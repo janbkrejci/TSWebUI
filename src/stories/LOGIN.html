@@ -1,0 +1,12 @@
+<div class="sl-theme-{{theme}}"
+    style="padding: 1em; background-color: var(--sl-color-neutral-0); color: var(--sl-color-neutral-1000); font-family: var(--sl-font-sans);">
+    <sl-dialog id="login-dialog" label="Přihlášení" class="dialog-focus">
+        <sl-input autofocus placeholder="Uživatel"></sl-input>
+        <br>
+        <sl-input  type="password" placeholder="Heslo"></sl-input>
+        <sl-button slot="footer" variant="primary">Přihlásit</sl-button>
+        <sl-button slot="footer" variant="default" onclick="document.getElementById('login-dialog').hide()">Storno</sl-button>
+    </sl-dialog>
+
+    <sl-button onclick="document.getElementById('login-dialog').show()">Přihlásit</sl-button>
+</div>

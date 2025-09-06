@@ -1,0 +1,156 @@
+<div class="sl-theme-{{theme}}"
+    style="padding: 1em; background-color: var(--sl-color-neutral-0); color: var(--sl-color-neutral-1000); font-family: var(--sl-font-sans);">
+    <style>
+        #page-number {
+            max-width: 4em;
+            display: inline-block;
+        }
+
+        #page-number::part(input) {
+            text-align: right;
+        }
+
+        #page-info {
+            font-size: var(--sl-font-size-small);
+            color: var(--sl-color-neutral-700);
+            font-weight: var(--sl-font-weight-light);
+        }
+
+        #item-count {
+            font-size: var(--sl-font-size-small);
+            color: var(--sl-color-neutral-700);
+            font-weight: var(--sl-font-weight-light);
+        }
+
+        #items-per-page {
+            font-size: var(--sl-font-size-small);
+            color: var(--sl-color-neutral-700);
+            font-weight: var(--sl-font-weight-light);
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+
+        #pager {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+            align-self: center;
+        }
+
+        #footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5em 0;
+            flex-wrap: wrap;
+        }
+    </style>
+    <script>
+        // select all on focus
+        let inputClick = (event) => {
+            event.target.select();
+            event.preventDefault();
+        };
+        let inputKeyDown = (event) => {
+            //ignore non-numeric keys except backspace and delete
+            if (!/[0-9]/.test(event.key) && event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
+                event.preventDefault();
+            }
+            // blur on enter
+            if (event.key === 'Enter') {
+                event.target.blur();
+            }
+        };
+        // on blur, ensure value is between 1 and 15
+        let inputBlur = (event) => {
+            let value = parseInt(event.target.value);
+            if (isNaN(value) || value < 1) {
+                event.target.value = 1;
+            } else if (value > 15) {
+                event.target.value = 15;
+            }
+        };
+    </script>
+    <!-- DATATABLE -->
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 40px;">
+                    <sl-checkbox></sl-checkbox>
+                </th>
+                <th style="width: 40px;">ID</th>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>City</th>
+                <th>Phone</th>
+                <th>Website</th>
+                <th>Company</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><sl-checkbox></sl-checkbox></td>
+                <td>1</td>
+                <td>Leanne Graham</td>
+                <td>Bret</td>
+                <td>leanne@example.com</td>
+                <td>London</td>
+                <td>555-1234</td>
+                <td>www.leannegraham.com</td>
+                <td>Example Corp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- FOOTER -->
+    <div id="footer">
+        <div id="item-count">Vybráno 10 z 500</div>
+        <div id="items-per-page">
+            Zobrazit
+            <sl-dropdown>
+                <sl-button slot="trigger">
+                    10
+                    <sl-icon name="chevron-down" style="margin-left: 0.5em;"></sl-icon>
+                </sl-button>
+
+                <sl-menu>
+                    <sl-menu-item>5</sl-menu-item>
+                    <sl-menu-item>10</sl-menu-item>
+                    <sl-menu-item>20</sl-menu-item>
+                    <sl-menu-item>50</sl-menu-item>
+                    <sl-menu-item>100</sl-menu-item>
+                    <sl-menu-item>1000</sl-menu-item>
+                </sl-menu>
+            </sl-dropdown>
+            na stránku
+        </div>
+        <!-- PAGER -->
+        <div id="pager" onclick="pageDropdownClicked(event)">
+            <sl-button-group>
+                <sl-button disabled>
+                    <sl-icon name="chevron-bar-left"></sl-icon>
+                </sl-button>
+                <sl-button disabled>
+                    <sl-icon name="chevron-left"></sl-icon>
+                </sl-button>
+            </sl-button-group>
+            <div id="page-info" variant="none">
+                Stránka
+                <sl-input id="page-number" size="small" value="8" onclick="inputClick(event)"
+                    onkeydown="inputKeyDown(event)" onblur="inputBlur(event)"></sl-input>
+                / 15
+            </div>
+
+            <sl-button-group>
+                <sl-button>
+                    <sl-icon name="chevron-right"></sl-icon>
+                </sl-button>
+                <sl-button>
+                    <sl-icon name="chevron-bar-right"></sl-icon>
+                </sl-button>
+            </sl-button-group>
+        </div>
+    </div>
+</div>
