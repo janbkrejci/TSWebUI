@@ -360,12 +360,24 @@
                 }
                 
                 if (col.filterable) {
-                    th.innerHTML = `<sl-input size="small" placeholder="${col.filterPlaceholder}"></sl-input>`;
+                    th.innerHTML = `<sl-input size="small" placeholder="${col.filterPlaceholder}" autocomplete="off" clearable></sl-input>`;
                 }
                 filterRow.appendChild(th);
             });
 
             thead.appendChild(filterRow);
+
+            // Add escape key handlers for filter inputs
+            const filterInputs = filterRow.querySelectorAll('sl-input');
+            filterInputs.forEach(input => {
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape') {
+                        event.target.value = '';
+                        console.log('Filter input cleared with Escape key');
+                    }
+                });
+            });
+
             return true;
         }
 
@@ -477,9 +489,12 @@
             columnsMenu.appendChild(divider);
 
             const searchInput = document.createElement('sl-input');
+            searchInput.autofocus = true;
             searchInput.placeholder = 'Search columns...';
             searchInput.className = 'search-input';
             searchInput.setAttribute('id', 'column-search');
+            searchInput.setAttribute('autocomplete', 'off');
+            searchInput.setAttribute('clearable', '');
             columnsMenu.appendChild(searchInput);
 
             // Add column items from definitions
@@ -511,6 +526,18 @@
                         // Small delay to ensure DOM is ready
                         setTimeout(() => filterColumnMenu(value), 10);
                     });
+                });
+
+                // Add escape key handler for column search
+                searchElement.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape') {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        event.target.value = '';
+                        filterColumnMenu('');
+                        console.log('Column search cleared with Escape key');
+                    }
                 });
             } else {
                 console.log('Search element not found!');
