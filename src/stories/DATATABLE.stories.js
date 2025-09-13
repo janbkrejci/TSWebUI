@@ -1,5 +1,6 @@
 import { fn } from 'storybook/test';
 import template from './DATATABLE.html?raw';
+import './datatable.css';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
@@ -42,13 +43,14 @@ export default {
   },
   // Use `fn` to spy on the onClick arg, which will appear in the actions panel once invoked: https://storybook.js.org/docs/essentials/actions#action-args
   //args: { onClick: fn() },
-  play: async ({ selectedColumns }) => {
-    // Wait for the component to be ready
-    await new Promise(resolve => setTimeout(resolve, 200));
+  play: async ({ args }) => {
+    // Wait for the component to be ready and scripts to load
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     // Update the component with the selected columns
-    if (window.updateDataTableColumns) {
-      window.updateDataTableColumns(selectedColumns || ['Name', 'Username', 'Email']);
+    if (window.updateDataTableColumns && args.selectedColumns) {
+      console.log('Storybook play: updating columns to', args.selectedColumns);
+      window.updateDataTableColumns(args.selectedColumns);
     }
   },
 };
