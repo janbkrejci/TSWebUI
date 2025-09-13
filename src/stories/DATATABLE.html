@@ -342,7 +342,7 @@
                 }
                 
                 if (col.filterable) {
-                    th.innerHTML = `<sl-input size="small" placeholder="${col.filterPlaceholder}" autocomplete="off" clearable></sl-input>`;
+                    th.innerHTML = `<sl-input size="small" placeholder="${col.filterPlaceholder}" autocomplete="off"></sl-input>`;
                 }
                 filterRow.appendChild(th);
             });
@@ -476,7 +476,6 @@
             searchInput.className = 'search-input';
             searchInput.setAttribute('id', 'column-search');
             searchInput.setAttribute('autocomplete', 'off');
-            searchInput.setAttribute('clearable', '');
             columnsMenu.appendChild(searchInput);
 
             // Add column items from definitions
