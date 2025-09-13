@@ -151,6 +151,11 @@ tbody tr {
     width: calc(100% - 1em);
 }
 
+.column-filter-hidden {
+    display: none !important;
+    visibility: hidden !important;
+}
+
 /* Table header styles */
 .checkbox-column {
     width: 40px;
