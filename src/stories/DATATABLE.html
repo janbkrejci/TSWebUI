@@ -3,7 +3,7 @@
         // Utility functions for page number input
         let inputClick = (event) => {
             event.target.select();
-            event.preventDefault();
+            event.preventDefaul        function populateTableData() {);
         };
         
         let inputKeyDown = (event) => {
@@ -24,6 +24,185 @@
             }
         };
 
+        // Table data
+        const tableData = [
+            {
+                id: 1,
+                name: "Leanne Graham",
+                username: "Bret",
+                email: "leanne@example.com",
+                city: "London",
+                phone: "555-1234",
+                website: "www.leannegraham.com",
+                company: "Example Corp"
+            },
+            {
+                id: 2,
+                name: "Ervin Howell",
+                username: "Antonette",
+                email: "ervin@example.com",
+                city: "Paris",
+                phone: "555-5678",
+                website: "www.ervinhowell.com",
+                company: "Howell LLC"
+            },
+            {
+                id: 3,
+                name: "Clementine Bauch",
+                username: "Samantha",
+                email: "clementine@example.com",
+                city: "Berlin",
+                phone: "555-8765",
+                website: "www.clementine.com",
+                company: "Bauch Group"
+            },
+            {
+                id: 4,
+                name: "Patricia Lebsack",
+                username: "Karianne",
+                email: "patricia@example.com",
+                city: "Madrid",
+                phone: "555-4321",
+                website: "www.patricia.com",
+                company: "Lebsack Ltd"
+            },
+            {
+                id: 5,
+                name: "Chelsey Dietrich",
+                username: "Kameron",
+                email: "chelsey@example.com",
+                city: "Rome",
+                phone: "555-2468",
+                website: "www.chelsey.com",
+                company: "Dietrich Inc"
+            },
+            {
+                id: 6,
+                name: "Mrs. Dennis Schulist",
+                username: "Leopoldo_Corkery",
+                email: "dennis@example.com",
+                city: "Vienna",
+                phone: "555-1357",
+                website: "www.dennis.com",
+                company: "Schulist Group"
+            },
+            {
+                id: 7,
+                name: "Kurtis Weissnat",
+                username: "Elwyn.Skiles",
+                email: "kurtis@example.com",
+                city: "Prague",
+                phone: "555-9753",
+                website: "www.kurtis.com",
+                company: "Weissnat LLC"
+            },
+            {
+                id: 8,
+                name: "Nicholas Runolfsdottir",
+                username: "Maxime_Nienow",
+                email: "nicholas@example.com",
+                city: "Brno",
+                phone: "555-8642",
+                website: "www.nicholas.com",
+                company: "Runolfsdottir Ltd"
+            },
+            {
+                id: 9,
+                name: "Glenna Reichert",
+                username: "Delphine",
+                email: "glenna@example.com",
+                city: "Ostrava",
+                phone: "555-7531",
+                website: "www.glenna.com",
+                company: "Reichert Group"
+            },
+            {
+                id: 10,
+                name: "Clementina DuBuque",
+                username: "Moriah.Stanton",
+                email: "clementina@example.com",
+                city: "Plzeň",
+                phone: "555-1597",
+                website: "www.clementina.com",
+                company: "DuBuque Inc"
+            }
+        ];
+
+        // Column mapping for dynamic table creation
+        const columns = {
+            'ID': 'id',
+            'Name': 'name',
+            'Username': 'username',
+            'Email': 'email',
+            'City': 'city',
+            'Phone': 'phone',
+            'Website': 'website',
+            'Company': 'company'
+        };
+
+        // Populate table with data
+        function populateTable() {
+            console.log('🔄 Populating table...');
+            const tbody = document.querySelector('tbody');
+            console.log('🔄 Found tbody:', tbody);
+            
+            if (!tbody) {
+                console.error('❌ Table body not found');
+                return;
+            }
+
+            // Clear existing rows
+            tbody.innerHTML = '';
+            console.log('🔄 Cleared existing rows');
+
+            // First, try adding a simple test row
+            const testRow = document.createElement('tr');
+            testRow.style.backgroundColor = 'yellow'; // Make it obvious
+            testRow.innerHTML = `
+                <td>TEST</td>
+                <td>1</td>
+                <td>Test Name</td>
+                <td>test_user</td>
+                <td>test@example.com</td>
+                <td>Test City</td>
+                <td>555-0000</td>
+                <td>www.test.com</td>
+                <td>Test Company</td>
+            `;
+            tbody.appendChild(testRow);
+            console.log('🧪 Added test row');
+
+            // Now create rows from data using innerHTML approach
+            let htmlRows = '';
+            tableData.forEach((rowData, index) => {
+                console.log(`🔄 Creating row ${index + 1}:`, rowData);
+                
+                htmlRows += `
+                    <tr onclick="rowClicked(event)" style="display: table-row; visibility: visible;">
+                        <td style="text-align: center; padding: 0.5em 1em; border-bottom: 1px solid #ccc;">☐</td>
+                        <td style="padding: 0.5em 1em; border-bottom: 1px solid #ccc;">${rowData.id}</td>
+                        <td style="padding: 0.5em 1em; border-bottom: 1px solid #ccc;">${rowData.name}</td>
+                        <td style="padding: 0.5em 1em; border-bottom: 1px solid #ccc;">${rowData.username}</td>
+                        <td style="padding: 0.5em 1em; border-bottom: 1px solid #ccc;">${rowData.email}</td>
+                        <td style="padding: 0.5em 1em; border-bottom: 1px solid #ccc;">${rowData.city}</td>
+                        <td style="padding: 0.5em 1em; border-bottom: 1px solid #ccc;">${rowData.phone}</td>
+                        <td style="padding: 0.5em 1em; border-bottom: 1px solid #ccc;">${rowData.website}</td>
+                        <td style="padding: 0.5em 1em; border-bottom: 1px solid #ccc;">${rowData.company}</td>
+                    </tr>
+                `;
+            });
+            
+            // Set all rows at once
+            tbody.innerHTML = testRow.outerHTML + htmlRows;
+            console.log('🔄 Set tbody innerHTML with all rows');
+
+            // Final check
+            const allRows = tbody.querySelectorAll('tr');
+            console.log(`✅ Table populated. Total rows in tbody: ${allRows.length}`);
+            console.log('📊 All rows:', Array.from(allRows));
+            console.log('📊 tbody HTML preview:', tbody.innerHTML.substring(0, 200) + '...');
+        }
+
         // Handle row clicks
         let rowClicked = (event) => {
             if (event.target.closest('sl-checkbox') || event.target.tagName === 'SL-CHECKBOX') {
@@ -34,10 +213,138 @@
             console.log('Row clicked with ID:', id);
         };
 
-        // DOM loaded handler
+        // Simple immediate population - let's try the most direct approach
+        function forcePopulateNow() {
+            console.log('� FORCE POPULATE NOW!');
+            
+            // Find table using specific ID
+            const table = document.getElementById('data-table');
+            if (!table) {
+                console.error('❌ Table with ID "data-table" not found!');
+                console.log('Available elements with IDs:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+                return false;
+            }
+            console.log('✅ Found table by ID:', table);
+            
+            const tbody = table.querySelector('tbody');
+            if (!tbody) {
+                console.error('❌ tbody not found in table!');
+                return false;
+            }
+            console.log('✅ Found tbody:', tbody);
+            
+            // Clear and add conspicuous test row
+            tbody.innerHTML = `
+                <tr style="background: #ff0000; height: 60px; border: 5px solid #000000;">
+                    <td colspan="9" style="text-align: center; color: white; font-weight: bold; padding: 20px; font-size: 18px;">
+                        ✅ SUCCESS! Table found by ID and populated!
+                    </td>
+                </tr>
+            `;
+            
+            // Add actual data rows
+            tableData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><sl-checkbox></sl-checkbox></td>
+                    <td>${row.id}</td>
+                    <td>${row.name}</td>
+                    <td>${row.username}</td>
+                    <td>${row.email}</td>
+                    <td>${row.city}</td>
+                    <td>${row.phone}</td>
+                    <td>${row.website}</td>
+                    <td>${row.company}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            const finalRowCount = tbody.querySelectorAll('tr').length;
+            console.log(`✅ Successfully added ${finalRowCount} rows (1 test + ${tableData.length} data)`);
+            return true;
+        }
+
+        // Initialize table with retry logic
+        function initializeTable() {
+            console.log('🚀 Initializing DataTable...');
+            
+            // Try populate by ID first
+            if (forcePopulateNow()) {
+                console.log('✅ Table populate succeeded');
+            } else {
+                console.log('❌ Table populate failed, will retry');
+                setTimeout(initializeTable, 200);
+                return;
+            }
+            
+            // Add listener to column menu sl-select event
+            const columnsMenu = document.querySelector('.columns-menu');
+            if (columnsMenu) {
+                console.log('✅ Column menu found, adding event listener');
+                columnsMenu.addEventListener('sl-select', (event) => {
+                    console.log('Column menu event triggered');
+                    forcePopulateNow();
+                });
+            }
+        }
+
+        // Multiple initialization attempts
+        console.log('🔍 Starting multiple initialization attempts...');
+        
+        // Attempt 1: Immediate
+        setTimeout(initializeTable, 10);
+        
+        // Attempt 2: Short delay
+        setTimeout(initializeTable, 100);
+        
+        // Attempt 3: Medium delay
+        setTimeout(initializeTable, 500);
+        
+        // Attempt 4: DOM ready
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM loaded - DataTable ready');
+            console.log('📄 DOM loaded - trying initialization');
+            initializeTable();
         });
+        
+        // Attempt 5: Window load
+        window.addEventListener('load', () => {
+            console.log('🌍 Window loaded - trying initialization');
+            initializeTable();
+        });
+
+        // Debug function to check table state
+        function debugTable() {
+            console.log('🔍 === TABLE DEBUG ===');
+            const table = document.querySelector('table');
+            const tbody = document.querySelector('tbody');
+            const rows = tbody ? tbody.querySelectorAll('tr') : [];
+            
+            console.log('🔍 Table element:', table);
+            console.log('🔍 Tbody element:', tbody);
+            console.log('🔍 Number of rows:', rows.length);
+            console.log('🔍 Table HTML:', table ? table.outerHTML.substring(0, 500) + '...' : 'No table');
+            console.log('🔍 Tbody HTML:', tbody ? tbody.innerHTML.substring(0, 500) + '...' : 'No tbody');
+            
+            if (rows.length > 0) {
+                console.log('🔍 First row:', rows[0]);
+                console.log('🔍 First row HTML:', rows[0].outerHTML);
+            }
+            
+            // Check computed styles
+            if (tbody) {
+                const styles = window.getComputedStyle(tbody);
+                console.log('🔍 Tbody display:', styles.display);
+                console.log('🔍 Tbody visibility:', styles.visibility);
+            }
+            
+            console.log('🔍 === END DEBUG ===');
+        }
+
+        // Global functions for debugging
+        window.populateTable = populateTable;
+        window.initializeTable = initializeTable;
+        window.tableData = tableData;
+        window.debugTable = debugTable;
     </script>
     <div id="container">
         <!-- DATATABLE -->
@@ -75,7 +382,7 @@
             </div>
         </div>
         <div class="table-container">
-            <table>
+            <table id="data-table">
                 <thead>
                     <tr>
                         <th class="checkbox-column"></th>
@@ -115,116 +422,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr onclick="rowClicked(event)">
-                        <td><sl-checkbox></sl-checkbox></td>
-                        <td>1</td>
-                        <td>Leanne Graham</td>
-                        <td>Bret</td>
-                        <td>leanne@example.com</td>
-                        <td>London</td>
-                        <td>555-1234</td>
-                        <td>www.leannegraham.com</td>
-                        <td>Example Corp</td>
-                    </tr>
-                    <tr onclick="rowClicked(event)">
-                        <td><sl-checkbox></sl-checkbox></td>
-                        <td>2</td>
-                        <td>Ervin Howell</td>
-                        <td>Antonette</td>
-                        <td>ervin@example.com</td>
-                        <td>Paris</td>
-                        <td>555-5678</td>
-                        <td>www.ervinhowell.com</td>
-                        <td>Howell LLC</td>
-                    </tr>
-                    <tr onclick="rowClicked(event)">
-                        <td><sl-checkbox></sl-checkbox></td>
-                        <td>3</td>
-                        <td>Clementine Bauch</td>
-                        <td>Samantha</td>
-                        <td>clementine@example.com</td>
-                        <td>Berlin</td>
-                        <td>555-8765</td>
-                        <td>www.clementine.com</td>
-                        <td>Bauch Group</td>
-                    </tr>
-                    <tr onclick="rowClicked(event)">
-                        <td><sl-checkbox></sl-checkbox></td>
-                        <td>4</td>
-                        <td>Patricia Lebsack</td>
-                        <td>Karianne</td>
-                        <td>patricia@example.com</td>
-                        <td>Madrid</td>
-                        <td>555-4321</td>
-                        <td>www.patricia.com</td>
-                        <td>Lebsack Ltd</td>
-                    </tr>
-                    <tr onclick="rowClicked(event)">
-                        <td><sl-checkbox></sl-checkbox></td>
-                        <td>5</td>
-                        <td>Chelsey Dietrich</td>
-                        <td>Kameron</td>
-                        <td>chelsey@example.com</td>
-                        <td>Rome</td>
-                        <td>555-2468</td>
-                        <td>www.chelsey.com</td>
-                        <td>Dietrich Inc</td>
-                    </tr>
-                    <tr onclick="rowClicked(event)">
-                        <td><sl-checkbox></sl-checkbox></td>
-                        <td>6</td>
-                        <td>Mrs. Dennis Schulist</td>
-                        <td>Leopoldo_Corkery</td>
-                        <td>dennis@example.com</td>
-                        <td>Vienna</td>
-                        <td>555-1357</td>
-                        <td>www.dennis.com</td>
-                        <td>Schulist Group</td>
-                    </tr>
-                    <tr onclick="rowClicked(event)">
-                        <td><sl-checkbox></sl-checkbox></td>
-                        <td>7</td>
-                        <td>Kurtis Weissnat</td>
-                        <td>Elwyn.Skiles</td>
-                        <td>kurtis@example.com</td>
-                        <td>Prague</td>
-                        <td>555-9753</td>
-                        <td>www.kurtis.com</td>
-                        <td>Weissnat LLC</td>
-                    </tr>
-                    <tr onclick="rowClicked(event)">
-                        <td><sl-checkbox></sl-checkbox></td>
-                        <td>8</td>
-                        <td>Nicholas Runolfsdottir</td>
-                        <td>Maxime_Nienow</td>
-                        <td>nicholas@example.com</td>
-                        <td>Brno</td>
-                        <td>555-8642</td>
-                        <td>www.nicholas.com</td>
-                        <td>Runolfsdottir Ltd</td>
-                    </tr>
-                    <tr onclick="rowClicked(event)">
-                        <td><sl-checkbox></sl-checkbox></td>
-                        <td>9</td>
-                        <td>Glenna Reichert</td>
-                        <td>Delphine</td>
-                        <td>glenna@example.com</td>
-                        <td>Ostrava</td>
-                        <td>555-7531</td>
-                        <td>www.glenna.com</td>
-                        <td>Reichert Group</td>
-                    </tr>
-                    <tr onclick="rowClicked(event)">
-                        <td><sl-checkbox></sl-checkbox></td>
-                        <td>10</td>
-                        <td>Clementina DuBuque</td>
-                        <td>Moriah.Stanton</td>
-                        <td>clementina@example.com</td>
-                        <td>Plzeň</td>
-                        <td>555-1597</td>
-                        <td>www.clementina.com</td>
-                        <td>DuBuque Inc</td>
-                    </tr>
+                    <!-- Table rows will be populated dynamically by populateTable() function -->
                 </tbody>
             </table>
         </div>
