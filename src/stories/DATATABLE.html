@@ -247,7 +247,6 @@
                 }
             });
 
-            console.log('All columns selected');
             populateTable();
         }
 
@@ -271,7 +270,6 @@
                 }
             });
 
-            console.log('All columns cleared (except unhideable)');
             populateTable();
         }
 
@@ -418,6 +416,9 @@
                     tr.appendChild(td);
                 });
 
+                // Add row click handler
+                tr.addEventListener('click', rowClicked);
+
                 tbody.appendChild(tr);
             });
             
@@ -490,8 +491,6 @@
             const columnsMenu = document.querySelector('.columns-menu');
             if (columnsMenu) {
                 columnsMenu.addEventListener('sl-select', (event) => {
-                    console.log('Column menu event triggered');
-                    
                     const selectedItem = event.detail.item;
                     const action = selectedItem?.getAttribute('data-action');
                     const columnKey = selectedItem?.getAttribute('data-column-key');
@@ -512,7 +511,6 @@
                         if (columnDef) {
                             // Skip processing if item is disabled (unhideable columns)
                             if (selectedItem.disabled) {
-                                console.log(`Column '${columnKey}' is disabled and cannot be changed`);
                                 event.preventDefault();
                                 return;
                             }
@@ -521,7 +519,6 @@
                             if (selectedItem.hasAttribute('data-unhideable') && unhideableColumns.includes(columnKey)) {
                                 // Prevent unselecting unhideable columns
                                 if (!selectedItem.checked) {
-                                    console.log(`Column '${columnKey}' cannot be hidden - forcing checked state`);
                                     selectedItem.checked = true;
                                     columnDef.visible = true;
                                     event.preventDefault();
@@ -531,7 +528,6 @@
                             
                             // Update the column visibility in definition
                             columnDef.visible = selectedItem.checked;
-                            console.log(`Column '${columnKey}' visibility changed to: ${columnDef.visible}`);
                         }
                     }
                     
@@ -541,7 +537,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('📄 DOM loaded - trying initialization');
             initializeTable();
         });
     </script>
