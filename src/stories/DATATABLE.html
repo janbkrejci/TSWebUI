@@ -220,6 +220,52 @@
             return columnDefinitions.filter(col => col.visible);
         }
 
+        // Function to select all columns (respecting unhideable columns)
+        function selectAllColumns() {
+            const columnsMenu = document.querySelector('.columns-menu');
+            if (!columnsMenu) return;
+
+            // Update column definitions
+            columnDefinitions.forEach(col => {
+                col.visible = true;
+            });
+
+            // Update menu items
+            const menuItems = columnsMenu.querySelectorAll('sl-menu-item[type="checkbox"]');
+            menuItems.forEach(item => {
+                if (!item.disabled) {
+                    item.checked = true;
+                }
+            });
+
+            console.log('All columns selected');
+            populateTable();
+        }
+
+        // Function to clear all columns (respecting unhideable columns)
+        function clearAllColumns() {
+            const columnsMenu = document.querySelector('.columns-menu');
+            if (!columnsMenu) return;
+
+            // Update column definitions (keep unhideable columns visible)
+            columnDefinitions.forEach(col => {
+                if (!unhideableColumns.includes(col.key)) {
+                    col.visible = false;
+                }
+            });
+
+            // Update menu items
+            const menuItems = columnsMenu.querySelectorAll('sl-menu-item[type="checkbox"]');
+            menuItems.forEach(item => {
+                if (!item.disabled) {
+                    item.checked = false;
+                }
+            });
+
+            console.log('All columns cleared (except unhideable)');
+            populateTable();
+        }
+
         // Handle row clicks
         let rowClicked = (event) => {
             if (event.target.closest('sl-checkbox') || event.target.tagName === 'SL-CHECKBOX') {
@@ -363,10 +409,12 @@
             // Add standard menu items
             const selectAll = document.createElement('sl-menu-item');
             selectAll.textContent = 'Select All';
+            selectAll.setAttribute('data-action', 'select-all');
             columnsMenu.appendChild(selectAll);
 
             const clearAll = document.createElement('sl-menu-item');
             clearAll.textContent = 'Clear All';
+            clearAll.setAttribute('data-action', 'clear-all');
             columnsMenu.appendChild(clearAll);
 
             const divider = document.createElement('sl-divider');
@@ -411,7 +459,17 @@
                     console.log('Column menu event triggered');
                     
                     const selectedItem = event.detail.item;
+                    const action = selectedItem?.getAttribute('data-action');
                     const columnKey = selectedItem?.getAttribute('data-column-key');
+                    
+                    // Handle select all / clear all actions
+                    if (action === 'select-all') {
+                        selectAllColumns();
+                        return;
+                    } else if (action === 'clear-all') {
+                        clearAllColumns();
+                        return;
+                    }
                     
                     if (columnKey) {
                         // Find the column definition
