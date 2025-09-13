@@ -260,66 +260,216 @@
 
         // Handle column visibility changes
         let columnVisibilityChanged = (event) => {
-            const menuItem = event.target;
+            // Find the menu item (might be a child element that triggered the event)
+            let menuItem = event.target;
+            if (menuItem.tagName !== 'SL-MENU-ITEM') {
+                menuItem = menuItem.closest('sl-menu-item');
+            }
+
+            if (!menuItem) {
+                console.error('Could not find menu item');
+                return;
+            }
+
             const columnName = menuItem.textContent.trim();
             const columnIndex = columnMap[columnName];
-            
-            if (columnIndex !== undefined) {
-                const isChecked = menuItem.checked;
-                toggleColumnVisibility(columnIndex, isChecked);
-            }
-        };
 
-        // Toggle column visibility
+            console.log(`Column "${columnName}" (index ${columnIndex}) visibility changed`);
+
+            if (columnIndex !== undefined) {
+                // For Shoelace menu items, check the current state
+                const isChecked = menuItem.hasAttribute('checked');
+                console.log(`Current state: ${isChecked ? 'checked' : 'unchecked'}`);
+
+                // Toggle the state
+                const newChecked = !isChecked;
+                if (newChecked) {
+                    menuItem.setAttribute('checked', '');
+                } else {
+                    menuItem.removeAttribute('checked');
+                }
+
+                console.log(`New state: ${newChecked ? 'checked' : 'unchecked'}`);
+                console.log(`Setting column ${columnIndex} visibility to: ${newChecked ? 'visible' : 'hidden'}`);
+
+                toggleColumnVisibility(columnIndex, newChecked);
+            } else {
+                console.warn(`Column "${columnName}" not found in columnMap`);
+            }
+        };        // Toggle column visibility
         let toggleColumnVisibility = (columnIndex, isVisible) => {
+            console.log(`Toggling column ${columnIndex} visibility to: ${isVisible ? 'SHOW' : 'HIDE'}`);
             const table = document.querySelector('table');
-            if (!table) return;
+            if (!table) {
+                console.error('Table not found!');
+                return;
+            }
 
             // Get all rows (header and body)
             const rows = table.querySelectorAll('tr');
-            
-            rows.forEach(row => {
+            console.log(`Found ${rows.length} rows to update`);
+
+            let updatedCells = 0;
+            rows.forEach((row, rowIndex) => {
                 const cell = row.cells[columnIndex];
                 if (cell) {
                     cell.style.display = isVisible ? '' : 'none';
+                    updatedCells++;
+                    if (rowIndex === 0) { // Log header row
+                        console.log(`Header cell ${columnIndex} set to: ${isVisible ? 'visible' : 'hidden'}`);
+                    }
+                } else {
+                    console.warn(`Cell at row ${rowIndex}, column ${columnIndex} not found`);
                 }
             });
-        };
-
-        // Handle Select All
+            console.log(`Updated ${updatedCells} cells for column ${columnIndex}`);
+        };        // Handle Select All
         let selectAllColumns = () => {
+            console.log('Select All clicked');
             const menuItems = document.querySelectorAll('sl-menu-item[type="checkbox"]');
-            menuItems.forEach(item => {
-                if (!item.checked) {
-                    item.checked = true;
-                    columnVisibilityChanged({ target: item });
+            console.log(`Found ${menuItems.length} menu items`);
+            menuItems.forEach((item, index) => {
+                if (!item.hasAttribute('checked')) {
+                    item.setAttribute('checked', '');
+                    // Directly show the column since we know it should be checked
+                    const columnName = item.textContent.trim();
+                    const columnIndex = columnMap[columnName];
+                    console.log(`Checking item ${index}: ${columnName} (column ${columnIndex})`);
+                    if (columnIndex !== undefined) {
+                        toggleColumnVisibility(columnIndex, true);
+                    }
                 }
             });
         };
 
         // Handle Clear All
         let clearAllColumns = () => {
+            console.log('Clear All clicked');
             const menuItems = document.querySelectorAll('sl-menu-item[type="checkbox"]');
-            menuItems.forEach(item => {
-                if (item.checked) {
-                    item.checked = false;
-                    columnVisibilityChanged({ target: item });
+            console.log(`Found ${menuItems.length} menu items`);
+            menuItems.forEach((item, index) => {
+                if (item.hasAttribute('checked')) {
+                    item.removeAttribute('checked');
+                    // Directly hide the column since we know it should be unchecked
+                    const columnName = item.textContent.trim();
+                    const columnIndex = columnMap[columnName];
+                    console.log(`Unchecking item ${index}: ${columnName} (column ${columnIndex})`);
+                    if (columnIndex !== undefined) {
+                        toggleColumnVisibility(columnIndex, false);
+                    }
                 }
             });
         };
 
         // Initialize column visibility on page load
         let initializeColumnVisibility = () => {
+            // Wait for data attribute to be available
+            const checkForDataAttribute = () => {
+                const container = document.getElementById('container');
+                const selectedColumnsData = container?.getAttribute('data-selected-columns');
+                
+                if (selectedColumnsData && selectedColumnsData !== '{{selectedColumns}}') {
+                    // Data attribute is ready
+                    updateColumnChooserFromStoryParams();
+                } else {
+                    // Try again in a short delay
+                    setTimeout(checkForDataAttribute, 100);
+                }
+            };
+            
+            checkForDataAttribute();
+        };
+
+        // Reactive function to update column chooser from story parameters
+        let updateColumnChooserFromStoryParams = () => {
+            console.log('Updating column chooser from story params');
+            // Get selected columns from data attribute
+            const container = document.getElementById('container');
+            const selectedColumnsData = container?.getAttribute('data-selected-columns');
+            const selectedColumns = selectedColumnsData ? JSON.parse(selectedColumnsData) : ['Name', 'Username', 'Email'];
+            console.log('Selected columns from data attribute:', selectedColumns);
+
+            // First, hide all columns
+            console.log('Hiding all columns first');
+            hideAllColumns();
+
+            // Set checkbox states and show selected columns
             const menuItems = document.querySelectorAll('sl-menu-item[type="checkbox"]');
-            menuItems.forEach(item => {
-                columnVisibilityChanged({ target: item });
+            console.log(`Found ${menuItems.length} menu items to update`);
+            menuItems.forEach((item, index) => {
+                const columnName = item.textContent.trim();
+                const shouldBeChecked = selectedColumns.includes(columnName);
+                console.log(`Item ${index}: ${columnName}, should be checked: ${shouldBeChecked}`);
+                if (shouldBeChecked) {
+                    item.setAttribute('checked', '');
+                    // Show the column
+                    const columnIndex = columnMap[columnName];
+                    console.log(`Showing column ${columnName} at index ${columnIndex}`);
+                    if (columnIndex !== undefined) {
+                        toggleColumnVisibility(columnIndex, true);
+                    }
+                } else {
+                    item.removeAttribute('checked');
+                    // Column is already hidden from hideAllColumns()
+                }
             });
         };
 
+        // Hide all table columns
+        let hideAllColumns = () => {
+            console.log('Hiding all columns');
+            const table = document.querySelector('table');
+            if (!table) {
+                console.log('No table found');
+                return;
+            }
+
+            const rows = table.querySelectorAll('tr');
+            console.log(`Found ${rows.length} rows to process`);
+            rows.forEach((row, rowIndex) => {
+                console.log(`Processing row ${rowIndex} with ${row.cells.length} cells`);
+                // Hide all columns except the checkbox column (index 0)
+                for (let i = 1; i < row.cells.length; i++) {
+                    const cell = row.cells[i];
+                    if (cell) {
+                        cell.style.display = 'none';
+                        console.log(`Hidden cell ${i} in row ${rowIndex}`);
+                    }
+                }
+                // Ensure checkbox column is always visible
+                const checkboxCell = row.cells[0];
+                if (checkboxCell) {
+                    checkboxCell.style.display = '';
+                    console.log(`Ensured checkbox cell in row ${rowIndex} is visible`);
+                }
+            });
+        };
+
+        // Global function for Storybook to update column parameters
+        window.updateDataTableColumns = (selectedColumns) => {
+            const container = document.getElementById('container');
+            if (container) {
+                container.setAttribute('data-selected-columns', JSON.stringify(selectedColumns));
+                // The mutation observer will handle the update
+            }
+        };
+
         // Initialize when DOM is loaded
-        document.addEventListener('DOMContentLoaded', initializeColumnVisibility);
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeColumnVisibility();
+            watchForStoryParameterChanges();
+        });
+
+        // Global function for Storybook to update column parameters
+        window.updateDataTableColumns = (selectedColumns) => {
+            const container = document.getElementById('container');
+            if (container) {
+                container.setAttribute('data-selected-columns', JSON.stringify(selectedColumns));
+                // The mutation observer will handle the update
+            }
+        };
     </script>
-    <div id="container">
+    <div id="container" data-selected-columns="{{selectedColumns}}">
         <!-- DATATABLE -->
         <!-- Toolbar -->
         <div class="toolbar">
@@ -343,9 +493,9 @@
                         <sl-divider></sl-divider>
                         <sl-input placeholder="Search columns..." class="search-input"></sl-input>
                         <sl-menu-item type="checkbox" onclick="columnVisibilityChanged(event)">ID</sl-menu-item>
-                        <sl-menu-item type="checkbox" checked onclick="columnVisibilityChanged(event)">Name</sl-menu-item>
-                        <sl-menu-item type="checkbox" checked onclick="columnVisibilityChanged(event)">Username</sl-menu-item>
-                        <sl-menu-item type="checkbox" checked onclick="columnVisibilityChanged(event)">Email</sl-menu-item>
+                        <sl-menu-item type="checkbox" onclick="columnVisibilityChanged(event)">Name</sl-menu-item>
+                        <sl-menu-item type="checkbox" onclick="columnVisibilityChanged(event)">Username</sl-menu-item>
+                        <sl-menu-item type="checkbox" onclick="columnVisibilityChanged(event)">Email</sl-menu-item>
                         <sl-menu-item type="checkbox" onclick="columnVisibilityChanged(event)">City</sl-menu-item>
                         <sl-menu-item type="checkbox" onclick="columnVisibilityChanged(event)">Phone</sl-menu-item>
                         <sl-menu-item type="checkbox" onclick="columnVisibilityChanged(event)">Website</sl-menu-item>
