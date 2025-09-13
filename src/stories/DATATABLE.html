@@ -106,6 +106,29 @@
         };
     </script>
     <!-- DATATABLE -->
+    <!-- Toolbar -->
+    <div class="toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1em; padding: 0.5em 0;">
+      <div>
+        <sl-button>New record</sl-button>
+        <sl-button variant="danger" style="margin-left: 0.5em;">Delete record</sl-button>
+      </div>
+      <div>
+        <sl-dropdown>
+          <sl-button slot="trigger" caret>Columns</sl-button>
+          <sl-menu style="min-width: 200px;">
+            <sl-input placeholder="Search columns..." style="margin: 0.5em; width: calc(100% - 1em);"></sl-input>
+            <sl-menu-item checked>ID</sl-menu-item>
+            <sl-menu-item checked>Name</sl-menu-item>
+            <sl-menu-item checked>Username</sl-menu-item>
+            <sl-menu-item checked>Email</sl-menu-item>
+            <sl-menu-item checked>City</sl-menu-item>
+            <sl-menu-item checked>Phone</sl-menu-item>
+            <sl-menu-item checked>Website</sl-menu-item>
+            <sl-menu-item checked>Company</sl-menu-item>
+          </sl-menu>
+        </sl-dropdown>
+      </div>
+    </div>
     <div style="overflow-x: auto; width: 100%;">
       <table style="min-width: 900px;">
           <thead>
