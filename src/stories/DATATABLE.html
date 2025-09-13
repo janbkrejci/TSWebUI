@@ -113,6 +113,10 @@
             background: var(--sl-color-primary-50);
         }
 
+        tbody tr {
+            cursor: pointer;
+        }
+
         /* Main container styles */
         .main-container {
             padding: 1em;
@@ -228,16 +232,33 @@
                 event.target.value = 15;
             }
         };
+        // handle row click
+        let rowClicked = (event) => {
+            // Prevent firing if clicking on checkbox or its contents
+            if (event.target.closest('sl-checkbox') || event.target.tagName === 'SL-CHECKBOX') {
+                return;
+            }
+            // Get the row that was clicked
+            let row = event.currentTarget;
+            // Get the ID from the second cell (index 1)
+            let id = row.cells[1].textContent;
+            // Log to console
+            console.log('Row clicked with ID:', id);
+        };
     </script>
     <div id="container">
         <!-- DATATABLE -->
         <!-- Toolbar -->
         <div class="toolbar">
             <div>
-                <sl-button variant="primary">New record</sl-button>
+                <sl-button variant="success" circle>
+                    <sl-icon name="plus"></sl-icon>
+                </sl-button>
             </div>
             <div class="toolbar-center">
-                <sl-button variant="danger">Delete record</sl-button>
+                <sl-button variant="danger">
+                    <sl-icon name="trash"></sl-icon>
+                </sl-button>
                 <sl-button>Export to Excel</sl-button>
             </div>
             <div>
@@ -301,7 +322,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    <tr onclick="rowClicked(event)">
                         <td><sl-checkbox></sl-checkbox></td>
                         <td>1</td>
                         <td>Leanne Graham</td>
@@ -312,7 +333,7 @@
                         <td>www.leannegraham.com</td>
                         <td>Example Corp</td>
                     </tr>
-                    <tr>
+                    <tr onclick="rowClicked(event)">
                         <td><sl-checkbox></sl-checkbox></td>
                         <td>2</td>
                         <td>Ervin Howell</td>
@@ -323,7 +344,7 @@
                         <td>www.ervinhowell.com</td>
                         <td>Howell LLC</td>
                     </tr>
-                    <tr>
+                    <tr onclick="rowClicked(event)">
                         <td><sl-checkbox></sl-checkbox></td>
                         <td>3</td>
                         <td>Clementine Bauch</td>
@@ -334,7 +355,7 @@
                         <td>www.clementine.com</td>
                         <td>Bauch Group</td>
                     </tr>
-                    <tr>
+                    <tr onclick="rowClicked(event)">
                         <td><sl-checkbox></sl-checkbox></td>
                         <td>4</td>
                         <td>Patricia Lebsack</td>
@@ -345,7 +366,7 @@
                         <td>www.patricia.com</td>
                         <td>Lebsack Ltd</td>
                     </tr>
-                    <tr>
+                    <tr onclick="rowClicked(event)">
                         <td><sl-checkbox></sl-checkbox></td>
                         <td>5</td>
                         <td>Chelsey Dietrich</td>
@@ -356,7 +377,7 @@
                         <td>www.chelsey.com</td>
                         <td>Dietrich Inc</td>
                     </tr>
-                    <tr>
+                    <tr onclick="rowClicked(event)">
                         <td><sl-checkbox></sl-checkbox></td>
                         <td>6</td>
                         <td>Mrs. Dennis Schulist</td>
@@ -367,7 +388,7 @@
                         <td>www.dennis.com</td>
                         <td>Schulist Group</td>
                     </tr>
-                    <tr>
+                    <tr onclick="rowClicked(event)">
                         <td><sl-checkbox></sl-checkbox></td>
                         <td>7</td>
                         <td>Kurtis Weissnat</td>
@@ -378,7 +399,7 @@
                         <td>www.kurtis.com</td>
                         <td>Weissnat LLC</td>
                     </tr>
-                    <tr>
+                    <tr onclick="rowClicked(event)">
                         <td><sl-checkbox></sl-checkbox></td>
                         <td>8</td>
                         <td>Nicholas Runolfsdottir</td>
@@ -389,7 +410,7 @@
                         <td>www.nicholas.com</td>
                         <td>Runolfsdottir Ltd</td>
                     </tr>
-                    <tr>
+                    <tr onclick="rowClicked(event)">
                         <td><sl-checkbox></sl-checkbox></td>
                         <td>9</td>
                         <td>Glenna Reichert</td>
@@ -400,7 +421,7 @@
                         <td>www.glenna.com</td>
                         <td>Reichert Group</td>
                     </tr>
-                    <tr>
+                    <tr onclick="rowClicked(event)">
                         <td><sl-checkbox></sl-checkbox></td>
                         <td>10</td>
                         <td>Clementina DuBuque</td>
