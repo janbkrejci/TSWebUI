@@ -1,25 +1,30 @@
-<div class="sl-theme-{{theme}}"
-    style="padding: 1em; background-color: var(--sl-color-neutral-0); color: var(--sl-color-neutral-1000); font-family: var(--sl-font-sans);">
+<div class="sl-theme-{{theme}} main-container">
     <style>
         #page-number {
             max-width: 4em;
             display: inline-block;
         }
+
         #page-number::part(input) {
             text-align: right;
         }
-        #page-info, #item-count, #items-per-page {
+
+        #page-info,
+        #item-count,
+        #items-per-page {
             font-size: var(--sl-font-size-small);
             color: var(--sl-color-neutral-700);
             font-weight: var(--sl-font-weight-light);
             white-space: nowrap;
         }
+
         #items-per-page {
             display: flex;
             align-items: center;
             gap: 0.5em;
             flex-wrap: nowrap;
         }
+
         #pager {
             display: flex;
             align-items: center;
@@ -28,22 +33,25 @@
             flex-wrap: nowrap;
             white-space: nowrap;
         }
+
         .table-container {
             overflow-x: auto;
-            width: 900px;
-            margin: 0 auto;
+            width: 100%;
+            margin: 0;
         }
+
         #footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0.5em 0;
             margin-top: 1em;
-            width: 900px;
-            margin-left: auto;
-            margin-right: auto;
+            width: 100%;
+            margin-left: 0;
+            margin-right: 0;
             flex-wrap: nowrap;
         }
+
         table {
             width: auto;
             border-collapse: collapse;
@@ -54,10 +62,13 @@
             border-radius: var(--sl-border-radius-large);
             overflow: hidden;
         }
+
         thead {
             background: var(--sl-color-neutral-100);
         }
-        th, td {
+
+        th,
+        td {
             padding: 0.5em 1em;
             border-bottom: 1px solid var(--sl-color-neutral-200);
             white-space: nowrap;
@@ -65,28 +76,126 @@
             text-overflow: ellipsis;
             max-width: 200px;
         }
+
         th {
             font-weight: var(--sl-font-weight-semibold);
             color: var(--sl-color-neutral-900);
             background: var(--sl-color-neutral-100);
             text-align: left;
         }
+
         .filter-row th {
             padding: 0.25em 1em;
             border-bottom: 1px solid var(--sl-color-neutral-200);
             background: var(--sl-color-neutral-50);
         }
+
         .filter-row sl-input {
             width: 100%;
         }
-        th:first-child, td:first-child {
+
+        th:first-child,
+        td:first-child {
             text-align: center;
         }
-        th:nth-child(2), td:nth-child(2) {
+
+        th:nth-child(2),
+        td:nth-child(2) {
             text-align: right;
         }
+
         tr:hover td {
             background: var(--sl-color-primary-50);
+        }
+
+        /* Main container styles */
+        .main-container {
+            padding: 1em;
+            background-color: var(--sl-color-neutral-0);
+            color: var(--sl-color-neutral-1000);
+            font-family: var(--sl-font-sans);
+        }
+
+        /* Toolbar styles */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1em;
+            padding: 0.5em 0;
+            width: 100%;
+            margin-left: 0;
+            margin-right: 0;
+            gap: 0.5em;
+        }
+
+        .toolbar-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            gap: 0.25em;
+        }
+
+        /* Menu styles */
+        .columns-menu {
+            min-width: 200px;
+        }
+
+        .search-input {
+            margin: 0.5em;
+            width: calc(100% - 1em);
+        }
+
+        /* Table header styles */
+        .checkbox-column {
+            width: 40px;
+        }
+
+        .id-column {
+            width: 40px;
+        }
+
+        /* Sort indicator styles */
+        .sort-indicator {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 0.25em;
+        }
+
+        .sort-svg {
+            vertical-align: middle;
+        }
+
+        /* Footer styles */
+        .footer {
+            display: flex;
+            gap: 0.5em;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1em;
+            padding: 0.5em 0;
+            max-width: 100%;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .items-per-page {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+            font-size: var(--sl-font-size-small);
+            color: var(--sl-color-neutral-700);
+            font-weight: var(--sl-font-weight-light);
+            white-space: nowrap;
+        }
+
+        .pager {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+
+        .chevron-icon {
+            margin-left: 0.5em;
         }
     </style>
     <script>
@@ -115,137 +224,239 @@
             }
         };
     </script>
-    <!-- DATATABLE -->
-    <!-- Toolbar -->
-    <div class="toolbar" style="display: flex; align-items: center; margin-bottom: 1em; padding: 0.5em 0; width: 900px; margin-left: auto; margin-right: auto; gap: 0.5em;">
-      <div>
-        <sl-button variant="primary">New record</sl-button>
-      </div>
-      <div style="flex: 1; display: flex; justify-content: center; gap: 0.25em;">
-        <sl-button variant="danger">Delete record</sl-button>
-        <sl-button>Export to Excel</sl-button>
-      </div>
-      <div>
-        <sl-dropdown>
-          <sl-button slot="trigger" caret>Columns</sl-button>
-          <sl-menu style="min-width: 200px;">
-            <sl-menu-item>Select All</sl-menu-item>
-            <sl-menu-item>Clear All</sl-menu-item>
-            <sl-divider></sl-divider>
-            <sl-input placeholder="Search columns..." style="margin: 0.5em; width: calc(100% - 1em);"></sl-input>
-            <sl-menu-item type="checkbox" checked>ID</sl-menu-item>
-            <sl-menu-item type="checkbox" checked>Name</sl-menu-item>
-            <sl-menu-item type="checkbox" checked>Username</sl-menu-item>
-            <sl-menu-item type="checkbox" checked>Email</sl-menu-item>
-            <sl-menu-item type="checkbox" checked>City</sl-menu-item>
-            <sl-menu-item type="checkbox" checked>Phone</sl-menu-item>
-            <sl-menu-item type="checkbox" checked>Website</sl-menu-item>
-            <sl-menu-item type="checkbox" checked>Company</sl-menu-item>
-          </sl-menu>
-        </sl-dropdown>
-      </div>
-    </div>
-    <div class="table-container">
-      <table style="width: 900px;">
-          <thead>
-              <tr>
-                  <th style="width: 40px;"></th>
-                  <th style="width: 40px;">ID</th>
-                                    <th>Name
-                                        <span style="display:inline-block; vertical-align:middle; margin-left:0.25em;">
-                                            <svg width="10" height="16" viewBox="0 0 10 16" style="vertical-align:middle;">
-                                                <polygon points="5,3 1,7 9,7" fill="var(--sl-color-neutral-500)"/>
-                                                <polygon points="5,13 1,9 9,9" fill="var(--sl-color-neutral-300)"/>
-                                            </svg>
-                                        </span>
-                                    </th>
-                                                        <th>Username
-                                                            <span style="display:inline-block; vertical-align:middle; margin-left:0.25em;">
-                                                                <svg width="10" height="16" viewBox="0 0 10 16" style="vertical-align:middle;">
-                                                                    <polygon points="5,3 1,7 9,7" fill="var(--sl-color-neutral-300)"/>
-                                                                    <polygon points="5,13 1,9 9,9" fill="var(--sl-color-neutral-500)"/>
-                                                                </svg>
-                                                            </span>
-                                                        </th>
-                  <th>Email</th>
-                  <th>City</th>
-                  <th>Phone</th>
-                  <th>Website</th>
-                  <th>Company</th>
-              </tr>
-              <tr class="filter-row">
-                  <th style="width: 40px;"><sl-checkbox></sl-checkbox></th>
-                  <th><sl-input size="small" placeholder="Filter ID"></sl-input></th>
-                  <th><sl-input size="small" placeholder="Filter Name"></sl-input></th>
-                  <th><sl-input size="small" placeholder="Filter Username"></sl-input></th>
-                  <th><sl-input size="small" placeholder="Filter Email"></sl-input></th>
-                  <th><sl-input size="small" placeholder="Filter City"></sl-input></th>
-                  <th><sl-input size="small" placeholder="Filter Phone"></sl-input></th>
-                  <th><sl-input size="small" placeholder="Filter Website"></sl-input></th>
-                  <th><sl-input size="small" placeholder="Filter Company"></sl-input></th>
-              </tr>
-          </thead>
-          <tbody>
-              <tr><td><sl-checkbox></sl-checkbox></td><td>1</td><td>Leanne Graham</td><td>Bret</td><td>leanne@example.com</td><td>London</td><td>555-1234</td><td>www.leannegraham.com</td><td>Example Corp</td></tr>
-              <tr><td><sl-checkbox></sl-checkbox></td><td>2</td><td>Ervin Howell</td><td>Antonette</td><td>ervin@example.com</td><td>Paris</td><td>555-5678</td><td>www.ervinhowell.com</td><td>Howell LLC</td></tr>
-              <tr><td><sl-checkbox></sl-checkbox></td><td>3</td><td>Clementine Bauch</td><td>Samantha</td><td>clementine@example.com</td><td>Berlin</td><td>555-8765</td><td>www.clementine.com</td><td>Bauch Group</td></tr>
-              <tr><td><sl-checkbox></sl-checkbox></td><td>4</td><td>Patricia Lebsack</td><td>Karianne</td><td>patricia@example.com</td><td>Madrid</td><td>555-4321</td><td>www.patricia.com</td><td>Lebsack Ltd</td></tr>
-              <tr><td><sl-checkbox></sl-checkbox></td><td>5</td><td>Chelsey Dietrich</td><td>Kameron</td><td>chelsey@example.com</td><td>Rome</td><td>555-2468</td><td>www.chelsey.com</td><td>Dietrich Inc</td></tr>
-              <tr><td><sl-checkbox></sl-checkbox></td><td>6</td><td>Mrs. Dennis Schulist</td><td>Leopoldo_Corkery</td><td>dennis@example.com</td><td>Vienna</td><td>555-1357</td><td>www.dennis.com</td><td>Schulist Group</td></tr>
-              <tr><td><sl-checkbox></sl-checkbox></td><td>7</td><td>Kurtis Weissnat</td><td>Elwyn.Skiles</td><td>kurtis@example.com</td><td>Prague</td><td>555-9753</td><td>www.kurtis.com</td><td>Weissnat LLC</td></tr>
-              <tr><td><sl-checkbox></sl-checkbox></td><td>8</td><td>Nicholas Runolfsdottir</td><td>Maxime_Nienow</td><td>nicholas@example.com</td><td>Brno</td><td>555-8642</td><td>www.nicholas.com</td><td>Runolfsdottir Ltd</td></tr>
-              <tr><td><sl-checkbox></sl-checkbox></td><td>9</td><td>Glenna Reichert</td><td>Delphine</td><td>glenna@example.com</td><td>Ostrava</td><td>555-7531</td><td>www.glenna.com</td><td>Reichert Group</td></tr>
-              <tr><td><sl-checkbox></sl-checkbox></td><td>10</td><td>Clementina DuBuque</td><td>Moriah.Stanton</td><td>clementina@example.com</td><td>Plzeň</td><td>555-1597</td><td>www.clementina.com</td><td>DuBuque Inc</td></tr>
-          </tbody>
-      </table>
-    </div>
-    <!-- FOOTER -->
-    <div id="footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1em; padding: 0.5em 0; max-width: 900px; margin-left: auto; margin-right: auto;">
-      <div id="item-count">Vybráno 10 z 500</div>
-      <div id="items-per-page" style="display: flex; align-items: center; gap: 0.5em;">
-          Zobrazit
-          <sl-dropdown>
-              <sl-button slot="trigger">
-                  10
-                  <sl-icon name="chevron-down" style="margin-left: 0.5em;"></sl-icon>
-              </sl-button>
+    <div id="container">
+        <!-- DATATABLE -->
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div>
+                <sl-button variant="primary">New record</sl-button>
+            </div>
+            <div class="toolbar-center">
+                <sl-button variant="danger">Delete record</sl-button>
+                <sl-button>Export to Excel</sl-button>
+            </div>
+            <div>
+                <sl-dropdown>
+                    <sl-button slot="trigger" caret>Columns</sl-button>
+                    <sl-menu class="columns-menu">
+                        <sl-menu-item>Select All</sl-menu-item>
+                        <sl-menu-item>Clear All</sl-menu-item>
+                        <sl-divider></sl-divider>
+                        <sl-input placeholder="Search columns..." class="search-input"></sl-input>
+                        <sl-menu-item type="checkbox" checked>ID</sl-menu-item>
+                        <sl-menu-item type="checkbox" checked>Name</sl-menu-item>
+                        <sl-menu-item type="checkbox" checked>Username</sl-menu-item>
+                        <sl-menu-item type="checkbox" checked>Email</sl-menu-item>
+                        <sl-menu-item type="checkbox" checked>City</sl-menu-item>
+                        <sl-menu-item type="checkbox" checked>Phone</sl-menu-item>
+                        <sl-menu-item type="checkbox" checked>Website</sl-menu-item>
+                        <sl-menu-item type="checkbox" checked>Company</sl-menu-item>
+                    </sl-menu>
+                </sl-dropdown>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="checkbox-column"></th>
+                        <th class="id-column">ID</th>
+                        <th>Name
+                            <span class="sort-indicator">
+                                <svg width="10" height="16" viewBox="0 0 10 16" class="sort-svg">
+                                    <polygon points="5,3 1,7 9,7" fill="var(--sl-color-neutral-500)" />
+                                    <polygon points="5,13 1,9 9,9" fill="var(--sl-color-neutral-300)" />
+                                </svg>
+                            </span>
+                        </th>
+                        <th>Username
+                            <span class="sort-indicator">
+                                <svg width="10" height="16" viewBox="0 0 10 16" class="sort-svg">
+                                    <polygon points="5,3 1,7 9,7" fill="var(--sl-color-neutral-300)" />
+                                    <polygon points="5,13 1,9 9,9" fill="var(--sl-color-neutral-500)" />
+                                </svg>
+                            </span>
+                        </th>
+                        <th>Email</th>
+                        <th>City</th>
+                        <th>Phone</th>
+                        <th>Website</th>
+                        <th>Company</th>
+                    </tr>
+                    <tr class="filter-row">
+                        <th class="checkbox-column"><sl-checkbox></sl-checkbox></th>
+                        <th><sl-input size="small" placeholder="Filter ID"></sl-input></th>
+                        <th><sl-input size="small" placeholder="Filter Name"></sl-input></th>
+                        <th><sl-input size="small" placeholder="Filter Username"></sl-input></th>
+                        <th><sl-input size="small" placeholder="Filter Email"></sl-input></th>
+                        <th><sl-input size="small" placeholder="Filter City"></sl-input></th>
+                        <th><sl-input size="small" placeholder="Filter Phone"></sl-input></th>
+                        <th><sl-input size="small" placeholder="Filter Website"></sl-input></th>
+                        <th><sl-input size="small" placeholder="Filter Company"></sl-input></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><sl-checkbox></sl-checkbox></td>
+                        <td>1</td>
+                        <td>Leanne Graham</td>
+                        <td>Bret</td>
+                        <td>leanne@example.com</td>
+                        <td>London</td>
+                        <td>555-1234</td>
+                        <td>www.leannegraham.com</td>
+                        <td>Example Corp</td>
+                    </tr>
+                    <tr>
+                        <td><sl-checkbox></sl-checkbox></td>
+                        <td>2</td>
+                        <td>Ervin Howell</td>
+                        <td>Antonette</td>
+                        <td>ervin@example.com</td>
+                        <td>Paris</td>
+                        <td>555-5678</td>
+                        <td>www.ervinhowell.com</td>
+                        <td>Howell LLC</td>
+                    </tr>
+                    <tr>
+                        <td><sl-checkbox></sl-checkbox></td>
+                        <td>3</td>
+                        <td>Clementine Bauch</td>
+                        <td>Samantha</td>
+                        <td>clementine@example.com</td>
+                        <td>Berlin</td>
+                        <td>555-8765</td>
+                        <td>www.clementine.com</td>
+                        <td>Bauch Group</td>
+                    </tr>
+                    <tr>
+                        <td><sl-checkbox></sl-checkbox></td>
+                        <td>4</td>
+                        <td>Patricia Lebsack</td>
+                        <td>Karianne</td>
+                        <td>patricia@example.com</td>
+                        <td>Madrid</td>
+                        <td>555-4321</td>
+                        <td>www.patricia.com</td>
+                        <td>Lebsack Ltd</td>
+                    </tr>
+                    <tr>
+                        <td><sl-checkbox></sl-checkbox></td>
+                        <td>5</td>
+                        <td>Chelsey Dietrich</td>
+                        <td>Kameron</td>
+                        <td>chelsey@example.com</td>
+                        <td>Rome</td>
+                        <td>555-2468</td>
+                        <td>www.chelsey.com</td>
+                        <td>Dietrich Inc</td>
+                    </tr>
+                    <tr>
+                        <td><sl-checkbox></sl-checkbox></td>
+                        <td>6</td>
+                        <td>Mrs. Dennis Schulist</td>
+                        <td>Leopoldo_Corkery</td>
+                        <td>dennis@example.com</td>
+                        <td>Vienna</td>
+                        <td>555-1357</td>
+                        <td>www.dennis.com</td>
+                        <td>Schulist Group</td>
+                    </tr>
+                    <tr>
+                        <td><sl-checkbox></sl-checkbox></td>
+                        <td>7</td>
+                        <td>Kurtis Weissnat</td>
+                        <td>Elwyn.Skiles</td>
+                        <td>kurtis@example.com</td>
+                        <td>Prague</td>
+                        <td>555-9753</td>
+                        <td>www.kurtis.com</td>
+                        <td>Weissnat LLC</td>
+                    </tr>
+                    <tr>
+                        <td><sl-checkbox></sl-checkbox></td>
+                        <td>8</td>
+                        <td>Nicholas Runolfsdottir</td>
+                        <td>Maxime_Nienow</td>
+                        <td>nicholas@example.com</td>
+                        <td>Brno</td>
+                        <td>555-8642</td>
+                        <td>www.nicholas.com</td>
+                        <td>Runolfsdottir Ltd</td>
+                    </tr>
+                    <tr>
+                        <td><sl-checkbox></sl-checkbox></td>
+                        <td>9</td>
+                        <td>Glenna Reichert</td>
+                        <td>Delphine</td>
+                        <td>glenna@example.com</td>
+                        <td>Ostrava</td>
+                        <td>555-7531</td>
+                        <td>www.glenna.com</td>
+                        <td>Reichert Group</td>
+                    </tr>
+                    <tr>
+                        <td><sl-checkbox></sl-checkbox></td>
+                        <td>10</td>
+                        <td>Clementina DuBuque</td>
+                        <td>Moriah.Stanton</td>
+                        <td>clementina@example.com</td>
+                        <td>Plzeň</td>
+                        <td>555-1597</td>
+                        <td>www.clementina.com</td>
+                        <td>DuBuque Inc</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- FOOTER -->
+        <div class="footer">
+            <div id="item-count">Vybráno 10 z 500</div>
+            <div class="items-per-page">
+                Zobrazit
+                <sl-dropdown>
+                    <sl-button slot="trigger">
+                        10
+                        <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>
+                    </sl-button>
 
-              <sl-menu>
-                  <sl-menu-item>5</sl-menu-item>
-                  <sl-menu-item>10</sl-menu-item>
-                  <sl-menu-item>20</sl-menu-item>
-                  <sl-menu-item>50</sl-menu-item>
-                  <sl-menu-item>100</sl-menu-item>
-                  <sl-menu-item>1000</sl-menu-item>
-              </sl-menu>
-          </sl-dropdown>
-          na stránku
-      </div>
-      <!-- PAGER -->
-      <div id="pager" onclick="pageDropdownClicked(event)" style="display: flex; align-items: center; gap: 0.5em;">
-          <sl-button-group>
-              <sl-button disabled>
-                  <sl-icon name="chevron-bar-left"></sl-icon>
-              </sl-button>
-              <sl-button disabled>
-                  <sl-icon name="chevron-left"></sl-icon>
-              </sl-button>
-          </sl-button-group>
-          <div id="page-info" variant="none">
-              Stránka
-              <sl-input id="page-number" size="small" value="8" onclick="inputClick(event)"
-                  onkeydown="inputKeyDown(event)" onblur="inputBlur(event)"></sl-input>
-              / 15
-          </div>
+                    <sl-menu>
+                        <sl-menu-item>5</sl-menu-item>
+                        <sl-menu-item>10</sl-menu-item>
+                        <sl-menu-item>20</sl-menu-item>
+                        <sl-menu-item>50</sl-menu-item>
+                        <sl-menu-item>100</sl-menu-item>
+                        <sl-menu-item>1000</sl-menu-item>
+                    </sl-menu>
+                </sl-dropdown>
+                na stránku
+            </div>
+            <!-- PAGER -->
+            <div class="pager" onclick="pageDropdownClicked(event)">
+                <sl-button-group>
+                    <sl-button disabled>
+                        <sl-icon name="chevron-bar-left"></sl-icon>
+                    </sl-button>
+                    <sl-button disabled>
+                        <sl-icon name="chevron-left"></sl-icon>
+                    </sl-button>
+                </sl-button-group>
+                <div id="page-info" variant="none">
+                    Stránka
+                    <sl-input id="page-number" size="small" value="8" onclick="inputClick(event)"
+                        onkeydown="inputKeyDown(event)" onblur="inputBlur(event)"></sl-input>
+                    / 15
+                </div>
 
-          <sl-button-group>
-              <sl-button>
-                  <sl-icon name="chevron-right"></sl-icon>
-              </sl-button>
-              <sl-button>
-                  <sl-icon name="chevron-bar-right"></sl-icon>
-              </sl-button>
-          </sl-button-group>
-      </div>
+                <sl-button-group>
+                    <sl-button>
+                        <sl-icon name="chevron-right"></sl-icon>
+                    </sl-button>
+                    <sl-button>
+                        <sl-icon name="chevron-bar-right"></sl-icon>
+                    </sl-button>
+                </sl-button-group>
+            </div>
+        </div>
     </div>
 </div>
