@@ -12,25 +12,38 @@
             font-size: var(--sl-font-size-small);
             color: var(--sl-color-neutral-700);
             font-weight: var(--sl-font-weight-light);
+            white-space: nowrap;
         }
         #items-per-page {
             display: flex;
             align-items: center;
             gap: 0.5em;
+            flex-wrap: nowrap;
         }
         #pager {
             display: flex;
             align-items: center;
             gap: 0.5em;
             align-self: center;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+        }
+        .table-container {
+            overflow-x: auto;
+            width: auto;
+            max-width: 900px;
+            margin: 0 auto;
         }
         #footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0.5em 0;
-            flex-wrap: wrap;
             margin-top: 1em;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            flex-wrap: nowrap;
         }
         table {
             width: auto;
@@ -73,9 +86,6 @@
         th:nth-child(2), td:nth-child(2) {
             text-align: right;
         }
-        tr:last-child td {
-            border-bottom: none;
-        }
         tr:hover td {
             background: var(--sl-color-primary-50);
         }
@@ -108,13 +118,13 @@
     </script>
     <!-- DATATABLE -->
     <!-- Toolbar -->
-    <div class="toolbar" style="display: flex; align-items: center; margin-bottom: 1em; padding: 0.5em 0;">
+    <div class="toolbar" style="display: flex; align-items: center; margin-bottom: 1em; padding: 0.5em 0; max-width: 900px; margin-left: auto; margin-right: auto; gap: 0.5em;">
       <div>
         <sl-button variant="primary">New record</sl-button>
       </div>
-      <div style="flex: 1; display: flex; justify-content: center;">
+      <div style="flex: 1; display: flex; justify-content: center; gap: 0.25em;">
         <sl-button variant="danger">Delete record</sl-button>
-        <sl-button style="margin-left: 0.5em;">Export to Excel</sl-button>
+        <sl-button>Export to Excel</sl-button>
       </div>
       <div>
         <sl-dropdown>
@@ -136,7 +146,7 @@
         </sl-dropdown>
       </div>
     </div>
-    <div style="overflow-x: auto; width: 100%;">
+    <div class="table-container">
       <table style="min-width: 900px;">
           <thead>
               <tr>
@@ -190,54 +200,53 @@
           </tbody>
       </table>
     </div>
-
     <!-- FOOTER -->
-    <div id="footer">
-        <div id="item-count">Vybráno 10 z 500</div>
-        <div id="items-per-page">
-            Zobrazit
-            <sl-dropdown>
-                <sl-button slot="trigger">
-                    10
-                    <sl-icon name="chevron-down" style="margin-left: 0.5em;"></sl-icon>
-                </sl-button>
+    <div id="footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1em; padding: 0.5em 0; max-width: 900px; margin-left: auto; margin-right: auto;">
+      <div id="item-count">Vybráno 10 z 500</div>
+      <div id="items-per-page" style="display: flex; align-items: center; gap: 0.5em;">
+          Zobrazit
+          <sl-dropdown>
+              <sl-button slot="trigger">
+                  10
+                  <sl-icon name="chevron-down" style="margin-left: 0.5em;"></sl-icon>
+              </sl-button>
 
-                <sl-menu>
-                    <sl-menu-item>5</sl-menu-item>
-                    <sl-menu-item>10</sl-menu-item>
-                    <sl-menu-item>20</sl-menu-item>
-                    <sl-menu-item>50</sl-menu-item>
-                    <sl-menu-item>100</sl-menu-item>
-                    <sl-menu-item>1000</sl-menu-item>
-                </sl-menu>
-            </sl-dropdown>
-            na stránku
-        </div>
-        <!-- PAGER -->
-        <div id="pager" onclick="pageDropdownClicked(event)">
-            <sl-button-group>
-                <sl-button disabled>
-                    <sl-icon name="chevron-bar-left"></sl-icon>
-                </sl-button>
-                <sl-button disabled>
-                    <sl-icon name="chevron-left"></sl-icon>
-                </sl-button>
-            </sl-button-group>
-            <div id="page-info" variant="none">
-                Stránka
-                <sl-input id="page-number" size="small" value="8" onclick="inputClick(event)"
-                    onkeydown="inputKeyDown(event)" onblur="inputBlur(event)"></sl-input>
-                / 15
-            </div>
+              <sl-menu>
+                  <sl-menu-item>5</sl-menu-item>
+                  <sl-menu-item>10</sl-menu-item>
+                  <sl-menu-item>20</sl-menu-item>
+                  <sl-menu-item>50</sl-menu-item>
+                  <sl-menu-item>100</sl-menu-item>
+                  <sl-menu-item>1000</sl-menu-item>
+              </sl-menu>
+          </sl-dropdown>
+          na stránku
+      </div>
+      <!-- PAGER -->
+      <div id="pager" onclick="pageDropdownClicked(event)" style="display: flex; align-items: center; gap: 0.5em;">
+          <sl-button-group>
+              <sl-button disabled>
+                  <sl-icon name="chevron-bar-left"></sl-icon>
+              </sl-button>
+              <sl-button disabled>
+                  <sl-icon name="chevron-left"></sl-icon>
+              </sl-button>
+          </sl-button-group>
+          <div id="page-info" variant="none">
+              Stránka
+              <sl-input id="page-number" size="small" value="8" onclick="inputClick(event)"
+                  onkeydown="inputKeyDown(event)" onblur="inputBlur(event)"></sl-input>
+              / 15
+          </div>
 
-            <sl-button-group>
-                <sl-button>
-                    <sl-icon name="chevron-right"></sl-icon>
-                </sl-button>
-                <sl-button>
-                    <sl-icon name="chevron-bar-right"></sl-icon>
-                </sl-button>
-            </sl-button-group>
-        </div>
+          <sl-button-group>
+              <sl-button>
+                  <sl-icon name="chevron-right"></sl-icon>
+              </sl-button>
+              <sl-button>
+                  <sl-icon name="chevron-bar-right"></sl-icon>
+              </sl-button>
+          </sl-button-group>
+      </div>
     </div>
 </div>
