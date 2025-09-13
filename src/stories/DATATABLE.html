@@ -58,6 +58,14 @@
             background: var(--sl-color-neutral-100);
             text-align: left;
         }
+        .filter-row th {
+            padding: 0.25em 1em;
+            border-bottom: 1px solid var(--sl-color-neutral-200);
+            background: var(--sl-color-neutral-50);
+        }
+        .filter-row sl-input {
+            width: 100%;
+        }
         th:first-child, td:first-child {
             text-align: center;
         }
@@ -102,7 +110,7 @@
       <table style="min-width: 900px;">
           <thead>
               <tr>
-                  <th style="width: 40px;"><sl-checkbox></sl-checkbox></th>
+                  <th style="width: 40px;"></th>
                   <th style="width: 40px;">ID</th>
                                     <th>Name
                                         <span style="display:inline-block; vertical-align:middle; margin-left:0.25em;">
@@ -125,6 +133,17 @@
                   <th>Phone</th>
                   <th>Website</th>
                   <th>Company</th>
+              </tr>
+              <tr class="filter-row">
+                  <th style="width: 40px;"><sl-checkbox></sl-checkbox></th>
+                  <th><sl-input size="small" placeholder="Filter ID"></sl-input></th>
+                  <th><sl-input size="small" placeholder="Filter Name"></sl-input></th>
+                  <th><sl-input size="small" placeholder="Filter Username"></sl-input></th>
+                  <th><sl-input size="small" placeholder="Filter Email"></sl-input></th>
+                  <th><sl-input size="small" placeholder="Filter City"></sl-input></th>
+                  <th><sl-input size="small" placeholder="Filter Phone"></sl-input></th>
+                  <th><sl-input size="small" placeholder="Filter Website"></sl-input></th>
+                  <th><sl-input size="small" placeholder="Filter Company"></sl-input></th>
               </tr>
           </thead>
           <tbody>
