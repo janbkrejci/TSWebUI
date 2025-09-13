@@ -30,6 +30,7 @@
             align-items: center;
             padding: 0.5em 0;
             flex-wrap: wrap;
+            margin-top: 1em;
         }
         table {
             width: auto;
@@ -107,24 +108,30 @@
     </script>
     <!-- DATATABLE -->
     <!-- Toolbar -->
-    <div class="toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1em; padding: 0.5em 0;">
+    <div class="toolbar" style="display: flex; align-items: center; margin-bottom: 1em; padding: 0.5em 0;">
       <div>
-        <sl-button>New record</sl-button>
-        <sl-button variant="danger" style="margin-left: 0.5em;">Delete record</sl-button>
+        <sl-button variant="primary">New record</sl-button>
+      </div>
+      <div style="flex: 1; display: flex; justify-content: center;">
+        <sl-button variant="danger">Delete record</sl-button>
+        <sl-button style="margin-left: 0.5em;">Export to Excel</sl-button>
       </div>
       <div>
         <sl-dropdown>
           <sl-button slot="trigger" caret>Columns</sl-button>
           <sl-menu style="min-width: 200px;">
+            <sl-menu-item>Select All</sl-menu-item>
+            <sl-menu-item>Clear All</sl-menu-item>
+            <sl-divider></sl-divider>
             <sl-input placeholder="Search columns..." style="margin: 0.5em; width: calc(100% - 1em);"></sl-input>
-            <sl-menu-item checked>ID</sl-menu-item>
-            <sl-menu-item checked>Name</sl-menu-item>
-            <sl-menu-item checked>Username</sl-menu-item>
-            <sl-menu-item checked>Email</sl-menu-item>
-            <sl-menu-item checked>City</sl-menu-item>
-            <sl-menu-item checked>Phone</sl-menu-item>
-            <sl-menu-item checked>Website</sl-menu-item>
-            <sl-menu-item checked>Company</sl-menu-item>
+            <sl-menu-item type="checkbox" checked>ID</sl-menu-item>
+            <sl-menu-item type="checkbox" checked>Name</sl-menu-item>
+            <sl-menu-item type="checkbox" checked>Username</sl-menu-item>
+            <sl-menu-item type="checkbox" checked>Email</sl-menu-item>
+            <sl-menu-item type="checkbox" checked>City</sl-menu-item>
+            <sl-menu-item type="checkbox" checked>Phone</sl-menu-item>
+            <sl-menu-item type="checkbox" checked>Website</sl-menu-item>
+            <sl-menu-item type="checkbox" checked>Company</sl-menu-item>
           </sl-menu>
         </sl-dropdown>
       </div>
