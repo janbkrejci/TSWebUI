@@ -245,6 +245,79 @@
             // Log to console
             console.log('Row clicked with ID:', id);
         };
+
+        // Column visibility mapping
+        const columnMap = {
+            'ID': 1,
+            'Name': 2,
+            'Username': 3,
+            'Email': 4,
+            'City': 5,
+            'Phone': 6,
+            'Website': 7,
+            'Company': 8
+        };
+
+        // Handle column visibility changes
+        let columnVisibilityChanged = (event) => {
+            const menuItem = event.target;
+            const columnName = menuItem.textContent.trim();
+            const columnIndex = columnMap[columnName];
+            
+            if (columnIndex !== undefined) {
+                const isChecked = menuItem.checked;
+                toggleColumnVisibility(columnIndex, isChecked);
+            }
+        };
+
+        // Toggle column visibility
+        let toggleColumnVisibility = (columnIndex, isVisible) => {
+            const table = document.querySelector('table');
+            if (!table) return;
+
+            // Get all rows (header and body)
+            const rows = table.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const cell = row.cells[columnIndex];
+                if (cell) {
+                    cell.style.display = isVisible ? '' : 'none';
+                }
+            });
+        };
+
+        // Handle Select All
+        let selectAllColumns = () => {
+            const menuItems = document.querySelectorAll('sl-menu-item[type="checkbox"]');
+            menuItems.forEach(item => {
+                if (!item.checked) {
+                    item.checked = true;
+                    columnVisibilityChanged({ target: item });
+                }
+            });
+        };
+
+        // Handle Clear All
+        let clearAllColumns = () => {
+            const menuItems = document.querySelectorAll('sl-menu-item[type="checkbox"]');
+            menuItems.forEach(item => {
+                if (item.checked) {
+                    item.checked = false;
+                    columnVisibilityChanged({ target: item });
+                }
+            });
+        };
+
+        // Initialize column visibility on page load
+        let initializeColumnVisibility = () => {
+            const menuItems = document.querySelectorAll('sl-menu-item[type="checkbox"]');
+            menuItems.forEach(item => {
+                columnVisibilityChanged({ target: item });
+            });
+        };
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeColumnVisibility);
     </script>
     <div id="container">
         <!-- DATATABLE -->
@@ -265,18 +338,18 @@
                 <sl-dropdown>
                     <sl-button slot="trigger" caret>Columns</sl-button>
                     <sl-menu class="columns-menu">
-                        <sl-menu-item>Select All</sl-menu-item>
-                        <sl-menu-item>Clear All</sl-menu-item>
+                        <sl-menu-item onclick="selectAllColumns()">Select All</sl-menu-item>
+                        <sl-menu-item onclick="clearAllColumns()">Clear All</sl-menu-item>
                         <sl-divider></sl-divider>
                         <sl-input placeholder="Search columns..." class="search-input"></sl-input>
-                        <sl-menu-item type="checkbox" checked>ID</sl-menu-item>
-                        <sl-menu-item type="checkbox" checked>Name</sl-menu-item>
-                        <sl-menu-item type="checkbox" checked>Username</sl-menu-item>
-                        <sl-menu-item type="checkbox" checked>Email</sl-menu-item>
-                        <sl-menu-item type="checkbox" checked>City</sl-menu-item>
-                        <sl-menu-item type="checkbox" checked>Phone</sl-menu-item>
-                        <sl-menu-item type="checkbox" checked>Website</sl-menu-item>
-                        <sl-menu-item type="checkbox" checked>Company</sl-menu-item>
+                        <sl-menu-item type="checkbox" onclick="columnVisibilityChanged(event)">ID</sl-menu-item>
+                        <sl-menu-item type="checkbox" checked onclick="columnVisibilityChanged(event)">Name</sl-menu-item>
+                        <sl-menu-item type="checkbox" checked onclick="columnVisibilityChanged(event)">Username</sl-menu-item>
+                        <sl-menu-item type="checkbox" checked onclick="columnVisibilityChanged(event)">Email</sl-menu-item>
+                        <sl-menu-item type="checkbox" onclick="columnVisibilityChanged(event)">City</sl-menu-item>
+                        <sl-menu-item type="checkbox" onclick="columnVisibilityChanged(event)">Phone</sl-menu-item>
+                        <sl-menu-item type="checkbox" onclick="columnVisibilityChanged(event)">Website</sl-menu-item>
+                        <sl-menu-item type="checkbox" onclick="columnVisibilityChanged(event)">Company</sl-menu-item>
                     </sl-menu>
                 </sl-dropdown>
             </div>
