@@ -35,7 +35,7 @@
 .table-container {
     overflow-x: auto;
     width: 100%;
-    margin: 0;
+    margin: 0 0 1rem 0;
 }
 
 #container {
@@ -61,7 +61,6 @@ table {
     background: var(--sl-color-neutral-0);
     color: var(--sl-color-neutral-1000);
     font-family: var(--sl-font-sans);
-    box-shadow: var(--sl-shadow-x-large);
     border-radius: var(--sl-border-radius-large);
     overflow: hidden;
 }

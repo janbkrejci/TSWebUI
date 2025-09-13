@@ -385,9 +385,10 @@
                 menuItem.setAttribute('data-column-key', col.key);
                 // Set checkbox state based on column visibility
                 menuItem.checked = col.visible;
-                // Mark unhideable columns
+                // Mark unhideable columns as disabled
                 if (unhideableColumns.includes(col.key)) {
                     menuItem.setAttribute('data-unhideable', 'true');
+                    menuItem.disabled = true;
                 }
                 columnsMenu.appendChild(menuItem);
             });
@@ -417,7 +418,14 @@
                         const columnDef = columnDefinitions.find(col => col.key === columnKey);
                         
                         if (columnDef) {
-                            // Check if an unhideable column is being unselected
+                            // Skip processing if item is disabled (unhideable columns)
+                            if (selectedItem.disabled) {
+                                console.log(`Column '${columnKey}' is disabled and cannot be changed`);
+                                event.preventDefault();
+                                return;
+                            }
+                            
+                            // Check if an unhideable column is being unselected (backup protection)
                             if (selectedItem.hasAttribute('data-unhideable') && unhideableColumns.includes(columnKey)) {
                                 // Prevent unselecting unhideable columns
                                 if (!selectedItem.checked) {
