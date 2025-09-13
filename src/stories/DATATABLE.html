@@ -231,30 +231,18 @@
 
         // Function to select all columns (respecting unhideable columns)
         function selectAllColumns() {
-            const columnsMenu = document.querySelector('.columns-menu');
-            if (!columnsMenu) return;
-
             // Update column definitions
             columnDefinitions.forEach(col => {
                 col.visible = true;
             });
 
-            // Update menu items
-            const menuItems = columnsMenu.querySelectorAll('sl-menu-item[type="checkbox"]');
-            menuItems.forEach(item => {
-                if (!item.disabled) {
-                    item.checked = true;
-                }
-            });
-
+            // Recreate menu to reflect changes
+            createColumnsMenu();
             populateTable();
         }
 
         // Function to clear all columns (respecting unhideable columns)
         function clearAllColumns() {
-            const columnsMenu = document.querySelector('.columns-menu');
-            if (!columnsMenu) return;
-
             // Update column definitions (keep unhideable columns visible)
             columnDefinitions.forEach(col => {
                 if (!unhideableColumns.includes(col.key)) {
@@ -262,14 +250,8 @@
                 }
             });
 
-            // Update menu items
-            const menuItems = columnsMenu.querySelectorAll('sl-menu-item[type="checkbox"]');
-            menuItems.forEach(item => {
-                if (!item.disabled) {
-                    item.checked = false;
-                }
-            });
-
+            // Recreate menu to reflect changes
+            createColumnsMenu();
             populateTable();
         }
 
@@ -516,13 +498,9 @@
             // Add search functionality
             const searchElement = columnsMenu.querySelector('#column-search');
             if (searchElement) {
-                console.log('Search element found, adding event listener');
-                
-                // Try multiple event types to ensure it works
                 ['input', 'sl-input', 'keyup', 'change'].forEach(eventType => {
                     searchElement.addEventListener(eventType, (event) => {
                         const value = event.target.value || '';
-                        console.log(`${eventType} event triggered with value:`, value);
                         // Small delay to ensure DOM is ready
                         setTimeout(() => filterColumnMenu(value), 10);
                     });
@@ -562,6 +540,21 @@
             // Populate table
             populateTable();
             
+            // Add focus behavior when dropdown opens
+            const columnsDropdown = document.querySelector('sl-dropdown');
+            if (columnsDropdown) {
+                columnsDropdown.addEventListener('sl-show', () => {
+                    // Small delay to ensure the dropdown content is rendered
+                    setTimeout(() => {
+                        const searchInput = document.querySelector('.columns-menu #column-search');
+                        if (searchInput) {
+                            searchInput.focus();
+                            console.log('Column search input focused');
+                        }
+                    }, 50);
+                });
+            }
+
             // Add listener to column menu sl-select event
             const columnsMenu = document.querySelector('.columns-menu');
             if (columnsMenu) {
