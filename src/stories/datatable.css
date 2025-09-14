@@ -316,3 +316,22 @@ th[data-column-key] {
 th[data-column-key]:hover .column-ordering-controls {
     display: inline-block !important;
 }
+
+/* Dropdown overlay for modal behavior */
+.dropdown-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    pointer-events: auto;
+}
+
+.dropdown-overlay.hidden {
+    display: none;
+}
+
+.dropdown-overlay.visible {
+    display: block;
+}

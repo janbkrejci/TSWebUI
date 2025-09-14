@@ -562,17 +562,42 @@
             populateTable();
         }
 
-        // Track dropdown interaction state
-        let dropdownInteractionTime = 0;
+        // Track open dropdown for overlay management
+        let currentOpenDropdown = null;
+
+        // Initialize overlay event listener
+        function initializeDropdownOverlay() {
+            const overlay = document.getElementById('dropdown-overlay');
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    if (currentOpenDropdown) {
+                        currentOpenDropdown.hide();
+                    }
+                });
+            }
+        }
+
+        // Show overlay
+        function showDropdownOverlay() {
+            const overlay = document.getElementById('dropdown-overlay');
+            if (overlay) {
+                overlay.classList.remove('hidden');
+                overlay.classList.add('visible');
+            }
+        }
+
+        // Hide overlay
+        function hideDropdownOverlay() {
+            const overlay = document.getElementById('dropdown-overlay');
+            if (overlay) {
+                overlay.classList.remove('visible');
+                overlay.classList.add('hidden');
+            }
+        }
 
         // Handle row clicks
         let rowClicked = (event) => {
-            // Don't fire row clicked if a dropdown was recently interacted with
-            const timeSinceDropdownInteraction = Date.now() - dropdownInteractionTime;
-            if (timeSinceDropdownInteraction < 200) {
-                return;
-            }
-            
+            // Don't fire row clicked if clicking on checkbox or dropdown elements
             if (event.target.closest('sl-checkbox') || event.target.tagName === 'SL-CHECKBOX' ||
                 event.target.closest('sl-dropdown') || event.target.closest('.menu-column')) {
                 return;
@@ -715,20 +740,7 @@
             checkboxFilter.innerHTML = '<sl-checkbox></sl-checkbox>';
             filterRow.appendChild(checkboxFilter);
             
-            // Add event listener to block header checkbox changes after dropdown interaction
-            const headerCheckbox = checkboxFilter.querySelector('sl-checkbox');
-            if (headerCheckbox) {
-                headerCheckbox.addEventListener('sl-change', (event) => {
-                    const timeSinceDropdownInteraction = Date.now() - dropdownInteractionTime;
-                    if (timeSinceDropdownInteraction < 200) {
-                        event.preventDefault();
-                        // Revert checkbox state
-                        setTimeout(() => {
-                            headerCheckbox.checked = !headerCheckbox.checked;
-                        }, 10);
-                    }
-                });
-            }
+
 
             // Add filter inputs for each visible column
             visibleColumns.forEach(col => {
@@ -820,22 +832,21 @@
                 const dropdown = menuCell.querySelector('sl-dropdown');
                 const menu = dropdown.querySelector('sl-menu');
                 
-                // Track dropdown interactions
+                // Handle dropdown show/hide with overlay
                 dropdown.addEventListener('sl-show', () => {
-                    dropdownInteractionTime = Date.now();
+                    // Close any other open dropdown first
+                    if (currentOpenDropdown && currentOpenDropdown !== dropdown) {
+                        currentOpenDropdown.hide();
+                    }
+                    
+                    currentOpenDropdown = dropdown;
+                    showDropdownOverlay();
                 });
                 
                 dropdown.addEventListener('sl-hide', () => {
-                    dropdownInteractionTime = Date.now();
+                    currentOpenDropdown = null;
+                    hideDropdownOverlay();
                 });
-                
-                // Also track clicks on the dropdown trigger button
-                const triggerButton = dropdown.querySelector('[slot="trigger"]');
-                if (triggerButton) {
-                    triggerButton.addEventListener('mousedown', () => {
-                        dropdownInteractionTime = Date.now();
-                    });
-                }
                 
                 menu.addEventListener('sl-select', (event) => {
                     const actionName = event.detail.item.getAttribute('data-action');
@@ -849,21 +860,6 @@
                 const checkboxCell = document.createElement('td');
                 checkboxCell.innerHTML = '<sl-checkbox></sl-checkbox>';
                 tr.appendChild(checkboxCell);
-                
-                // Add event listener to block checkbox changes after dropdown interaction
-                const checkbox = checkboxCell.querySelector('sl-checkbox');
-                if (checkbox) {
-                    checkbox.addEventListener('sl-change', (event) => {
-                        const timeSinceDropdownInteraction = Date.now() - dropdownInteractionTime;
-                        if (timeSinceDropdownInteraction < 200) {
-                            event.preventDefault();
-                            // Revert checkbox state
-                            setTimeout(() => {
-                                checkbox.checked = !checkbox.checked;
-                            }, 10);
-                        }
-                    });
-                }
 
                 // Add data cells based on visible column definitions
                 visibleColumns.forEach(col => {
@@ -1084,6 +1080,9 @@
 
             // Add pagination event listeners
             setupPaginationListeners();
+            
+            // Initialize dropdown overlay
+            initializeDropdownOverlay();
         }
 
         // Function to setup pagination event listeners
@@ -1217,5 +1216,7 @@
                 </sl-button-group>
             </div>
         </div>
+        <!-- Dropdown overlay for modal behavior -->
+        <div id="dropdown-overlay" class="dropdown-overlay hidden"></div>
     </div>
 </div>
