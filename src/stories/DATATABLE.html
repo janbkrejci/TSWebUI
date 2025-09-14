@@ -525,6 +525,11 @@
         }
 
         function changeItemsPerPage(newSize) {
+            // Prevent unnecessary rerendering if the same size is selected
+            if (itemsPerPage === newSize) {
+                return;
+            }
+            
             itemsPerPage = newSize;
             currentPage = 1; // Reset to first page
             populateTable();
