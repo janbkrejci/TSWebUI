@@ -8,6 +8,4 @@ implement row selection using checkboxes. the one in header should have checked,
 
 column ordering
 
-unshowable columns (ID)
-
 booleans - showRowMenu, columnSelection, columnOrdering, sortable, pageable, filterable

@@ -311,7 +311,8 @@
                 filterable: true,
                 filterPlaceholder: 'Filter ID',
                 visible: false,
-                align: 'right'
+                align: 'right',
+                order: 0
             },
             { 
                 key: 'name', 
@@ -322,7 +323,8 @@
                 filterable: true,
                 filterPlaceholder: 'Filter Name',
                 visible: true,
-                align: 'left'
+                align: 'left',
+                order: 1
             },
             { 
                 key: 'username', 
@@ -333,7 +335,8 @@
                 filterable: true,
                 filterPlaceholder: 'Filter Username',
                 visible: false,
-                align: 'left'
+                align: 'left',
+                order: 2
             },
             { 
                 key: 'email', 
@@ -344,7 +347,8 @@
                 filterable: true,
                 filterPlaceholder: 'Filter Email',
                 visible: false,
-                align: 'left'
+                align: 'left',
+                order: 3
             },
             { 
                 key: 'city', 
@@ -355,7 +359,8 @@
                 filterable: true,
                 filterPlaceholder: 'Filter City',
                 visible: false,
-                align: 'left'
+                align: 'left',
+                order: 4
             },
             { 
                 key: 'phone', 
@@ -366,7 +371,8 @@
                 filterable: true,
                 filterPlaceholder: 'Filter Phone',
                 visible: false,
-                align: 'center'
+                align: 'center',
+                order: 5
             },
             { 
                 key: 'website', 
@@ -377,7 +383,8 @@
                 filterable: true,
                 filterPlaceholder: 'Filter Website',
                 visible: false,
-                align: 'left'
+                align: 'left',
+                order: 6
             },
             { 
                 key: 'company', 
@@ -388,7 +395,8 @@
                 filterable: true,
                 filterPlaceholder: 'Filter Company',
                 visible: false,
-                align: 'left'
+                align: 'left',
+                order: 7
             }
         ];
 
@@ -397,10 +405,58 @@
         const unhideableColumns = ['name', 'email'];
         const unshowableColumns = ['id']; // These columns are hidden and cannot be shown in column selection menu
 
-        // Function to get visible columns based on column definitions
+        // Function to get visible columns based on column definitions, sorted by order
         function getVisibleColumns() {
-            return columnDefinitions.filter(col => col.visible);
+            return columnDefinitions
+                .filter(col => col.visible)
+                .sort((a, b) => a.order - b.order);
         }
+
+        // Function to move column left in order
+        function moveColumnLeft(columnKey) {
+            const currentCol = columnDefinitions.find(col => col.key === columnKey);
+            if (!currentCol) return;
+
+            // Find the visible column that is immediately to the left
+            const visibleColumns = getVisibleColumns();
+            const currentIndex = visibleColumns.findIndex(col => col.key === columnKey);
+            
+            if (currentIndex > 0) {
+                const leftCol = visibleColumns[currentIndex - 1];
+                // Swap order values
+                const tempOrder = currentCol.order;
+                currentCol.order = leftCol.order;
+                leftCol.order = tempOrder;
+                
+                // Refresh table and menu
+                populateTable();
+                createColumnsMenu();
+            }
+        }
+
+        // Function to move column right in order
+        function moveColumnRight(columnKey) {
+            const currentCol = columnDefinitions.find(col => col.key === columnKey);
+            if (!currentCol) return;
+
+            // Find the visible column that is immediately to the right
+            const visibleColumns = getVisibleColumns();
+            const currentIndex = visibleColumns.findIndex(col => col.key === columnKey);
+            
+            if (currentIndex < visibleColumns.length - 1) {
+                const rightCol = visibleColumns[currentIndex + 1];
+                // Swap order values
+                const tempOrder = currentCol.order;
+                currentCol.order = rightCol.order;
+                rightCol.order = tempOrder;
+                
+                // Refresh table and menu
+                populateTable();
+                createColumnsMenu();
+            }
+        }
+
+
 
         // Pagination functions
         function getTotalPages() {
@@ -592,8 +648,54 @@
                     th.style.textAlign = col.align;
                 }
                 
-                th.innerHTML = col.title + createSortIndicator(col.sortable, col.sortDirection);
+                // Add data attribute for column identification
+                th.setAttribute('data-column-key', col.key);
+                
+                // Create header content with title and sort indicator
+                const headerContent = `
+                    <span class="column-header-content">
+                        ${col.title}
+                        ${createSortIndicator(col.sortable, col.sortDirection)}
+                    </span>
+                    <span class="column-ordering-controls" style="display: none;">
+                        ${index > 0 ? `<sl-icon-button name="arrow-left" size="small" class="move-column-left" data-column-key="${col.key}" title="Move left"></sl-icon-button>` : ''}
+                        ${index < visibleColumns.length - 1 ? `<sl-icon-button name="arrow-right" size="small" class="move-column-right" data-column-key="${col.key}" title="Move right"></sl-icon-button>` : ''}
+                    </span>
+                `;
+                
+                th.innerHTML = headerContent;
+                
+                // Add mouse events for showing/hiding ordering controls
+                th.addEventListener('mouseenter', () => {
+                    const controls = th.querySelector('.column-ordering-controls');
+                    if (controls) {
+                        controls.style.display = 'inline-block';
+                    }
+                });
+                
+                th.addEventListener('mouseleave', () => {
+                    const controls = th.querySelector('.column-ordering-controls');
+                    if (controls) {
+                        controls.style.display = 'none';
+                    }
+                });
+                
                 headerRow.appendChild(th);
+            });
+
+            // Add event listeners for column ordering buttons
+            headerRow.addEventListener('click', (event) => {
+                if (event.target.classList.contains('move-column-left')) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const columnKey = event.target.getAttribute('data-column-key');
+                    moveColumnLeft(columnKey);
+                } else if (event.target.classList.contains('move-column-right')) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const columnKey = event.target.getAttribute('data-column-key');
+                    moveColumnRight(columnKey);
+                }
             });
 
             thead.appendChild(headerRow);
@@ -848,13 +950,12 @@
             searchInput.setAttribute('autocomplete', 'off');
             columnsMenu.appendChild(searchInput);
 
-            // Add column items from definitions (excluding unshowable columns)
-            columnDefinitions.forEach(col => {
-                // Skip unshowable columns - they should not appear in the menu at all
-                if (unshowableColumns.includes(col.key)) {
-                    return;
-                }
+            // Add column items from definitions (excluding unshowable columns), sorted by order
+            const sortedColumns = columnDefinitions
+                .filter(col => !unshowableColumns.includes(col.key))
+                .sort((a, b) => a.order - b.order);
                 
+            sortedColumns.forEach(col => {
                 const menuItem = document.createElement('sl-menu-item');
                 menuItem.type = 'checkbox';
                 menuItem.textContent = col.title;

@@ -278,3 +278,41 @@ tbody tr {
 .chevron-icon {
     margin-left: 0.5em;
 }
+
+/* Column ordering controls */
+.column-header-content {
+    display: inline-block;
+}
+
+.column-ordering-controls {
+    display: none;
+    float: right;
+    margin-left: 0.5em;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.column-ordering-controls:hover {
+    opacity: 1;
+}
+
+.column-ordering-controls sl-icon-button {
+    --sl-spacing-x-small: 0.25rem;
+    margin: 0 1px;
+}
+
+.column-ordering-controls sl-icon-button::part(base) {
+    padding: 2px;
+    font-size: 0.75rem;
+}
+
+/* Make header cells position relative for better control positioning */
+th[data-column-key] {
+    position: relative;
+    user-select: none;
+    overflow: visible;
+}
+
+th[data-column-key]:hover .column-ordering-controls {
+    display: inline-block !important;
+}
