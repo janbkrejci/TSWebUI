@@ -500,8 +500,17 @@
             populateTable();
         }
 
+        // Track dropdown interaction state
+        let dropdownInteractionTime = 0;
+
         // Handle row clicks
         let rowClicked = (event) => {
+            // Don't fire row clicked if a dropdown was recently interacted with
+            const timeSinceDropdownInteraction = Date.now() - dropdownInteractionTime;
+            if (timeSinceDropdownInteraction < 200) {
+                return;
+            }
+            
             if (event.target.closest('sl-checkbox') || event.target.tagName === 'SL-CHECKBOX' ||
                 event.target.closest('sl-dropdown') || event.target.closest('.menu-column')) {
                 return;
@@ -588,6 +597,21 @@
             checkboxFilter.className = 'checkbox-column';
             checkboxFilter.innerHTML = '<sl-checkbox></sl-checkbox>';
             filterRow.appendChild(checkboxFilter);
+            
+            // Add event listener to block header checkbox changes after dropdown interaction
+            const headerCheckbox = checkboxFilter.querySelector('sl-checkbox');
+            if (headerCheckbox) {
+                headerCheckbox.addEventListener('sl-change', (event) => {
+                    const timeSinceDropdownInteraction = Date.now() - dropdownInteractionTime;
+                    if (timeSinceDropdownInteraction < 200) {
+                        event.preventDefault();
+                        // Revert checkbox state
+                        setTimeout(() => {
+                            headerCheckbox.checked = !headerCheckbox.checked;
+                        }, 10);
+                    }
+                });
+            }
 
             // Add filter inputs for each visible column
             visibleColumns.forEach(col => {
@@ -612,7 +636,6 @@
                 input.addEventListener('keydown', (event) => {
                     if (event.key === 'Escape') {
                         event.target.value = '';
-                        console.log('Filter input cleared with Escape key');
                     }
                 });
             });
@@ -676,6 +699,24 @@
                 // Add event listener for menu selection
                 const dropdown = menuCell.querySelector('sl-dropdown');
                 const menu = dropdown.querySelector('sl-menu');
+                
+                // Track dropdown interactions
+                dropdown.addEventListener('sl-show', () => {
+                    dropdownInteractionTime = Date.now();
+                });
+                
+                dropdown.addEventListener('sl-hide', () => {
+                    dropdownInteractionTime = Date.now();
+                });
+                
+                // Also track clicks on the dropdown trigger button
+                const triggerButton = dropdown.querySelector('[slot="trigger"]');
+                if (triggerButton) {
+                    triggerButton.addEventListener('mousedown', () => {
+                        dropdownInteractionTime = Date.now();
+                    });
+                }
+                
                 menu.addEventListener('sl-select', (event) => {
                     const actionName = event.detail.item.getAttribute('data-action');
                     const action = menuActions.find(a => a.actionName === actionName);
@@ -688,6 +729,21 @@
                 const checkboxCell = document.createElement('td');
                 checkboxCell.innerHTML = '<sl-checkbox></sl-checkbox>';
                 tr.appendChild(checkboxCell);
+                
+                // Add event listener to block checkbox changes after dropdown interaction
+                const checkbox = checkboxCell.querySelector('sl-checkbox');
+                if (checkbox) {
+                    checkbox.addEventListener('sl-change', (event) => {
+                        const timeSinceDropdownInteraction = Date.now() - dropdownInteractionTime;
+                        if (timeSinceDropdownInteraction < 200) {
+                            event.preventDefault();
+                            // Revert checkbox state
+                            setTimeout(() => {
+                                checkbox.checked = !checkbox.checked;
+                            }, 10);
+                        }
+                    });
+                }
 
                 // Add data cells based on visible column definitions
                 visibleColumns.forEach(col => {
@@ -702,6 +758,8 @@
                     tr.appendChild(td);
                 });
 
+
+                
                 // Add row click handler
                 tr.addEventListener('click', rowClicked);
 
@@ -720,7 +778,6 @@
             if (searchInput) {
                 searchInput.value = '';
                 filterColumnMenu('');
-                console.log('Column search filter cleared');
             }
         }
 
@@ -808,11 +865,10 @@
                         event.stopImmediatePropagation();
                         event.target.value = '';
                         filterColumnMenu('');
-                        console.log('Column search cleared with Escape key');
                     }
                 });
             } else {
-                console.log('Search element not found!');
+                console.error('Search element not found!');
             }
 
             return true;
@@ -843,7 +899,6 @@
                         const searchInput = document.querySelector('.columns-menu #column-search');
                         if (searchInput) {
                             searchInput.focus();
-                            console.log('Column search input focused');
                         }
                     }, 50);
                 });

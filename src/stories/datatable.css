@@ -41,6 +41,8 @@
 #container {
     min-width: 700px;
     padding: 1em;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 #footer {
@@ -130,6 +132,9 @@ tbody tr {
     background-color: var(--sl-color-neutral-0);
     color: var(--sl-color-neutral-1000);
     font-family: var(--sl-font-sans);
+    overflow-x: auto;
+    width: 100%;
+    min-width: 0;
 }
 
 /* Toolbar styles */
@@ -142,6 +147,8 @@ tbody tr {
     width: 100%;
     margin-left: 0;
     margin-right: 0;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .toolbar > :first-child {
@@ -236,6 +243,8 @@ tbody tr {
     max-width: 100%;
     margin-left: 0;
     margin-right: 0;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .footer > :first-child {
