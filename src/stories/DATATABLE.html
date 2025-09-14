@@ -515,9 +515,18 @@
                 event.target.closest('sl-dropdown') || event.target.closest('.menu-column')) {
                 return;
             }
+            
             let row = event.currentTarget;
-            let id = row.cells[2].textContent; // Updated index due to menu column
-            console.log('Row clicked with ID:', id);
+            const rowId = parseInt(row.getAttribute('data-row-id'));
+            
+            // Find the corresponding full data entry from tableData array
+            const rowData = tableData.find(item => item.id === rowId);
+            
+            if (rowData) {
+                console.log('Row clicked - Full table data entry:', rowData);
+            } else {
+                console.log('Row clicked but data not found for ID:', rowId);
+            }
         };
 
         // Function to create sort indicator SVG
@@ -674,6 +683,9 @@
             // Add actual data rows (paginated)
             currentPageData.forEach((row, index) => {
                 const tr = document.createElement('tr');
+                
+                // Store the row ID as a data attribute for later retrieval
+                tr.setAttribute('data-row-id', row.id);
                 
                 // Add menu cell with dropdown
                 const menuCell = document.createElement('td');
