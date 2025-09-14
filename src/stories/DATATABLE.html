@@ -395,6 +395,7 @@
         // Column visibility configuration
         const preselectedColumns = ['name', 'email'];
         const unhideableColumns = ['name', 'email'];
+        const unshowableColumns = ['id']; // These columns are hidden and cannot be shown in column selection menu
 
         // Function to get visible columns based on column definitions
         function getVisibleColumns() {
@@ -474,11 +475,13 @@
             updatePaginationUI();
         }
 
-        // Function to select all columns (respecting unhideable columns)
+        // Function to select all columns (respecting unhideable and unshowable columns)
         function selectAllColumns() {
             // Update column definitions
             columnDefinitions.forEach(col => {
-                col.visible = true;
+                if (!unshowableColumns.includes(col.key)) {
+                    col.visible = true;
+                }
             });
 
             // Recreate menu to reflect changes
@@ -486,11 +489,14 @@
             populateTable();
         }
 
-        // Function to clear all columns (respecting unhideable columns)
+        // Function to clear all columns (respecting unhideable columns, unshowable columns stay hidden)
         function clearAllColumns() {
-            // Update column definitions (keep unhideable columns visible)
+            // Update column definitions (keep unhideable columns visible, unshowable columns stay hidden)
             columnDefinitions.forEach(col => {
-                if (!unhideableColumns.includes(col.key)) {
+                if (unshowableColumns.includes(col.key)) {
+                    // Keep unshowable columns hidden
+                    col.visible = false;
+                } else if (!unhideableColumns.includes(col.key)) {
                     col.visible = false;
                 }
             });
@@ -842,8 +848,13 @@
             searchInput.setAttribute('autocomplete', 'off');
             columnsMenu.appendChild(searchInput);
 
-            // Add column items from definitions
+            // Add column items from definitions (excluding unshowable columns)
             columnDefinitions.forEach(col => {
+                // Skip unshowable columns - they should not appear in the menu at all
+                if (unshowableColumns.includes(col.key)) {
+                    return;
+                }
+                
                 const menuItem = document.createElement('sl-menu-item');
                 menuItem.type = 'checkbox';
                 menuItem.textContent = col.title;
@@ -890,7 +901,10 @@
         function initializeTable() {
             // set preselected columns visibility in columns definitions
             columnDefinitions.forEach(col => {
-                if (preselectedColumns.includes(col.key) || unhideableColumns.includes(col.key)) {
+                if (unshowableColumns.includes(col.key)) {
+                    // Unshowable columns are always hidden
+                    col.visible = false;
+                } else if (preselectedColumns.includes(col.key) || unhideableColumns.includes(col.key)) {
                     col.visible = true;
                 } else  {
                     col.visible = false;
