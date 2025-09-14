@@ -515,6 +515,9 @@
             populateTableRows();
             updatePaginationUI();
             
+            // Update column menu to refresh filter icons
+            createColumnsMenu();
+            
             // Hide loading overlay (focus is preserved since headers are not regenerated)
             hideLoadingOverlay();
         }
@@ -561,6 +564,9 @@
             currentPage = 1;
             populateTableRows();
             updatePaginationUI();
+            
+            // Update column menu to refresh filter icons
+            createColumnsMenu();
         }
 
         // Pagination functions
@@ -1096,7 +1102,19 @@
             // Clear existing menu items
             columnsMenu.innerHTML = '';
 
-            // Add standard menu items
+            // Add filter management section only if filters are active
+            const hasActiveFilters = Object.keys(columnFilters).length > 0;
+            if (hasActiveFilters) {
+                const clearFilters = document.createElement('sl-menu-item');
+                clearFilters.textContent = 'Clear All Filters';
+                clearFilters.setAttribute('data-action', 'clear-filters');
+                columnsMenu.appendChild(clearFilters);
+
+                const filterDivider = document.createElement('sl-divider');
+                columnsMenu.appendChild(filterDivider);
+            }
+
+            // Add standard column menu items
             const selectAll = document.createElement('sl-menu-item');
             selectAll.textContent = 'Select All';
             selectAll.setAttribute('data-action', 'select-all');
@@ -1126,7 +1144,16 @@
             sortedColumns.forEach(col => {
                 const menuItem = document.createElement('sl-menu-item');
                 menuItem.type = 'checkbox';
-                menuItem.textContent = col.title;
+                
+                // Create column text with filter icon if filtered
+                const hasFilter = columnFilters[col.key] && columnFilters[col.key].trim() !== '';
+                const filterIcon = hasFilter ? `
+                    <svg width="12" height="12" viewBox="0 0 16 16" style="margin-left: 6px; fill: var(--sl-color-neutral-600); vertical-align: middle;">
+                        <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z"/>
+                    </svg>
+                ` : '';
+                menuItem.innerHTML = `${col.title}${filterIcon}`;
+                
                 menuItem.setAttribute('data-column-key', col.key);
                 // Set checkbox state based on column visibility
                 menuItem.checked = col.visible;
@@ -1214,8 +1241,11 @@
                     // Clear the column filter whenever any menu item is selected
                     clearColumnFilter();
                     
-                    // Handle select all / clear all actions
-                    if (action === 'select-all') {
+                    // Handle special actions
+                    if (action === 'clear-filters') {
+                        clearAllFilters();
+                        return;
+                    } else if (action === 'select-all') {
                         selectAllColumns();
                         return;
                     } else if (action === 'clear-all') {
