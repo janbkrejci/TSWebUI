@@ -350,7 +350,8 @@ th[data-column-key]:hover .column-ordering-controls {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--sl-color-neutral-0);
+    opacity: 0.8;
     display: flex;
     align-items: center;
     justify-content: center;
