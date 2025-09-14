@@ -19,9 +19,9 @@
             const value = parseInt(event.target.value);
             const totalPages = getTotalPages();
             if (isNaN(value) || value < 1) {
-                event.target.value = currentPage; // Reset to current page instead of forcing 1
+                event.target.value = 1;
             } else if (value > totalPages) {
-                event.target.value = currentPage; // Reset to current page instead of forcing max
+                event.target.value = totalPages;
             } else if (value !== currentPage) {
                 goToPage(value);
             }
@@ -1064,7 +1064,7 @@
                 na stránku
             </div>
             <!-- PAGER -->
-            <div class="pager" onclick="pageDropdownClicked(event)">
+            <div class="pager">
                 <sl-button-group>
                     <sl-button disabled>
                         <sl-icon name="chevron-bar-left"></sl-icon>
