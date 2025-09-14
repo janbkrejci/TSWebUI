@@ -31,6 +31,12 @@
         let currentPage = 1;
         let itemsPerPage = 5;
         const availablePageSizes = [5, 10, 20, 50, 100];
+        
+        // Column filtering state
+        let columnFilters = {}; // Object to store active filters by column key
+        let filteredData = []; // Cached filtered data
+        let filterTimeout = null; // Timeout for debouncing
+        const FILTER_DEBOUNCE_DELAY = 500; // Half second debounce
 
         // Table data - expanded dataset for pagination testing
         const tableData = [
@@ -456,17 +462,123 @@
             }
         }
 
+        // Column filtering functions
+        function showLoadingOverlay() {
+            const overlay = document.getElementById('table-loading-overlay');
+            const table = document.getElementById('data-table');
+            
+            if (overlay && table) {
+                const thead = table.querySelector('thead');
+                
+                if (thead) {
+                    // Calculate the height of thead to position overlay correctly
+                    const theadHeight = thead.offsetHeight;
+                    overlay.style.top = theadHeight + 'px';
+                }
+                
+                overlay.classList.remove('hidden');
+                overlay.classList.add('visible');
+            }
+        }
 
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('table-loading-overlay');
+            if (overlay) {
+                overlay.classList.remove('visible');
+                overlay.classList.add('hidden');
+            }
+            // Focus is automatically preserved since filter inputs are not regenerated
+        }
+
+        function applyFilters() {
+            // Show loading overlay
+            showLoadingOverlay();
+            
+            // Filter data based on active column filters
+            filteredData = tableData.filter(row => {
+                return Object.keys(columnFilters).every(columnKey => {
+                    const filterValue = columnFilters[columnKey];
+                    if (!filterValue) return true; // Empty filter passes all
+                    
+                    const cellValue = row[columnKey];
+                    if (cellValue === null || cellValue === undefined) return false;
+                    
+                    // Simple substring search (case-insensitive)
+                    return cellValue.toString().toLowerCase().includes(filterValue.toLowerCase());
+                });
+            });
+            
+            // Reset to first page when filters change
+            currentPage = 1;
+            
+            // Update only table rows and pagination (no need to regenerate headers)
+            populateTableRows();
+            updatePaginationUI();
+            
+            // Hide loading overlay (focus is preserved since headers are not regenerated)
+            hideLoadingOverlay();
+        }
+
+        function setColumnFilter(columnKey, filterValue) {
+            // Clear existing timeout
+            if (filterTimeout) {
+                clearTimeout(filterTimeout);
+            }
+            
+            // Update filter value
+            if (filterValue && filterValue.trim()) {
+                columnFilters[columnKey] = filterValue.trim();
+            } else {
+                delete columnFilters[columnKey];
+            }
+            
+            // If clearing filter, apply immediately
+            if (!filterValue || !filterValue.trim()) {
+                applyFilters();
+                return;
+            }
+            
+            // Show loading overlay immediately when user starts typing
+            showLoadingOverlay();
+            
+            // Debounce the filtering
+            filterTimeout = setTimeout(() => {
+                applyFilters();
+            }, FILTER_DEBOUNCE_DELAY);
+        }
+
+        function clearAllFilters() {
+            columnFilters = {};
+            filteredData = [];
+            
+            // Clear all filter inputs
+            const filterInputs = document.querySelectorAll('.filter-row sl-input');
+            filterInputs.forEach(input => {
+                input.value = '';
+            });
+            
+            // Reset to first page and update table
+            currentPage = 1;
+            populateTableRows();
+            updatePaginationUI();
+        }
 
         // Pagination functions
+        function getActiveData() {
+            // Return filtered data if filters are active, otherwise return all data
+            return Object.keys(columnFilters).length > 0 ? filteredData : tableData;
+        }
+
         function getTotalPages() {
-            return Math.ceil(tableData.length / itemsPerPage);
+            const activeData = getActiveData();
+            return Math.ceil(activeData.length / itemsPerPage);
         }
 
         function getCurrentPageData() {
+            const activeData = getActiveData();
             const startIndex = (currentPage - 1) * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
-            return tableData.slice(startIndex, endIndex);
+            return activeData.slice(startIndex, endIndex);
         }
 
         function updatePaginationUI() {
@@ -488,9 +600,12 @@
             // Update item count
             const itemCount = document.getElementById('item-count');
             if (itemCount) {
-                const startItem = (currentPage - 1) * itemsPerPage + 1;
-                const endItem = Math.min(currentPage * itemsPerPage, tableData.length);
-                itemCount.textContent = `Zobrazeno ${startItem}-${endItem} z ${tableData.length}`;
+                const activeData = getActiveData();
+                const startItem = activeData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
+                const endItem = Math.min(currentPage * itemsPerPage, activeData.length);
+                const totalItems = activeData.length;
+                const filterText = Object.keys(columnFilters).length > 0 ? ` (filtrováno z ${tableData.length})` : '';
+                itemCount.textContent = `Zobrazeno ${startItem}-${endItem} z ${totalItems}${filterText}`;
             }
 
             // Update items per page dropdown
@@ -519,7 +634,7 @@
             const totalPages = getTotalPages();
             if (page >= 1 && page <= totalPages && page !== currentPage) {
                 currentPage = page;
-                populateTable();
+                populateTableRows();
                 updatePaginationUI();
             }
         }
@@ -532,7 +647,7 @@
             
             itemsPerPage = newSize;
             currentPage = 1; // Reset to first page
-            populateTable();
+            populateTableRows();
             updatePaginationUI();
         }
 
@@ -748,7 +863,7 @@
 
 
             // Add filter inputs for each visible column
-            visibleColumns.forEach(col => {
+            visibleColumns.forEach((col, index) => {
                 const th = document.createElement('th');
                 
                 // Apply text alignment to filter row
@@ -757,37 +872,54 @@
                 }
                 
                 if (col.filterable) {
-                    th.innerHTML = `<sl-input size="small" placeholder="${col.filterPlaceholder}" autocomplete="off"></sl-input>`;
+                    const inputId = `filter-${col.key}`;
+                    th.innerHTML = `<sl-input id="${inputId}" size="small" placeholder="${col.filterPlaceholder}" autocomplete="off" data-column-key="${col.key}"></sl-input>`;
                 }
                 filterRow.appendChild(th);
             });
 
             thead.appendChild(filterRow);
 
-            // Add escape key handlers for filter inputs
-            const filterInputs = filterRow.querySelectorAll('sl-input');
+            // Add event handlers for filter inputs
+            const filterInputs = filterRow.querySelectorAll('sl-input[data-column-key]');
             filterInputs.forEach(input => {
+                const columnKey = input.getAttribute('data-column-key');
+                
+                // Handle input events for filtering
+                input.addEventListener('input', (event) => {
+                    const filterValue = event.target.value;
+                    setColumnFilter(columnKey, filterValue);
+                });
+                
+                // Handle focus to select all content
+                input.addEventListener('focus', (event) => {
+                    // Use setTimeout to ensure the focus event completes first
+                    setTimeout(() => {
+                        event.target.select();
+                    }, 0);
+                });
+                
+                // Handle escape key to clear filter
                 input.addEventListener('keydown', (event) => {
                     if (event.key === 'Escape') {
                         event.target.value = '';
+                        setColumnFilter(columnKey, '');
                     }
                 });
+                
+                // Restore filter value if it exists
+                if (columnFilters[columnKey]) {
+                    input.value = columnFilters[columnKey];
+                }
             });
 
             return true;
         }
 
-        // Updated populate table function
-        function populateTable() {
-            
-            // Find table using specific ID
+        // Function to populate only table rows (tbody) - used for filtering/pagination
+        function populateTableRows() {
             const table = document.getElementById('data-table');
             if (!table) {
-                return false;
-            }
-
-            // Create headers dynamically
-            if (!createTableHeaders()) {
                 return false;
             }
              
@@ -805,8 +937,21 @@
             // Get current page data for pagination
             const currentPageData = getCurrentPageData();
 
-            // Add actual data rows (paginated)
-            currentPageData.forEach((row, index) => {
+            // Check if there's no data to display
+            if (currentPageData.length === 0) {
+                const tr = document.createElement('tr');
+                tr.className = 'no-data-row';
+                
+                const td = document.createElement('td');
+                td.colSpan = visibleColumns.length + 2; // +2 for menu and checkbox columns
+                td.textContent = 'No data found';
+                td.className = 'no-data-row';
+                
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+            } else {
+                // Add actual data rows (paginated)
+                currentPageData.forEach((row, index) => {
                 const tr = document.createElement('tr');
                 
                 // Store the row ID as a data attribute for later retrieval
@@ -885,8 +1030,30 @@
                 tr.addEventListener('click', rowClicked);
 
                 tbody.appendChild(tr);
-            });
+                });
+            }
 
+            return true;
+        }
+
+        // Full table population function - creates headers and rows
+        function populateTable() {
+            // Find table using specific ID
+            const table = document.getElementById('data-table');
+            if (!table) {
+                return false;
+            }
+
+            // Create headers dynamically
+            if (!createTableHeaders()) {
+                return false;
+            }
+            
+            // Populate rows
+            if (!populateTableRows()) {
+                return false;
+            }
+            
             // Update pagination UI after populating table
             updatePaginationUI();
             
@@ -1012,6 +1179,10 @@
                     col.visible = false;
                 }
             });
+            
+            // Initialize filtered data
+            filteredData = tableData.slice(); // Start with all data
+            
             // Create columns menu
             createColumnsMenu();
             
@@ -1088,6 +1259,15 @@
             
             // Initialize dropdown overlay
             initializeDropdownOverlay();
+            
+            // Add global keyboard shortcuts
+            document.addEventListener('keydown', (event) => {
+                // Ctrl+Shift+C to clear all filters
+                if (event.ctrlKey && event.shiftKey && event.key === 'C') {
+                    event.preventDefault();
+                    clearAllFilters();
+                }
+            });
         }
 
         // Function to setup pagination event listeners
@@ -1172,6 +1352,9 @@
                     <!-- Table rows will be populated dynamically by populateTable() function -->
                 </tbody>
             </table>
+            <!-- Loading overlay for filtering positioned over table body area -->
+            <div id="table-loading-overlay" class="table-loading-overlay hidden">
+            </div>
         </div>
         <!-- FOOTER -->
         <div class="footer">

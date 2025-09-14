@@ -59,6 +59,7 @@
 
 table {
     width: auto;
+    table-layout: auto;
     border-collapse: collapse;
     background: var(--sl-color-neutral-0);
     color: var(--sl-color-neutral-1000);
@@ -78,7 +79,9 @@ td {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 80px;
     max-width: 200px;
+    width: auto;
 }
 
 th {
@@ -208,6 +211,8 @@ tbody tr {
 
 .checkbox-column {
     width: 40px;
+    min-width: 40px;
+    max-width: 40px;
     text-align: center;
     padding: 0.75em 0.5em;
 }
@@ -220,6 +225,8 @@ tbody tr {
 
 .id-column {
     width: 40px;
+    min-width: 40px;
+    max-width: 40px;
 }
 
 /* Sort indicator styles */
@@ -334,4 +341,61 @@ th[data-column-key]:hover .column-ordering-controls {
 
 .dropdown-overlay.visible {
     display: block;
+}
+
+/* Loading overlay for table filtering - positioned over tbody area only */
+.table-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(1px);
+    pointer-events: none;
+}
+
+/* Calculate overlay position to cover only tbody area */
+.table-container {
+    position: relative;
+}
+
+/* Position overlay to start after thead */
+.table-loading-overlay {
+    top: 0;
+    margin-top: 0;
+}
+
+/* When overlay is visible, calculate offset from thead height */
+.table-loading-overlay.visible {
+    display: flex;
+}
+
+.table-loading-overlay.hidden {
+    display: none;
+}
+
+.table-loading-overlay.visible {
+    display: flex;
+}
+
+.table-container {
+    position: relative;
+}
+
+/* No data found row */
+.no-data-row {
+    text-align: center;
+    color: var(--sl-color-neutral-500);
+    font-style: italic;
+    padding: 2rem;
+}
+
+/* Column filter inputs */
+.filter-row sl-input {
+    width: 100%;
+    min-width: 80px;
 }
