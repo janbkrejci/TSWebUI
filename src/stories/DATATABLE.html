@@ -1,12 +1,12 @@
 <div class="sl-theme-{{theme}} main-container">
     <script>
         // Utility functions for page number input
-        let inputClick = (event) => {
+        let pageNumberClick = (event) => {
             event.target.select();
             event.preventDefault();
         };
         
-        let inputKeyDown = (event) => {
+        let pageNumberKeyDown = (event) => {
             if (!/[0-9]/.test(event.key) && event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
                 event.preventDefault();
             }
@@ -15,7 +15,7 @@
             }
         };
         
-        let inputBlur = (event) => {
+        let pageNumberBlur = (event) => {
             let value = parseInt(event.target.value);
             if (isNaN(value) || value < 1) {
                 event.target.value = 1;
@@ -678,8 +678,8 @@
                 </sl-button-group>
                 <div id="page-info" variant="none">
                     Stránka
-                    <sl-input id="page-number" size="small" value="8" onclick="inputClick(event)"
-                        onkeydown="inputKeyDown(event)" onblur="inputBlur(event)"></sl-input>
+                    <sl-input id="page-number" size="small" value="8" onclick="pageNumberClick(event)"
+                        onkeydown="pageNumberKeyDown(event)" onblur="pageNumberBlur(event)"></sl-input>
                     / 15
                 </div>
 
