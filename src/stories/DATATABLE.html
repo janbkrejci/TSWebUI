@@ -38,6 +38,9 @@
         let filterTimeout = null; // Timeout for debouncing
         const FILTER_DEBOUNCE_DELAY = 500; // Half second debounce
 
+    // Row selection state
+    let selectedRowIds = new Set();
+
         // Table data - expanded dataset for pagination testing
         const tableData = [
             {
@@ -637,6 +640,68 @@
             createColumnsMenu();
         }
 
+        // ---- Row selection helpers ----
+        function getHeaderCheckbox() {
+            return document.getElementById('header-select-all');
+        }
+
+        function updateHeaderCheckboxState() {
+            const headerCb = getHeaderCheckbox();
+            if (!headerCb) return;
+            const activeData = getActiveData();
+            const total = activeData.length;
+            if (total === 0) {
+                headerCb.checked = false;
+                headerCb.indeterminate = false;
+                return;
+            }
+            let selectedCount = 0;
+            for (const row of activeData) {
+                if (selectedRowIds.has(row.id)) selectedCount++;
+            }
+            if (selectedCount === 0) {
+                headerCb.checked = false;
+                headerCb.indeterminate = false;
+            } else if (selectedCount === total) {
+                headerCb.checked = true;
+                headerCb.indeterminate = false;
+            } else {
+                headerCb.checked = false;
+                headerCb.indeterminate = true;
+            }
+        }
+
+        function handleRowCheckboxChange(rowId, checked) {
+            if (checked) {
+                selectedRowIds.add(rowId);
+            } else {
+                selectedRowIds.delete(rowId);
+            }
+            updateHeaderCheckboxState();
+        }
+
+        function selectAllActive() {
+            const activeData = getActiveData();
+            activeData.forEach(row => selectedRowIds.add(row.id));
+        }
+
+        function deselectAllActive() {
+            const activeData = getActiveData();
+            activeData.forEach(row => selectedRowIds.delete(row.id));
+        }
+
+        function handleHeaderCheckboxChange(event) {
+            const checked = event.target.checked;
+            if (checked) {
+                selectAllActive();
+            } else {
+                deselectAllActive();
+            }
+            // Re-render current page checkboxes to reflect new state
+            populateTableRows();
+            updatePaginationUI();
+        }
+
         // Pagination functions
         function getActiveData() {
             // Return filtered data if filters are active, otherwise return all data
@@ -851,6 +916,7 @@
             // Add checkbox column
             const checkboxHeader = document.createElement('th');
             checkboxHeader.className = 'checkbox-column';
+            checkboxHeader.innerHTML = '<sl-checkbox id="header-select-all"></sl-checkbox>';
             headerRow.appendChild(checkboxHeader);
 
             // Get visible columns
@@ -949,7 +1015,7 @@
             // Add checkbox column for filter row
             const checkboxFilter = document.createElement('th');
             checkboxFilter.className = 'checkbox-column';
-            checkboxFilter.innerHTML = '<sl-checkbox></sl-checkbox>';
+            // No checkbox in filter row
             filterRow.appendChild(checkboxFilter);
             
 
@@ -1004,6 +1070,14 @@
                     input.value = columnFilters[columnKey];
                 }
             });
+
+            // Wire header select-all checkbox
+            const headerSelect = document.getElementById('header-select-all');
+            if (headerSelect) {
+                headerSelect.addEventListener('sl-change', handleHeaderCheckboxChange);
+                // Initialize its tri-state state
+                updateHeaderCheckboxState();
+            }
 
             return true;
         }
@@ -1100,7 +1174,15 @@
                 
                 // Add checkbox cell
                 const checkboxCell = document.createElement('td');
-                checkboxCell.innerHTML = '<sl-checkbox></sl-checkbox>';
+                checkboxCell.innerHTML = '<sl-checkbox class="row-select"></sl-checkbox>';
+                const rowCheckbox = checkboxCell.querySelector('sl-checkbox');
+                // Set checked state from selection set
+                rowCheckbox.checked = selectedRowIds.has(row.id);
+                rowCheckbox.addEventListener('sl-change', (e) => {
+                    handleRowCheckboxChange(row.id, e.target.checked);
+                    // Stop the row click from firing
+                    e.stopPropagation();
+                });
                 tr.appendChild(checkboxCell);
 
                 // Add data cells based on visible column definitions
@@ -1125,6 +1207,8 @@
                 });
             }
 
+            // After rows are rendered, update header tri-state
+            updateHeaderCheckboxState();
             return true;
         }
 
