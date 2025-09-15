@@ -109,10 +109,9 @@ th {
     text-align: left;
 }
 
-.filter-row th {
-    padding: 0.25em 1em;
-    border-bottom: 1px solid var(--sl-color-neutral-200);
-    background: var(--sl-color-neutral-50);
+/* Specific styling for filter row checkbox column */
+.filter-row .checkbox-column {
+    padding: 0.5em 0.5em;
 }
 
 .filter-row sl-input {
@@ -236,6 +235,14 @@ tbody tr {
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 24px;
+    min-width: 24px;
+}
+
+/* Specific styling for header select-all checkbox to match funnel icon size */
+#header-select-all {
+    min-height: 24px !important;
+    min-width: 24px !important;
 }
 
 .id-column {
@@ -406,6 +413,7 @@ th[data-column-key]:hover .column-ordering-controls {
     /* keep a stable height similar to small icon-button (~28px incl. padding) */
     min-height: 24px;
     min-width: 24px;
+    margin-left: -7px;
 }
 .selection-view-badge {
     line-height: 1;
