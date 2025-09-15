@@ -976,10 +976,9 @@
             menuHeader.style.width = '32px';
             headerRow.appendChild(menuHeader);
 
-            // Add checkbox column
+            // Add checkbox column (empty in header row; tri-state checkbox lives in filter row)
             const checkboxHeader = document.createElement('th');
             checkboxHeader.className = 'checkbox-column';
-            checkboxHeader.innerHTML = '<sl-checkbox id="header-select-all"></sl-checkbox>';
             headerRow.appendChild(checkboxHeader);
 
             // Get visible columns
@@ -1078,7 +1077,8 @@
             // Add checkbox column for filter row
             const checkboxFilter = document.createElement('th');
             checkboxFilter.className = 'checkbox-column';
-            // No checkbox in filter row
+            // Tri-state select-all checkbox belongs to the filter row
+            checkboxFilter.innerHTML = '<sl-checkbox id="header-select-all"></sl-checkbox>';
             filterRow.appendChild(checkboxFilter);
             
 
