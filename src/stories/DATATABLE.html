@@ -462,6 +462,74 @@
             }
         }
 
+        // ---- Sorting helpers ----
+        function getActiveSortColumn() {
+            // Prefer first VISIBLE sortable column with active sort, ordered by 'order'
+            const visibleActive = columnDefinitions
+                .filter(c => c.visible && c.sortable && c.sortDirection && c.sortDirection !== 'none')
+                .sort((a, b) => a.order - b.order);
+            if (visibleActive.length > 0) return visibleActive[0];
+
+            // Fallback: any active sortable column
+            const anyActive = columnDefinitions.find(c => c.sortable && c.sortDirection && c.sortDirection !== 'none');
+            return anyActive || null;
+        }
+
+        function clearOtherSorts(exceptKey) {
+            columnDefinitions.forEach(c => {
+                if (c.key !== exceptKey) c.sortDirection = 'none';
+            });
+        }
+
+        function toggleSort(columnKey) {
+            const col = columnDefinitions.find(c => c.key === columnKey);
+            if (!col || !col.sortable) return;
+
+            // Cycle: none -> asc -> desc -> none
+            const next = col.sortDirection === 'none' || !col.sortDirection
+                ? 'asc'
+                : col.sortDirection === 'asc'
+                    ? 'desc'
+                    : 'none';
+
+            col.sortDirection = next;
+            // Single-column sort: clear others
+            clearOtherSorts(col.key);
+
+            // Keep current page but ensure rows + headers reflect sort
+            createTableHeaders();
+            populateTableRows();
+            updatePaginationUI();
+        }
+
+        function compareValues(aVal, bVal) {
+            const aNull = aVal === null || aVal === undefined;
+            const bNull = bVal === null || bVal === undefined;
+            if (aNull && bNull) return 0;
+            if (aNull) return 1; // nulls last
+            if (bNull) return -1;
+
+            if (typeof aVal === 'number' && typeof bVal === 'number') {
+                return aVal - bVal;
+            }
+
+            // String compare (case-insensitive, numeric aware)
+            return String(aVal).localeCompare(String(bVal), undefined, { numeric: true, sensitivity: 'base' });
+        }
+
+        function getSortedData(data) {
+            const activeCol = getActiveSortColumn();
+            if (!activeCol || activeCol.sortDirection === 'none') return data;
+
+            const key = activeCol.key;
+            const dir = activeCol.sortDirection;
+            const sorted = data.slice().sort((a, b) => {
+                const cmp = compareValues(a[key], b[key]);
+                return dir === 'asc' ? cmp : -cmp;
+            });
+            return sorted;
+        }
+
         // Column filtering functions
         function showLoadingOverlay() {
             const overlay = document.getElementById('table-loading-overlay');
@@ -582,9 +650,10 @@
 
         function getCurrentPageData() {
             const activeData = getActiveData();
+            const sorted = getSortedData(activeData);
             const startIndex = (currentPage - 1) * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
-            return activeData.slice(startIndex, endIndex);
+            return sorted.slice(startIndex, endIndex);
         }
 
         function updatePaginationUI() {
@@ -834,19 +903,36 @@
                 headerRow.appendChild(th);
             });
 
-            // Add event listeners for column ordering buttons
+            // Add event listeners for column ordering buttons and sorting on header click
             headerRow.addEventListener('click', (event) => {
-                if (event.target.classList.contains('move-column-left')) {
+                // Handle move column buttons first (clicks might land on nested elements)
+                const moveLeftBtn = event.target.closest('.move-column-left');
+                const moveRightBtn = event.target.closest('.move-column-right');
+                if (moveLeftBtn) {
                     event.preventDefault();
                     event.stopPropagation();
-                    const columnKey = event.target.getAttribute('data-column-key');
+                    const columnKey = moveLeftBtn.getAttribute('data-column-key');
                     moveColumnLeft(columnKey);
-                } else if (event.target.classList.contains('move-column-right')) {
+                    return;
+                }
+                if (moveRightBtn) {
                     event.preventDefault();
                     event.stopPropagation();
-                    const columnKey = event.target.getAttribute('data-column-key');
+                    const columnKey = moveRightBtn.getAttribute('data-column-key');
                     moveColumnRight(columnKey);
+                    return;
                 }
+
+                // Otherwise, toggle sort if clicking on a sortable header cell
+                const th = event.target.closest('th');
+                if (!th) return;
+                const columnKey = th.getAttribute('data-column-key');
+                if (!columnKey) return;
+
+                const colDef = columnDefinitions.find(c => c.key === columnKey);
+                if (!colDef || !colDef.sortable) return;
+
+                toggleSort(columnKey);
             });
 
             thead.appendChild(headerRow);
@@ -1206,6 +1292,17 @@
                     col.visible = false;
                 }
             });
+
+            // Normalize sort state: ensure at most one active sort (prefer first visible one)
+            const activeSorts = columnDefinitions.filter(c => c.sortable && c.sortDirection && c.sortDirection !== 'none');
+            if (activeSorts.length > 1) {
+                // Keep the first visible by order, otherwise the first in list
+                const firstVisible = columnDefinitions
+                    .filter(c => c.visible && c.sortable && c.sortDirection && c.sortDirection !== 'none')
+                    .sort((a, b) => a.order - b.order)[0];
+                const keepKey = (firstVisible || activeSorts[0]).key;
+                clearOtherSorts(keepKey);
+            }
             
             // Initialize filtered data
             filteredData = tableData.slice(); // Start with all data
