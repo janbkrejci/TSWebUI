@@ -40,6 +40,9 @@
 
     // Row selection state
     let selectedRowIds = new Set();
+    // Selection view mode for filtering by selection
+    // Possible values: 'all' | 'selected' | 'unselected'
+    let selectionViewMode = 'all';
 
         // Table data - expanded dataset for pagination testing
         const tableData = [
@@ -692,7 +695,13 @@
                 selectedRowIds.delete(rowId);
             }
             updateHeaderCheckboxState();
+            // If we are in a filtered-by-selection mode, re-render rows so that the row disappears/appears immediately
+            if (selectionViewMode !== 'all') {
+                populateTableRows();
+                updatePaginationUI();
+            }
             updateSelectionMenuUI();
+            updateSelectionViewToggleUI();
         }
 
         function selectAllActive() {
@@ -709,6 +718,9 @@
             selectedRowIds.clear();
             populateTableRows();
             updatePaginationUI();
+            // Reset selection view mode and UI when no rows are selected
+            selectionViewMode = 'all';
+            updateSelectionViewToggleUI();
         }
 
         function handleHeaderCheckboxChange(event) {
@@ -763,12 +775,22 @@
                 container.classList.add('hidden');
                 container.style.display = 'none';
             }
+            // Keep the selection view toggle in sync
+            updateSelectionViewToggleUI();
         }
 
         // Pagination functions
         function getActiveData() {
-            // Return filtered data if filters are active, otherwise return all data
-            return Object.keys(columnFilters).length > 0 ? filteredData : tableData;
+            // Base data: filtered or all
+            const base = Object.keys(columnFilters).length > 0 ? filteredData : tableData;
+            // Apply selection view mode filter on top
+            if (selectionViewMode === 'selected') {
+                return base.filter(r => selectedRowIds.has(r.id));
+            }
+            if (selectionViewMode === 'unselected') {
+                return base.filter(r => !selectedRowIds.has(r.id));
+            }
+            return base;
         }
 
         function getTotalPages() {
@@ -976,9 +998,16 @@
             menuHeader.style.width = '32px';
             headerRow.appendChild(menuHeader);
 
-            // Add checkbox column (empty in header row; tri-state checkbox lives in filter row)
+            // Add checkbox column with selection view toggle in header row (tri-state checkbox lives in filter row below)
             const checkboxHeader = document.createElement('th');
             checkboxHeader.className = 'checkbox-column';
+            checkboxHeader.innerHTML = `
+                <div id="selection-view-toggle" class="selection-view-toggle hidden">
+                    <sl-tooltip content="">
+                        <sl-icon-button id="selection-view-toggle-btn" name="funnel" size="small" title=""></sl-icon-button>
+                    </sl-tooltip>
+                </div>
+            `;
             headerRow.appendChild(checkboxHeader);
 
             // Get visible columns
@@ -1142,6 +1171,23 @@
                 updateHeaderCheckboxState();
             }
 
+            // Wire selection view toggle button
+            const viewToggleBtn = document.getElementById('selection-view-toggle-btn');
+            if (viewToggleBtn) {
+                viewToggleBtn.addEventListener('click', () => {
+                    // Cycle modes only if at least one row is selected
+                    if (selectedRowIds.size === 0) return;
+                    selectionViewMode = selectionViewMode === 'all' ? 'selected' : selectionViewMode === 'selected' ? 'unselected' : 'all';
+                    currentPage = 1; // reset pagination when mode changes
+                    populateTableRows();
+                    updatePaginationUI();
+                    updateSelectionViewToggleUI();
+                });
+            }
+
+            // Initialize selection view toggle UI state
+            updateSelectionViewToggleUI();
+
             return true;
         }
 
@@ -1273,6 +1319,7 @@
             // After rows are rendered, update header tri-state and selection menu UI
             updateHeaderCheckboxState();
             updateSelectionMenuUI();
+            updateSelectionViewToggleUI();
             return true;
         }
 
@@ -1563,6 +1610,44 @@
                     clearAllFilters();
                 }
             });
+        }
+
+        // Update selection view toggle (icon, tooltip, and visibility)
+        function updateSelectionViewToggleUI() {
+            const container = document.getElementById('selection-view-toggle');
+            const btn = document.getElementById('selection-view-toggle-btn');
+            const tooltip = container ? container.querySelector('sl-tooltip') : null;
+            if (!container || !btn) return;
+
+            const selectedCount = selectedRowIds.size;
+            if (selectedCount === 0) {
+                // Reset mode to all when nothing is selected and hide control
+                if (selectionViewMode !== 'all') {
+                    selectionViewMode = 'all';
+                    // Rows may need to be repopulated if we were previously filtered
+                    populateTableRows();
+                    updatePaginationUI();
+                }
+                container.classList.add('hidden');
+                return;
+            }
+
+            // Show control
+            container.classList.remove('hidden');
+
+            // Update tooltip/title based on current mode
+            let label = '';
+            if (selectionViewMode === 'all') {
+                label = 'Režim zobrazení: všechny řádky';
+            } else if (selectionViewMode === 'selected') {
+                label = 'Režim zobrazení: jen vybrané řádky';
+            } else {
+                label = 'Režim zobrazení: jen nevybrané řádky';
+            }
+            btn.title = label;
+            if (tooltip) {
+                tooltip.setAttribute('content', label);
+            }
         }
 
         // Function to setup pagination event listeners

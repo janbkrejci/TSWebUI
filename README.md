@@ -4,6 +4,8 @@ npmp run storybook
 
 TODO
 
-implement row selection using checkboxes. the one in header should have checked, unchecked or indeterminate state according to count of selected rows. the delete button in toolbar should be enclosed in rowActions container that shows or hides automatically, it shows when at least one row is selected
+tooltipy, čeština, ikony Cog pro Columns a Download pro Excel, raketa pro Selection - tooltip Operace s výběrem
 
-sorting
+sloupec s datem 2025-08-01 a sloupec s číslem 123 456,22 do test dat
+filtry pro číselné a datumové sloupce
+začíná na pro textové - jek? tečkou na začátku?
