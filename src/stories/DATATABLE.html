@@ -2025,12 +2025,16 @@
                 <sl-button id="export-excel-btn">Export to Excel</sl-button>
             </div>
             <div>
-                <sl-dropdown>
-                    <sl-button slot="trigger" caret>Columns</sl-button>
-                    <sl-menu class="columns-menu">
-                        <!-- Menu items will be created dynamically by createColumnsMenu() function -->
-                    </sl-menu>
-                </sl-dropdown>
+               
+                    <sl-dropdown>
+                        <sl-button slot="trigger" caret>
+                            <sl-icon name="gear"></sl-icon>
+                        </sl-button>
+                        <sl-menu class="columns-menu">
+                            <!-- Menu items will be created dynamically by createColumnsMenu() function -->
+                        </sl-menu>
+                    </sl-dropdown>
+               
             </div>
         </div>
     <!-- Export dialog -->
