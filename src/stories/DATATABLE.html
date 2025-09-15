@@ -748,7 +748,7 @@
 
             const selectedCount = selectedRowIds.size;
             if (selectedCount > 0) {
-        container.classList.remove('hidden');
+        container.classList.remove('selection-menu-container-hidden');
         container.style.display = '';
                 triggerBtn.textContent = '';
                 triggerBtn.innerHTML = `Selection (${selectedCount}) <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>`;
@@ -772,7 +772,7 @@
                     menuEl.appendChild(mi);
                 });
             } else {
-                container.classList.add('hidden');
+                container.classList.add('selection-menu-container-hidden');
                 container.style.display = 'none';
             }
             // Keep the selection view toggle in sync
@@ -995,7 +995,7 @@
             // Add menu column
             const menuHeader = document.createElement('th');
             menuHeader.className = 'menu-column';
-            menuHeader.style.width = '32px';
+
             headerRow.appendChild(menuHeader);
 
             // Add checkbox column with selection view toggle in header row (tri-state checkbox lives in filter row below)
@@ -1004,9 +1004,9 @@
             checkboxHeader.innerHTML = `
                 <div id="selection-view-toggle" class="selection-view-toggle invisible">
                     <sl-tooltip content="">
-                        <div class="selection-view-toggle-btn-wrapper" style="position: relative; display: inline-block;">
+                        <div class="selection-view-toggle-btn-wrapper">
                             <sl-icon-button id="selection-view-toggle-btn" name="funnel" size="small" title=""></sl-icon-button>
-                            <sl-icon id="selection-view-badge" class="selection-view-badge" name="" style="display: none; position: absolute; right: -2px; bottom: -2px; font-size: 12px;"></sl-icon>
+                            <sl-icon id="selection-view-badge" class="selection-view-badge selection-view-badge-hidden" name="" ></sl-icon>
                         </div>
                     </sl-tooltip>
                 </div>
@@ -1037,7 +1037,7 @@
                         ${col.title}
                         ${createSortIndicator(col.sortable, col.sortDirection)}
                     </span>
-                    <span class="column-ordering-controls" style="display: none;">
+                    <span class="column-ordering-controls column-ordering-controls-hidden">
                         ${index > 0 ? `<sl-icon-button name="arrow-left" size="small" class="move-column-left" data-column-key="${col.key}" title="Move left"></sl-icon-button>` : ''}
                         ${index < visibleColumns.length - 1 ? `<sl-icon-button name="arrow-right" size="small" class="move-column-right" data-column-key="${col.key}" title="Move right"></sl-icon-button>` : ''}
                     </span>
@@ -1432,7 +1432,7 @@
                 // Create column text with filter icon if filtered
                 const hasFilter = columnFilters[col.key] && columnFilters[col.key].trim() !== '';
                 const filterIcon = hasFilter ? `
-                    <svg width="12" height="12" viewBox="0 0 16 16" style="margin-left: 6px; fill: var(--sl-color-neutral-600); vertical-align: middle;">
+                    <svg width="12" height="12" viewBox="0 0 16 16" class="filter-icon">
                         <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z"/>
                     </svg>
                 ` : '';
@@ -2010,7 +2010,7 @@
                 </sl-button>
             </div>
             <div class="toolbar-center">
-                <div class="selection-menu-container hidden" style="display: none;">
+                <div class="selection-menu-container selection-menu-container-hidden">
                     <sl-dropdown>
                         <sl-button id="selection-dropdown-trigger" slot="trigger">
                             Selection (0)
@@ -2036,12 +2036,12 @@
     <!-- Export dialog -->
         <sl-dialog id="export-dialog" label="Export to Excel">
             <div class="export-options">
-                <div id="export-rows-section" class="export-section" style="margin-bottom: 12px;">
-                    <div class="export-section-title" style="font-weight: 600; margin-bottom: 6px;">Řádky</div>
+                <div id="export-rows-section" class="export-section export-rows-section">
+                    <div class="export-section-title">Řádky</div>
                     <sl-radio-group id="export-rows-group"></sl-radio-group>
                 </div>
                 <div id="export-columns-section" class="export-section">
-                    <div class="export-section-title" style="font-weight: 600; margin-bottom: 6px;">Sloupce</div>
+                    <div class="export-section-title">Sloupce</div>
                     <sl-radio-group id="export-columns-group"></sl-radio-group>
                 </div>
             </div>
@@ -2051,23 +2051,23 @@
         <!-- Import error dialog -->
         <sl-dialog id="import-error-dialog" label="Import z Excelu">
             <sl-alert open variant="danger">
-                <sl-icon slot="icon" name="exclamation-octagon" style="font-size: 32px;"></sl-icon>
+                <sl-icon slot="icon" name="exclamation-octagon" class="large-icon"></sl-icon>
                 Struktura souboru neodpovídá. Import nebude proveden.
-                <div id="import-missing-columns" style="margin-top: 8px; font-size: var(--sl-font-size-small);"></div>
+                <div id="import-missing-columns" class="import-missing-columns"></div>
             </sl-alert>
             <sl-button slot="footer" variant="default" id="import-error-close-btn">Zavřít</sl-button>
         </sl-dialog>
         <!-- Import summary dialog -->
         <sl-dialog id="import-summary-dialog" label="Import z Excelu">
             <sl-alert open variant="primary">
-                <sl-icon slot="icon" name="info-circle" style="font-size: 32px;"></sl-icon>
+                <sl-icon slot="icon" name="info-circle" class="large-icon"></sl-icon>
                 <div id="import-summary-text">Souhrn importu</div>
             </sl-alert>
-            <div id="import-rejected-section" style="margin-top: 12px; display: none;">
-                <div style="font-weight:600; margin-bottom:4px;">Zamítnuté řádky</div>
-                <div id="import-rejected-list" style="font-size: var(--sl-font-size-small);"></div>
-                <div style="font-weight:600; margin:8px 0 4px;">Náhled zamítnutých (ukázka)</div>
-                <pre id="import-rejected-preview" style="max-height:200px; overflow:auto; background: var(--sl-color-neutral-50); padding: 8px; border-radius: var(--sl-border-radius-medium);"></pre>
+            <div id="import-rejected-section" class="import-rejected-section-hidden">
+                <div class="rejected-title">Zamítnuté řádky</div>
+                <div id="import-rejected-list" class="rejected-list"></div>
+                <div class="rejected-preview-title">Náhled zamítnutých (ukázka)</div>
+                <pre id="import-rejected-preview" class="rejected-preview"></pre>
             </div>
             <sl-button slot="footer" variant="default" id="import-rejected-save-btn">Uložit</sl-button>
             <sl-button slot="footer" variant="primary" id="import-summary-close-btn">OK</sl-button>
@@ -2085,7 +2085,7 @@
             <div id="table-loading-overlay" class="table-loading-overlay hidden">
             </div>
             <!-- Hidden file input for importing Excel -->
-            <input type="file" id="import-file-input" accept=".xlsx" style="display:none" />
+            <input type="file" id="import-file-input" accept=".xlsx" class="import-file-input-hidden" />
         </div>
         <!-- FOOTER -->
         <div class="footer">

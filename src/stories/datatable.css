@@ -48,6 +48,13 @@
     margin: 0 0 1rem 0;
 }
 
+.template-container {
+    padding: 1em;
+    background-color: var(--sl-color-neutral-0);
+    color: var(--sl-color-neutral-1000);
+    font-family: var(--sl-font-sans);
+}
+
 #container {
     min-width: 700px;
     padding: 1em;
@@ -421,4 +428,96 @@ th[data-column-key]:hover .column-ordering-controls {
 }
 .selection-view-badge {
     line-height: 1;
+}
+
+/* Inline styles moved from HTML */
+.selection-view-toggle-btn-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.selection-view-badge-hidden {
+    display: none;
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    font-size: 12px;
+}
+
+.column-ordering-controls-hidden {
+    display: none;
+}
+
+.filter-icon {
+    margin-left: 6px;
+    fill: var(--sl-color-neutral-600);
+    vertical-align: middle;
+}
+
+.selection-menu-container-hidden {
+    display: none;
+}
+
+.export-rows-section {
+    margin-bottom: 12px;
+}
+
+.export-section-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.large-icon {
+    font-size: 32px;
+}
+
+.import-missing-columns {
+    margin-top: 8px;
+    font-size: var(--sl-font-size-small);
+}
+
+.import-rejected-section-hidden {
+    margin-top: 12px;
+    display: none;
+}
+
+.rejected-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.rejected-list {
+    font-size: var(--sl-font-size-small);
+}
+
+.rejected-preview-title {
+    font-weight: 600;
+    margin: 8px 0 4px;
+}
+
+.rejected-preview {
+    max-height: 200px;
+    overflow: auto;
+    background: var(--sl-color-neutral-50);
+    padding: 8px;
+    border-radius: var(--sl-border-radius-medium);
+}
+
+.import-file-input-hidden {
+    display: none;
+}
+
+/* Styles for other HTML files */
+.login-container {
+    padding: 1em;
+    background-color: var(--sl-color-neutral-0);
+    color: var(--sl-color-neutral-1000);
+    font-family: var(--sl-font-sans);
+}
+
+.template-container {
+    padding: 1em;
+    background-color: var(--sl-color-neutral-0);
+    color: var(--sl-color-neutral-1000);
+    font-family: var(--sl-font-sans);
 }
