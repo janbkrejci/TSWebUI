@@ -1004,7 +1004,10 @@
             checkboxHeader.innerHTML = `
                 <div id="selection-view-toggle" class="selection-view-toggle hidden">
                     <sl-tooltip content="">
-                        <sl-icon-button id="selection-view-toggle-btn" name="funnel" size="small" title=""></sl-icon-button>
+                        <div class="selection-view-toggle-btn-wrapper" style="position: relative; display: inline-block;">
+                            <sl-icon-button id="selection-view-toggle-btn" name="funnel" size="small" title=""></sl-icon-button>
+                            <sl-icon id="selection-view-badge" class="selection-view-badge" name="" style="display: none; position: absolute; right: -2px; bottom: -2px; font-size: 12px;"></sl-icon>
+                        </div>
                     </sl-tooltip>
                 </div>
             `;
@@ -1617,6 +1620,7 @@
             const container = document.getElementById('selection-view-toggle');
             const btn = document.getElementById('selection-view-toggle-btn');
             const tooltip = container ? container.querySelector('sl-tooltip') : null;
+            const badge = document.getElementById('selection-view-badge');
             if (!container || !btn) return;
 
             const selectedCount = selectedRowIds.size;
@@ -1629,6 +1633,7 @@
                     updatePaginationUI();
                 }
                 container.classList.add('hidden');
+                if (badge) badge.style.display = 'none';
                 return;
             }
 
@@ -1639,10 +1644,21 @@
             let label = '';
             if (selectionViewMode === 'all') {
                 label = 'Režim zobrazení: všechny řádky';
+                if (badge) badge.style.display = 'none';
             } else if (selectionViewMode === 'selected') {
                 label = 'Režim zobrazení: jen vybrané řádky';
+                if (badge) {
+                    badge.name = 'check';
+                    badge.style.display = '';
+                    badge.style.color = 'var(--sl-color-success-600)';
+                }
             } else {
                 label = 'Režim zobrazení: jen nevybrané řádky';
+                if (badge) {
+                    badge.name = 'x';
+                    badge.style.display = '';
+                    badge.style.color = 'var(--sl-color-danger-600)';
+                }
             }
             btn.title = label;
             if (tooltip) {
