@@ -1706,42 +1706,43 @@
             if (!dlg || !rowsGroup || !colsGroup || !rowsSection || !colsSection) return;
 
             // Rows options
+            rowsGroup.value = '';
             rowsGroup.innerHTML = '';
             if (needRowsChoice) {
-                const addRadio = (value, label, disabled=false, checked=false) => {
+                const addRadio = (value, label, disabled=false) => {
                     const r = document.createElement('sl-radio');
                     r.setAttribute('value', value);
                     r.textContent = label;
                     if (disabled) r.disabled = true;
-                    if (checked) r.checked = true;
                     rowsGroup.appendChild(r);
                 };
-                addRadio('all', 'Všechny řádky', false, !anyFilter && !anySelected);
-                addRadio('filtered', 'Podle filtrů', !anyFilter, anyFilter && !anySelected);
-                addRadio('selected', 'Jen vybrané', !anySelected, anySelected);
+                addRadio('all', 'Všechny řádky', false);
+                addRadio('filtered', 'Podle filtrů', !anyFilter);
+                addRadio('selected', 'Jen vybrané', !anySelected);
                 rowsSection.style.display = '';
             } else {
                 rowsSection.style.display = 'none';
-                // still set default
-                rowsGroup.innerHTML = '<sl-radio value="all" checked>Všechny řádky</sl-radio>';
+                // keep group empty; defaults will be applied on confirm
+                rowsGroup.innerHTML = '';
             }
 
             // Columns options
+            colsGroup.value = '';
             colsGroup.innerHTML = '';
             if (needColsChoice) {
-                const addRadio = (value, label, checked=false) => {
+                const addRadio = (value, label) => {
                     const r = document.createElement('sl-radio');
                     r.setAttribute('value', value);
                     r.textContent = label;
-                    if (checked) r.checked = true;
                     colsGroup.appendChild(r);
                 };
-                addRadio('all', 'Všechny sloupce', false);
-                addRadio('visible', 'Jen viditelné sloupce', true);
+                addRadio('all', 'Všechny sloupce');
+                addRadio('visible', 'Jen viditelné sloupce');
                 colsSection.style.display = '';
             } else {
                 colsSection.style.display = 'none';
-                colsGroup.innerHTML = '<sl-radio value="visible" checked>Jen viditelné sloupce</sl-radio>';
+                // keep group empty; defaults will be applied on confirm
+                colsGroup.innerHTML = '';
             }
 
             // Hook up buttons
@@ -1749,8 +1750,11 @@
             const confirmBtn = document.getElementById('export-confirm-btn');
             if (cancelBtn) cancelBtn.onclick = () => dlg.hide();
             if (confirmBtn) confirmBtn.onclick = async () => {
-                const rowsValue = (rowsGroup.value || rowsGroup.querySelector('sl-radio[checked]')?.getAttribute('value') || 'all');
-                const colsValue = (colsGroup.value || colsGroup.querySelector('sl-radio[checked]')?.getAttribute('value') || 'visible');
+                // Defaults when nothing selected: rows -> all; columns -> visible
+                let rowsValue = rowsGroup.value || rowsGroup.querySelector('sl-radio[checked]')?.getAttribute('value');
+                let colsValue = colsGroup.value || colsGroup.querySelector('sl-radio[checked]')?.getAttribute('value');
+                if (!rowsValue) rowsValue = 'all';
+                if (!colsValue) colsValue = 'visible';
                 dlg.hide();
                 await performExport(rowsValue, colsValue);
             };
