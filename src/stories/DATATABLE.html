@@ -1,4 +1,4 @@
-<div class="sl-theme-{{theme}} main-container">
+<div class="sl-theme-{{theme}} base-container main-container">
     <script>
         // Utility functions for page number input
         let pageNumberClick = (event) => {
@@ -1918,7 +1918,7 @@
                     updatePaginationUI();
                 }
                 container.classList.add('invisible');
-                if (badge) badge.style.display = 'none';
+                if (badge) badge.classList.add('selection-view-badge-hidden');
                 return;
             }
 
@@ -1929,19 +1929,19 @@
             let label = '';
             if (selectionViewMode === 'all') {
                 label = 'Režim zobrazení: všechny řádky';
-                if (badge) badge.style.display = 'none';
+                if (badge) badge.classList.add('selection-view-badge-hidden');
             } else if (selectionViewMode === 'selected') {
                 label = 'Režim zobrazení: jen vybrané řádky';
                 if (badge) {
+                    badge.classList.remove('selection-view-badge-hidden');
                     badge.name = 'check';
-                    badge.style.display = '';
                     badge.style.color = 'var(--sl-color-success-600)';
                 }
             } else {
                 label = 'Režim zobrazení: jen nevybrané řádky';
                 if (badge) {
+                    badge.classList.remove('selection-view-badge-hidden');
                     badge.name = 'x';
-                    badge.style.display = '';
                     badge.style.color = 'var(--sl-color-danger-600)';
                 }
             }
