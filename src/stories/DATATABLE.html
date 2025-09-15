@@ -304,6 +304,20 @@
             { actionName: 'export', label: 'Export Row' }
         ];
 
+        // Actions for Selection dropdown in toolbar
+        const selectionMenuItems = [
+            // singleOnly items appear only when exactly one row is selected
+            { name: 'edit', title: 'Edit record', singleOnly: true },
+            { name: 'duplicate', title: 'Duplicate record', singleOnly: true },
+            // multi-capable items appear for any selection count >= 1
+            { name: 'delete', title: 'Delete selected', singleOnly: false },
+            { name: 'export', title: 'Export selected', singleOnly: false }
+        ];
+
+        function selectionMenuItemSelected(item, selectedRows) {
+            console.log('Selection menu action:', item, 'on rows:', selectedRows);
+        }
+
         // Function to handle row menu item selection
         function rowMenuItemSelected(menuAction, rowData) {
             console.log('Selected action:', menuAction, 'for row:', rowData);
@@ -678,6 +692,7 @@
                 selectedRowIds.delete(rowId);
             }
             updateHeaderCheckboxState();
+            updateSelectionMenuUI();
         }
 
         function selectAllActive() {
@@ -690,6 +705,12 @@
             activeData.forEach(row => selectedRowIds.delete(row.id));
         }
 
+        function clearAllSelectedRecords() {
+            selectedRowIds.clear();
+            populateTableRows();
+            updatePaginationUI();
+        }
+
         function handleHeaderCheckboxChange(event) {
             const checked = event.target.checked;
             if (checked) {
@@ -700,6 +721,48 @@
             // Re-render current page checkboxes to reflect new state
             populateTableRows();
             updatePaginationUI();
+            updateSelectionMenuUI();
+        }
+
+        function getSelectedRows() {
+            return tableData.filter(r => selectedRowIds.has(r.id));
+        }
+
+    function updateSelectionMenuUI() {
+            const container = document.querySelector('.selection-menu-container');
+            const triggerBtn = document.getElementById('selection-dropdown-trigger');
+            const menuEl = document.querySelector('.selection-menu');
+            if (!container || !triggerBtn || !menuEl) return;
+
+            const selectedCount = selectedRowIds.size;
+            if (selectedCount > 0) {
+        container.classList.remove('hidden');
+        container.style.display = '';
+                triggerBtn.textContent = '';
+                triggerBtn.innerHTML = `Selection (${selectedCount}) <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>`;
+
+                // Build menu
+                menuEl.innerHTML = '';
+                const unselectItem = document.createElement('sl-menu-item');
+                unselectItem.setAttribute('data-action', 'unselect-all');
+                unselectItem.textContent = 'Unselect all records';
+                menuEl.appendChild(unselectItem);
+
+                const dividerTop = document.createElement('sl-divider');
+                menuEl.appendChild(dividerTop);
+
+                const exactlyOne = selectedCount === 1;
+                selectionMenuItems.forEach(item => {
+                    if (item.singleOnly && !exactlyOne) return;
+                    const mi = document.createElement('sl-menu-item');
+                    mi.setAttribute('data-name', item.name);
+                    mi.textContent = item.title;
+                    menuEl.appendChild(mi);
+                });
+            } else {
+                container.classList.add('hidden');
+                container.style.display = 'none';
+            }
         }
 
         // Pagination functions
@@ -1207,8 +1270,9 @@
                 });
             }
 
-            // After rows are rendered, update header tri-state
+            // After rows are rendered, update header tri-state and selection menu UI
             updateHeaderCheckboxState();
+            updateSelectionMenuUI();
             return true;
         }
 
@@ -1396,6 +1460,26 @@
             
             // Populate table
             populateTable();
+
+            // Initialize selection menu listeners
+            const selectionMenu = document.querySelector('.selection-menu');
+            if (selectionMenu) {
+                selectionMenu.addEventListener('sl-select', (event) => {
+                    const action = event.detail.item?.getAttribute('data-action');
+                    if (action === 'unselect-all') {
+                        clearAllSelectedRecords();
+                        updateSelectionMenuUI();
+                        return;
+                    }
+                    const name = event.detail.item?.getAttribute('data-name');
+                    if (name) {
+                        const item = selectionMenuItems.find(it => it.name === name);
+                        if (item) {
+                            selectionMenuItemSelected(item, getSelectedRows());
+                        }
+                    }
+                });
+            }
             
             // Add focus behavior when dropdown opens
             const columnsDropdown = document.querySelector('sl-dropdown');
@@ -1540,9 +1624,17 @@
                 </sl-button>
             </div>
             <div class="toolbar-center">
-                <sl-button variant="danger">
-                    <sl-icon name="trash"></sl-icon>
-                </sl-button>
+                <div class="selection-menu-container hidden" style="display: none;">
+                    <sl-dropdown>
+                        <sl-button id="selection-dropdown-trigger" slot="trigger">
+                            Selection (0)
+                            <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>
+                        </sl-button>
+                        <sl-menu class="selection-menu">
+                            <!-- Will be populated dynamically in updateSelectionMenuUI() -->
+                        </sl-menu>
+                    </sl-dropdown>
+                </div>
                 <sl-button>Export to Excel</sl-button>
             </div>
             <div>
