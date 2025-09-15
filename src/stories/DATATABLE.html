@@ -1655,7 +1655,7 @@
         }
 
         function buildExportDataset(rows, cols) {
-            const headers = cols.map(c => c.title);
+            const headers = cols.map(c => c.key);
             const data = rows.map(r => cols.map(c => r[c.key]));
             return { headers, data };
         }
@@ -1774,14 +1774,17 @@
         }
 
         // --- Import helpers ---
-        function getAllExportableColumns() {
-            return columnDefinitions
-                .filter(c => !unshowableColumns.includes(c.key))
-                .sort((a,b)=>a.order-b.order);
-        }
-
         function processImport(obj) {
             console.log('processImport:', obj);
+        }
+
+        function formatRejectedFilename() {
+            const d = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            const y = d.getFullYear();
+            const m = pad(d.getMonth() + 1);
+            const day = pad(d.getDate());
+            return `${y}-${m}-${day} Zamítnuté řádky.xlsx`;
         }
 
         async function onImportFileSelected(event) {
@@ -1795,12 +1798,11 @@
                 const ws = wb.Sheets[sheetName];
                 const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
 
-                // Validate columns: require all exportable columns to be present by header title
-                const expectedCols = getAllExportableColumns();
+                // Validate columns: require all exportable columns to be present by header KEY
                 const headersInFile = Object.keys(json[0] || {});
                 const missing = [];
-                for (const col of expectedCols) {
-                    if (!headersInFile.includes(col.title)) missing.push(col.title);
+                for (const col of columnDefinitions) {
+                    if (!headersInFile.includes(col.key)) missing.push(col.key);
                 }
                 if (missing.length > 0) {
                     const errDlg = document.getElementById('import-error-dialog');
@@ -1814,13 +1816,12 @@
                     return;
                 }
 
-                // Map rows: header titles to column keys
-                const titleToKey = Object.fromEntries(expectedCols.map(c => [c.title, c.key]));
+                // Map rows: copy only known keys from columnDefinitions (includes hidden 'id')
+                const knownKeys = new Set(columnDefinitions.map(c => c.key));
                 const mapped = json.map((row, idx) => {
                     const obj = {};
-                    for (const [title, val] of Object.entries(row)) {
-                        const key = titleToKey[title];
-                        if (key) obj[key] = val;
+                    for (const [key, val] of Object.entries(row)) {
+                        if (knownKeys.has(key)) obj[key] = val;
                     }
                     return { __index: idx + 2, data: obj }; // +2 for header + 1-index
                 });
@@ -1859,6 +1860,31 @@
                 if (sumDlg) {
                     const okBtn = document.getElementById('import-summary-close-btn');
                     if (okBtn) okBtn.onclick = () => sumDlg.hide();
+                    const saveBtn = document.getElementById('import-rejected-save-btn');
+                    if (saveBtn) {
+                        if (rejectedRows.length === 0) {
+                            saveBtn.style.display = 'none';
+                            saveBtn.onclick = null;
+                        } else {
+                            saveBtn.style.display = '';
+                            saveBtn.onclick = async () => {
+                                const XLSX = await ensureSheetJS();
+                                // Ensure ID is included first if present
+                                const idCol = columnDefinitions.find(c => c.key === 'id');
+                                const colsSet = new Set();
+                                const cols = [];
+                                if (idCol) { cols.push(idCol); colsSet.add('id'); }
+                                expectedCols.forEach(c => { if (!colsSet.has(c.key)) { cols.push(c); colsSet.add(c.key); } });
+                                const headers = cols.map(c => c.key);
+                                const rejectedData = mapped.filter(m => rejectedRows.includes(m.__index)).map(m => m.data);
+                                const aoa = [headers, ...rejectedData.map(obj => cols.map(c => obj[c.key] ?? ''))];
+                                const ws = XLSX.utils.aoa_to_sheet(aoa);
+                                const wb = XLSX.utils.book_new();
+                                XLSX.utils.book_append_sheet(wb, ws, 'Zamítnuté');
+                                XLSX.writeFile(wb, formatRejectedFilename());
+                            };
+                        }
+                    }
                     sumDlg.show();
                 }
             } catch (e) {
@@ -2043,6 +2069,7 @@
                 <div style="font-weight:600; margin:8px 0 4px;">Náhled zamítnutých (ukázka)</div>
                 <pre id="import-rejected-preview" style="max-height:200px; overflow:auto; background: var(--sl-color-neutral-50); padding: 8px; border-radius: var(--sl-border-radius-medium);"></pre>
             </div>
+            <sl-button slot="footer" variant="default" id="import-rejected-save-btn">Uložit</sl-button>
             <sl-button slot="footer" variant="primary" id="import-summary-close-btn">OK</sl-button>
         </sl-dialog>
         <div class="table-container">
