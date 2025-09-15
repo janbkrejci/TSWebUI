@@ -1619,6 +1619,17 @@
             if (exportBtn) {
                 exportBtn.addEventListener('click', onExportClick);
             }
+
+            // Wire Import from Excel button
+            const importBtn = document.getElementById('import-excel-btn');
+            const importInput = document.getElementById('import-file-input');
+            if (importBtn && importInput) {
+                importBtn.addEventListener('click', () => {
+                    importInput.value = '';
+                    importInput.click();
+                });
+                importInput.addEventListener('change', onImportFileSelected);
+            }
         }
 
         // --- Export helpers ---
@@ -1762,6 +1773,107 @@
             dlg.show();
         }
 
+        // --- Import helpers ---
+        function getAllExportableColumns() {
+            return columnDefinitions
+                .filter(c => !unshowableColumns.includes(c.key))
+                .sort((a,b)=>a.order-b.order);
+        }
+
+        function processImport(obj) {
+            console.log('processImport:', obj);
+        }
+
+        async function onImportFileSelected(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            try {
+                const XLSX = await ensureSheetJS();
+                const data = await file.arrayBuffer();
+                const wb = XLSX.read(data, { type: 'array' });
+                const sheetName = wb.SheetNames[0];
+                const ws = wb.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+                // Validate columns: require all exportable columns to be present by header title
+                const expectedCols = getAllExportableColumns();
+                const headersInFile = Object.keys(json[0] || {});
+                const missing = [];
+                for (const col of expectedCols) {
+                    if (!headersInFile.includes(col.title)) missing.push(col.title);
+                }
+                if (missing.length > 0) {
+                    const errDlg = document.getElementById('import-error-dialog');
+                    const list = document.getElementById('import-missing-columns');
+                    if (list) list.textContent = 'Chybějící sloupce: ' + missing.join(', ');
+                    if (errDlg) {
+                        const closeBtn = document.getElementById('import-error-close-btn');
+                        if (closeBtn) closeBtn.onclick = () => errDlg.hide();
+                        errDlg.show();
+                    }
+                    return;
+                }
+
+                // Map rows: header titles to column keys
+                const titleToKey = Object.fromEntries(expectedCols.map(c => [c.title, c.key]));
+                const mapped = json.map((row, idx) => {
+                    const obj = {};
+                    for (const [title, val] of Object.entries(row)) {
+                        const key = titleToKey[title];
+                        if (key) obj[key] = val;
+                    }
+                    return { __index: idx + 2, data: obj }; // +2 for header + 1-index
+                });
+
+                // Dummy categorization stats; call processImport for each
+                let added = 0, updated = 0, rejected = 0, skipped = 0;
+                const rejectedRows = [];
+                mapped.forEach(({ __index, data }) => {
+                    processImport(data);
+                    // Dummy decision: alternate status for preview
+                    const mod = __index % 4;
+                    if (mod === 1) added++;
+                    else if (mod === 2) updated++;
+                    else if (mod === 3) { rejected++; rejectedRows.push(__index); }
+                    else skipped++;
+                });
+
+                // Show summary dialog
+                const sumDlg = document.getElementById('import-summary-dialog');
+                const sumText = document.getElementById('import-summary-text');
+                const rejSec = document.getElementById('import-rejected-section');
+                const rejList = document.getElementById('import-rejected-list');
+                const rejPrev = document.getElementById('import-rejected-preview');
+                if (sumText) {
+                    sumText.textContent = `${added} řádků bylo přidáno, ${updated} bylo upraveno, ${rejected} bylo zamítnuto, ${skipped} bylo přeskočeno - žádná změna.`;
+                }
+                if (rejectedRows.length > 0) {
+                    if (rejSec) rejSec.style.display = '';
+                    if (rejList) rejList.textContent = 'Čísla řádků: ' + rejectedRows.join(', ');
+                    // Dummy preview of first few rejected rows
+                    const preview = mapped.filter(m => rejectedRows.includes(m.__index)).slice(0, 5).map(m => m.data);
+                    if (rejPrev) rejPrev.textContent = JSON.stringify(preview, null, 2);
+                } else {
+                    if (rejSec) rejSec.style.display = 'none';
+                }
+                if (sumDlg) {
+                    const okBtn = document.getElementById('import-summary-close-btn');
+                    if (okBtn) okBtn.onclick = () => sumDlg.hide();
+                    sumDlg.show();
+                }
+            } catch (e) {
+                console.error('Import failed', e);
+                const errDlg = document.getElementById('import-error-dialog');
+                const list = document.getElementById('import-missing-columns');
+                if (list) list.textContent = 'Chyba při čtení souboru.';
+                if (errDlg) {
+                    const closeBtn = document.getElementById('import-error-close-btn');
+                    if (closeBtn) closeBtn.onclick = () => errDlg.hide();
+                    errDlg.show();
+                }
+            }
+        }
+
         // Update selection view toggle (icon, tooltip, and visibility)
         function updateSelectionViewToggleUI() {
             const container = document.getElementById('selection-view-toggle');
@@ -1883,6 +1995,7 @@
                         </sl-menu>
                     </sl-dropdown>
                 </div>
+                <sl-button id="import-excel-btn" variant="default">Import from Excel</sl-button>
                 <sl-button id="export-excel-btn">Export to Excel</sl-button>
             </div>
             <div>
@@ -1894,7 +2007,7 @@
                 </sl-dropdown>
             </div>
         </div>
-        <!-- Export dialog -->
+    <!-- Export dialog -->
         <sl-dialog id="export-dialog" label="Export to Excel">
             <div class="export-options">
                 <div id="export-rows-section" class="export-section" style="margin-bottom: 12px;">
@@ -1909,6 +2022,29 @@
             <sl-button slot="footer" variant="default" id="export-cancel-btn">Zrušit</sl-button>
             <sl-button slot="footer" variant="primary" id="export-confirm-btn">Exportovat</sl-button>
         </sl-dialog>
+        <!-- Import error dialog -->
+        <sl-dialog id="import-error-dialog" label="Import z Excelu">
+            <sl-alert open variant="danger">
+                <sl-icon slot="icon" name="exclamation-octagon" style="font-size: 32px;"></sl-icon>
+                Struktura souboru neodpovídá. Import nebude proveden.
+                <div id="import-missing-columns" style="margin-top: 8px; font-size: var(--sl-font-size-small);"></div>
+            </sl-alert>
+            <sl-button slot="footer" variant="default" id="import-error-close-btn">Zavřít</sl-button>
+        </sl-dialog>
+        <!-- Import summary dialog -->
+        <sl-dialog id="import-summary-dialog" label="Import z Excelu">
+            <sl-alert open variant="primary">
+                <sl-icon slot="icon" name="info-circle" style="font-size: 32px;"></sl-icon>
+                <div id="import-summary-text">Souhrn importu</div>
+            </sl-alert>
+            <div id="import-rejected-section" style="margin-top: 12px; display: none;">
+                <div style="font-weight:600; margin-bottom:4px;">Zamítnuté řádky</div>
+                <div id="import-rejected-list" style="font-size: var(--sl-font-size-small);"></div>
+                <div style="font-weight:600; margin:8px 0 4px;">Náhled zamítnutých (ukázka)</div>
+                <pre id="import-rejected-preview" style="max-height:200px; overflow:auto; background: var(--sl-color-neutral-50); padding: 8px; border-radius: var(--sl-border-radius-medium);"></pre>
+            </div>
+            <sl-button slot="footer" variant="primary" id="import-summary-close-btn">OK</sl-button>
+        </sl-dialog>
         <div class="table-container">
             <table id="data-table">
                 <thead>
@@ -1921,6 +2057,8 @@
             <!-- Loading overlay for filtering positioned over table body area -->
             <div id="table-loading-overlay" class="table-loading-overlay hidden">
             </div>
+            <!-- Hidden file input for importing Excel -->
+            <input type="file" id="import-file-input" accept=".xlsx" style="display:none" />
         </div>
         <!-- FOOTER -->
         <div class="footer">
