@@ -3,6 +3,16 @@
     display: inline-block;
 }
 
+/* Utility: generic hidden helper */
+.hidden {
+    display: none !important;
+}
+
+/* Utility: invisibility without affecting layout */
+.invisible {
+    visibility: hidden !important;
+}
+
 #page-number::part(input) {
     text-align: right;
 }
@@ -399,4 +409,17 @@ th[data-column-key]:hover .column-ordering-controls {
 .filter-row sl-input {
     width: 100%;
     min-width: 80px;
+}
+
+/* Selection view toggle styles */
+.selection-view-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* keep a stable height similar to small icon-button (~28px incl. padding) */
+    min-height: 24px;
+    min-width: 24px;
+}
+.selection-view-badge {
+    line-height: 1;
 }

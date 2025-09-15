@@ -1002,7 +1002,7 @@
             const checkboxHeader = document.createElement('th');
             checkboxHeader.className = 'checkbox-column';
             checkboxHeader.innerHTML = `
-                <div id="selection-view-toggle" class="selection-view-toggle hidden">
+                <div id="selection-view-toggle" class="selection-view-toggle invisible">
                     <sl-tooltip content="">
                         <div class="selection-view-toggle-btn-wrapper" style="position: relative; display: inline-block;">
                             <sl-icon-button id="selection-view-toggle-btn" name="funnel" size="small" title=""></sl-icon-button>
@@ -1632,13 +1632,13 @@
                     populateTableRows();
                     updatePaginationUI();
                 }
-                container.classList.add('hidden');
+                container.classList.add('invisible');
                 if (badge) badge.style.display = 'none';
                 return;
             }
 
             // Show control
-            container.classList.remove('hidden');
+            container.classList.remove('invisible');
 
             // Update tooltip/title based on current mode
             let label = '';
