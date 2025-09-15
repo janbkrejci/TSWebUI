@@ -1613,6 +1613,149 @@
                     clearAllFilters();
                 }
             });
+
+            // Wire Export to Excel button
+            const exportBtn = document.getElementById('export-excel-btn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', onExportClick);
+            }
+        }
+
+        // --- Export helpers ---
+        function getExportableRows(option) {
+            // option: 'all' | 'filtered' | 'selected'
+            if (option === 'selected') {
+                const selected = tableData.filter(r => selectedRowIds.has(r.id));
+                return selected;
+            }
+            if (option === 'filtered') {
+                return getActiveData();
+            }
+            return tableData;
+        }
+
+        function getExportableColumns(option) {
+            // option: 'all' | 'visible'
+            if (option === 'visible') {
+                return getVisibleColumns();
+            }
+            // all columns except unshowable? For export we'll include all definitions that exist
+            return columnDefinitions.slice().sort((a,b)=>a.order-b.order);
+        }
+
+        function buildExportDataset(rows, cols) {
+            const headers = cols.map(c => c.title);
+            const data = rows.map(r => cols.map(c => r[c.key]));
+            return { headers, data };
+        }
+
+        async function ensureSheetJS() {
+            if (window.XLSX) return window.XLSX;
+            await new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = 'https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js';
+                s.onload = resolve;
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+            return window.XLSX;
+        }
+
+        function formatExportFilename() {
+            const d = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            const y = d.getFullYear();
+            const m = pad(d.getMonth() + 1);
+            const day = pad(d.getDate());
+            return `${y}-${m}-${day} Export.xlsx`;
+        }
+
+        async function performExport(rowsOption, colsOption) {
+            const rows = getExportableRows(rowsOption);
+            const cols = getExportableColumns(colsOption);
+            const { headers, data } = buildExportDataset(rows, cols);
+
+            const XLSX = await ensureSheetJS();
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Export');
+            XLSX.writeFile(wb, formatExportFilename());
+        }
+
+        function onExportClick() {
+            const anyFilter = Object.keys(columnFilters).length > 0;
+            const anySelected = selectedRowIds.size > 0;
+            const allVisible = getVisibleColumns().length === columnDefinitions.filter(c => !unshowableColumns.includes(c.key)).length;
+
+            // Decide if dialog is needed
+            const needRowsChoice = anyFilter || anySelected; // otherwise always all
+            const needColsChoice = !allVisible; // otherwise all columns visible == all
+
+            // If no choices needed, export immediately with defaults
+            if (!needRowsChoice && !needColsChoice) {
+                performExport('all', 'visible');
+                return;
+            }
+
+            // Build dialog options dynamically
+            const dlg = document.getElementById('export-dialog');
+            const rowsGroup = document.getElementById('export-rows-group');
+            const colsGroup = document.getElementById('export-columns-group');
+            const rowsSection = document.getElementById('export-rows-section');
+            const colsSection = document.getElementById('export-columns-section');
+            if (!dlg || !rowsGroup || !colsGroup || !rowsSection || !colsSection) return;
+
+            // Rows options
+            rowsGroup.innerHTML = '';
+            if (needRowsChoice) {
+                const addRadio = (value, label, disabled=false, checked=false) => {
+                    const r = document.createElement('sl-radio');
+                    r.setAttribute('value', value);
+                    r.textContent = label;
+                    if (disabled) r.disabled = true;
+                    if (checked) r.checked = true;
+                    rowsGroup.appendChild(r);
+                };
+                addRadio('all', 'Všechny řádky', false, !anyFilter && !anySelected);
+                addRadio('filtered', 'Podle filtrů', !anyFilter, anyFilter && !anySelected);
+                addRadio('selected', 'Jen vybrané', !anySelected, anySelected);
+                rowsSection.style.display = '';
+            } else {
+                rowsSection.style.display = 'none';
+                // still set default
+                rowsGroup.innerHTML = '<sl-radio value="all" checked>Všechny řádky</sl-radio>';
+            }
+
+            // Columns options
+            colsGroup.innerHTML = '';
+            if (needColsChoice) {
+                const addRadio = (value, label, checked=false) => {
+                    const r = document.createElement('sl-radio');
+                    r.setAttribute('value', value);
+                    r.textContent = label;
+                    if (checked) r.checked = true;
+                    colsGroup.appendChild(r);
+                };
+                addRadio('all', 'Všechny sloupce', false);
+                addRadio('visible', 'Jen viditelné sloupce', true);
+                colsSection.style.display = '';
+            } else {
+                colsSection.style.display = 'none';
+                colsGroup.innerHTML = '<sl-radio value="visible" checked>Jen viditelné sloupce</sl-radio>';
+            }
+
+            // Hook up buttons
+            const cancelBtn = document.getElementById('export-cancel-btn');
+            const confirmBtn = document.getElementById('export-confirm-btn');
+            if (cancelBtn) cancelBtn.onclick = () => dlg.hide();
+            if (confirmBtn) confirmBtn.onclick = async () => {
+                const rowsValue = (rowsGroup.value || rowsGroup.querySelector('sl-radio[checked]')?.getAttribute('value') || 'all');
+                const colsValue = (colsGroup.value || colsGroup.querySelector('sl-radio[checked]')?.getAttribute('value') || 'visible');
+                dlg.hide();
+                await performExport(rowsValue, colsValue);
+            };
+
+            dlg.show();
         }
 
         // Update selection view toggle (icon, tooltip, and visibility)
@@ -1736,7 +1879,7 @@
                         </sl-menu>
                     </sl-dropdown>
                 </div>
-                <sl-button>Export to Excel</sl-button>
+                <sl-button id="export-excel-btn">Export to Excel</sl-button>
             </div>
             <div>
                 <sl-dropdown>
@@ -1747,6 +1890,21 @@
                 </sl-dropdown>
             </div>
         </div>
+        <!-- Export dialog -->
+        <sl-dialog id="export-dialog" label="Export to Excel">
+            <div class="export-options">
+                <div id="export-rows-section" class="export-section" style="margin-bottom: 12px;">
+                    <div class="export-section-title" style="font-weight: 600; margin-bottom: 6px;">Řádky</div>
+                    <sl-radio-group id="export-rows-group"></sl-radio-group>
+                </div>
+                <div id="export-columns-section" class="export-section">
+                    <div class="export-section-title" style="font-weight: 600; margin-bottom: 6px;">Sloupce</div>
+                    <sl-radio-group id="export-columns-group"></sl-radio-group>
+                </div>
+            </div>
+            <sl-button slot="footer" variant="default" id="export-cancel-btn">Zrušit</sl-button>
+            <sl-button slot="footer" variant="primary" id="export-confirm-btn">Exportovat</sl-button>
+        </sl-dialog>
         <div class="table-container">
             <table id="data-table">
                 <thead>
