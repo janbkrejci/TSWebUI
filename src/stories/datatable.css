@@ -89,7 +89,6 @@ td {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    min-width: 80px;
     max-width: 200px;
     width: auto;
 }
@@ -110,7 +109,7 @@ th {
 .filter-row sl-input {
     width: 100%;
     max-width: 200px;
-    min-width: 80px;
+    min-width: 0;
 }
 
 /* Menu column (first column) */
@@ -408,7 +407,7 @@ th[data-column-key]:hover .column-ordering-controls {
 /* Column filter inputs */
 .filter-row sl-input {
     width: 100%;
-    min-width: 80px;
+    min-width: 0;
 }
 
 /* Selection view toggle styles */
