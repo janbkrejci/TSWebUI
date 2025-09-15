@@ -5,7 +5,7 @@
             event.target.select();
             event.preventDefault();
         };
-        
+
         let pageNumberKeyDown = (event) => {
             if (!/[0-9]/.test(event.key) && event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
                 event.preventDefault();
@@ -14,7 +14,7 @@
                 event.target.blur();
             }
         };
-        
+
         let pageNumberBlur = (event) => {
             const value = parseInt(event.target.value);
             const totalPages = getTotalPages();
@@ -31,18 +31,18 @@
         let currentPage = 1;
         let itemsPerPage = 5;
         const availablePageSizes = [5, 10, 20, 50, 100];
-        
+
         // Column filtering state
         let columnFilters = {}; // Object to store active filters by column key
         let filteredData = []; // Cached filtered data
         let filterTimeout = null; // Timeout for debouncing
         const FILTER_DEBOUNCE_DELAY = 500; // Half second debounce
 
-    // Row selection state
-    let selectedRowIds = new Set();
-    // Selection view mode for filtering by selection
-    // Possible values: 'all' | 'selected' | 'unselected'
-    let selectionViewMode = 'all';
+        // Row selection state
+        let selectedRowIds = new Set();
+        // Selection view mode for filtering by selection
+        // Possible values: 'all' | 'selected' | 'unselected'
+        let selectionViewMode = 'all';
 
         // Table data - expanded dataset for pagination testing
         const tableData = [
@@ -328,10 +328,10 @@
 
         // Column definitions for dynamic table creation
         const columnDefinitions = [
-            { 
-                key: 'id', 
-                title: 'ID', 
-                sortable: false, 
+            {
+                key: 'id',
+                title: 'ID',
+                sortable: false,
                 sortDirection: 'none',
                 className: 'id-column',
                 filterable: true,
@@ -340,10 +340,10 @@
                 align: 'right',
                 order: 0
             },
-            { 
-                key: 'name', 
-                title: 'Name', 
-                sortable: true, 
+            {
+                key: 'name',
+                title: 'Name',
+                sortable: true,
                 sortDirection: 'asc',
                 className: '',
                 filterable: true,
@@ -352,10 +352,10 @@
                 align: 'left',
                 order: 1
             },
-            { 
-                key: 'username', 
-                title: 'Username', 
-                sortable: true, 
+            {
+                key: 'username',
+                title: 'Username',
+                sortable: true,
                 sortDirection: 'desc',
                 className: '',
                 filterable: true,
@@ -364,10 +364,10 @@
                 align: 'left',
                 order: 2
             },
-            { 
-                key: 'email', 
-                title: 'Email', 
-                sortable: false, 
+            {
+                key: 'email',
+                title: 'Email',
+                sortable: false,
                 sortDirection: 'none',
                 className: '',
                 filterable: true,
@@ -376,10 +376,10 @@
                 align: 'left',
                 order: 3
             },
-            { 
-                key: 'city', 
-                title: 'City', 
-                sortable: false, 
+            {
+                key: 'city',
+                title: 'City',
+                sortable: false,
                 sortDirection: 'none',
                 className: '',
                 filterable: true,
@@ -388,10 +388,10 @@
                 align: 'left',
                 order: 4
             },
-            { 
-                key: 'phone', 
-                title: 'Phone', 
-                sortable: false, 
+            {
+                key: 'phone',
+                title: 'Phone',
+                sortable: false,
                 sortDirection: 'none',
                 className: '',
                 filterable: true,
@@ -400,10 +400,10 @@
                 align: 'center',
                 order: 5
             },
-            { 
-                key: 'website', 
-                title: 'Website', 
-                sortable: false, 
+            {
+                key: 'website',
+                title: 'Website',
+                sortable: false,
                 sortDirection: 'none',
                 className: '',
                 filterable: true,
@@ -412,10 +412,10 @@
                 align: 'left',
                 order: 6
             },
-            { 
-                key: 'company', 
-                title: 'Company', 
-                sortable: false, 
+            {
+                key: 'company',
+                title: 'Company',
+                sortable: false,
                 sortDirection: 'none',
                 className: '',
                 filterable: true,
@@ -446,14 +446,14 @@
             // Find the visible column that is immediately to the left
             const visibleColumns = getVisibleColumns();
             const currentIndex = visibleColumns.findIndex(col => col.key === columnKey);
-            
+
             if (currentIndex > 0) {
                 const leftCol = visibleColumns[currentIndex - 1];
                 // Swap order values
                 const tempOrder = currentCol.order;
                 currentCol.order = leftCol.order;
                 leftCol.order = tempOrder;
-                
+
                 // Refresh table and menu
                 populateTable();
                 createColumnsMenu();
@@ -468,14 +468,14 @@
             // Find the visible column that is immediately to the right
             const visibleColumns = getVisibleColumns();
             const currentIndex = visibleColumns.findIndex(col => col.key === columnKey);
-            
+
             if (currentIndex < visibleColumns.length - 1) {
                 const rightCol = visibleColumns[currentIndex + 1];
                 // Swap order values
                 const tempOrder = currentCol.order;
                 currentCol.order = rightCol.order;
                 rightCol.order = tempOrder;
-                
+
                 // Refresh table and menu
                 populateTable();
                 createColumnsMenu();
@@ -554,16 +554,16 @@
         function showLoadingOverlay() {
             const overlay = document.getElementById('table-loading-overlay');
             const table = document.getElementById('data-table');
-            
+
             if (overlay && table) {
                 const thead = table.querySelector('thead');
-                
+
                 if (thead) {
                     // Calculate the height of thead to position overlay correctly
                     const theadHeight = thead.offsetHeight;
                     overlay.style.top = theadHeight + 'px';
                 }
-                
+
                 overlay.classList.remove('hidden');
                 overlay.classList.add('visible');
             }
@@ -581,31 +581,31 @@
         function applyFilters() {
             // Show loading overlay
             showLoadingOverlay();
-            
+
             // Filter data based on active column filters
             filteredData = tableData.filter(row => {
                 return Object.keys(columnFilters).every(columnKey => {
                     const filterValue = columnFilters[columnKey];
                     if (!filterValue) return true; // Empty filter passes all
-                    
+
                     const cellValue = row[columnKey];
                     if (cellValue === null || cellValue === undefined) return false;
-                    
+
                     // Simple substring search (case-insensitive)
                     return cellValue.toString().toLowerCase().includes(filterValue.toLowerCase());
                 });
             });
-            
+
             // Reset to first page when filters change
             currentPage = 1;
-            
+
             // Update only table rows and pagination (no need to regenerate headers)
             populateTableRows();
             updatePaginationUI();
-            
+
             // Update column menu to refresh filter icons
             createColumnsMenu();
-            
+
             // Hide loading overlay (focus is preserved since headers are not regenerated)
             hideLoadingOverlay();
         }
@@ -615,23 +615,23 @@
             if (filterTimeout) {
                 clearTimeout(filterTimeout);
             }
-            
+
             // Update filter value
             if (filterValue && filterValue.trim()) {
                 columnFilters[columnKey] = filterValue.trim();
             } else {
                 delete columnFilters[columnKey];
             }
-            
+
             // If clearing filter, apply immediately
             if (!filterValue || !filterValue.trim()) {
                 applyFilters();
                 return;
             }
-            
+
             // Show loading overlay immediately when user starts typing
             showLoadingOverlay();
-            
+
             // Debounce the filtering
             filterTimeout = setTimeout(() => {
                 applyFilters();
@@ -641,18 +641,18 @@
         function clearAllFilters() {
             columnFilters = {};
             filteredData = [];
-            
+
             // Clear all filter inputs
             const filterInputs = document.querySelectorAll('.filter-row sl-input');
             filterInputs.forEach(input => {
                 input.value = '';
             });
-            
+
             // Reset to first page and update table
             currentPage = 1;
             populateTableRows();
             updatePaginationUI();
-            
+
             // Update column menu to refresh filter icons
             createColumnsMenu();
         }
@@ -740,7 +740,7 @@
             return tableData.filter(r => selectedRowIds.has(r.id));
         }
 
-    function updateSelectionMenuUI() {
+        function updateSelectionMenuUI() {
             const container = document.querySelector('.selection-menu-container');
             const triggerBtn = document.getElementById('selection-dropdown-trigger');
             const menuEl = document.querySelector('.selection-menu');
@@ -748,10 +748,10 @@
 
             const selectedCount = selectedRowIds.size;
             if (selectedCount > 0) {
-        container.classList.remove('selection-menu-container-hidden');
-        container.style.display = '';
+                container.classList.remove('selection-menu-container-hidden');
+                container.style.display = '';
                 triggerBtn.textContent = '';
-                triggerBtn.innerHTML = `Selection (${selectedCount}) <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>`;
+                triggerBtn.innerHTML = `<sl-icon name="rocket-takeoff"></sl-icon> (${selectedCount}) <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>`;
 
                 // Build menu
                 menuEl.innerHTML = '';
@@ -774,6 +774,7 @@
             } else {
                 container.classList.add('selection-menu-container-hidden');
                 container.style.display = 'none';
+                triggerBtn.innerHTML = `<sl-icon name="rocket-takeoff"></sl-icon> <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>`;
             }
             // Keep the selection view toggle in sync
             updateSelectionViewToggleUI();
@@ -808,7 +809,7 @@
 
         function updatePaginationUI() {
             const totalPages = getTotalPages();
-            
+
             // Update page number input
             const pageInput = document.getElementById('page-number');
             if (pageInput) {
@@ -843,12 +844,12 @@
             // Update navigation buttons
             const prevButtons = document.querySelectorAll('.pager sl-button-group:first-child sl-button');
             const nextButtons = document.querySelectorAll('.pager sl-button-group:last-child sl-button');
-            
+
             // First page and previous page buttons
             prevButtons.forEach(btn => {
                 btn.disabled = currentPage <= 1;
             });
-            
+
             // Next page and last page buttons
             nextButtons.forEach(btn => {
                 btn.disabled = currentPage >= totalPages;
@@ -869,7 +870,7 @@
             if (itemsPerPage === newSize) {
                 return;
             }
-            
+
             itemsPerPage = newSize;
             currentPage = 1; // Reset to first page
             populateTableRows();
@@ -947,13 +948,13 @@
                 event.target.closest('sl-dropdown') || event.target.closest('.menu-column')) {
                 return;
             }
-            
+
             let row = event.currentTarget;
             const rowId = parseInt(row.getAttribute('data-row-id'));
-            
+
             // Find the corresponding full data entry from tableData array
             const rowData = tableData.find(item => item.id === rowId);
-            
+
             if (rowData) {
                 console.log('Row clicked - Full table data entry:', rowData);
             } else {
@@ -964,10 +965,10 @@
         // Function to create sort indicator SVG
         function createSortIndicator(sortable = false, direction = 'none') {
             if (!sortable) return '';
-            
+
             const upColor = direction === 'asc' ? 'var(--sl-color-neutral-500)' : 'var(--sl-color-neutral-300)';
             const downColor = direction === 'desc' ? 'var(--sl-color-neutral-500)' : 'var(--sl-color-neutral-300)';
-            
+
             return `
                 <span class="sort-indicator">
                     <svg width="10" height="16" viewBox="0 0 10 16" class="sort-svg">
@@ -991,7 +992,7 @@
 
             // Create main header row
             const headerRow = document.createElement('tr');
-            
+
             // Add menu column
             const menuHeader = document.createElement('th');
             menuHeader.className = 'menu-column';
@@ -1022,15 +1023,15 @@
                 if (col.className) {
                     th.className = col.className;
                 }
-                
+
                 // Apply text alignment
                 if (col.align) {
                     th.style.textAlign = col.align;
                 }
-                
+
                 // Add data attribute for column identification
                 th.setAttribute('data-column-key', col.key);
-                
+
                 // Create header content with title and sort indicator
                 const headerContent = `
                     <span class="column-header-content">
@@ -1042,9 +1043,9 @@
                         ${index < visibleColumns.length - 1 ? `<sl-icon-button name="arrow-right" size="small" class="move-column-right" data-column-key="${col.key}" title="Move right"></sl-icon-button>` : ''}
                     </span>
                 `;
-                
+
                 th.innerHTML = headerContent;
-                
+
                 // Add mouse events for showing/hiding ordering controls
                 th.addEventListener('mouseenter', () => {
                     const controls = th.querySelector('.column-ordering-controls');
@@ -1052,14 +1053,14 @@
                         controls.style.display = 'inline-block';
                     }
                 });
-                
+
                 th.addEventListener('mouseleave', () => {
                     const controls = th.querySelector('.column-ordering-controls');
                     if (controls) {
                         controls.style.display = 'none';
                     }
                 });
-                
+
                 headerRow.appendChild(th);
             });
 
@@ -1100,30 +1101,30 @@
             // Create filter row
             const filterRow = document.createElement('tr');
             filterRow.className = 'filter-row';
-            
+
             // Add empty menu column for filter row
             const menuFilter = document.createElement('th');
             menuFilter.className = 'menu-column';
             filterRow.appendChild(menuFilter);
-            
+
             // Add checkbox column for filter row
             const checkboxFilter = document.createElement('th');
             checkboxFilter.className = 'checkbox-column';
             // Tri-state select-all checkbox belongs to the filter row
             checkboxFilter.innerHTML = '<sl-checkbox id="header-select-all"></sl-checkbox>';
             filterRow.appendChild(checkboxFilter);
-            
+
 
 
             // Add filter inputs for each visible column
             visibleColumns.forEach((col, index) => {
                 const th = document.createElement('th');
-                
+
                 // Apply text alignment to filter row
                 if (col.align) {
                     th.style.textAlign = col.align;
                 }
-                
+
                 if (col.filterable) {
                     const inputId = `filter-${col.key}`;
                     th.innerHTML = `<sl-input id="${inputId}" size="small" placeholder="${col.filterPlaceholder}" autocomplete="off" data-column-key="${col.key}"></sl-input>`;
@@ -1137,13 +1138,13 @@
             const filterInputs = filterRow.querySelectorAll('sl-input[data-column-key]');
             filterInputs.forEach(input => {
                 const columnKey = input.getAttribute('data-column-key');
-                
+
                 // Handle input events for filtering
                 input.addEventListener('input', (event) => {
                     const filterValue = event.target.value;
                     setColumnFilter(columnKey, filterValue);
                 });
-                
+
                 // Handle focus to select all content
                 input.addEventListener('focus', (event) => {
                     // Use setTimeout to ensure the focus event completes first
@@ -1151,7 +1152,7 @@
                         event.target.select();
                     }, 0);
                 });
-                
+
                 // Handle escape key to clear filter
                 input.addEventListener('keydown', (event) => {
                     if (event.key === 'Escape') {
@@ -1159,7 +1160,7 @@
                         setColumnFilter(columnKey, '');
                     }
                 });
-                
+
                 // Restore filter value if it exists
                 if (columnFilters[columnKey]) {
                     input.value = columnFilters[columnKey];
@@ -1200,15 +1201,15 @@
             if (!table) {
                 return false;
             }
-             
+
             const tbody = table.querySelector('tbody');
             if (!tbody) {
-                 return false;
+                return false;
             }
-             
+
             // Clear existing rows
             tbody.innerHTML = '';
-            
+
             // Get visible columns
             const visibleColumns = getVisibleColumns();
 
@@ -1219,32 +1220,32 @@
             if (currentPageData.length === 0) {
                 const tr = document.createElement('tr');
                 tr.className = 'no-data-row';
-                
+
                 const td = document.createElement('td');
                 td.colSpan = visibleColumns.length + 2; // +2 for menu and checkbox columns
                 td.textContent = 'No data found';
                 td.className = 'no-data-row';
-                
+
                 tr.appendChild(td);
                 tbody.appendChild(tr);
             } else {
                 // Add actual data rows (paginated)
                 currentPageData.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                
-                // Store the row ID as a data attribute for later retrieval
-                tr.setAttribute('data-row-id', row.id);
-                
-                // Add menu cell with dropdown
-                const menuCell = document.createElement('td');
-                menuCell.className = 'menu-column';
-                
-                const dropdownId = `row-menu-${row.id}`;
-                const menuItems = menuActions.map(action => 
-                    `<sl-menu-item data-action="${action.actionName}">${action.label}</sl-menu-item>`
-                ).join('');
-                
-                menuCell.innerHTML = `
+                    const tr = document.createElement('tr');
+
+                    // Store the row ID as a data attribute for later retrieval
+                    tr.setAttribute('data-row-id', row.id);
+
+                    // Add menu cell with dropdown
+                    const menuCell = document.createElement('td');
+                    menuCell.className = 'menu-column';
+
+                    const dropdownId = `row-menu-${row.id}`;
+                    const menuItems = menuActions.map(action =>
+                        `<sl-menu-item data-action="${action.actionName}">${action.label}</sl-menu-item>`
+                    ).join('');
+
+                    menuCell.innerHTML = `
                     <sl-dropdown hoist id="${dropdownId}">
                         <sl-button slot="trigger" size="small" variant="text" circle>
                             <sl-icon name="three-dots-vertical"></sl-icon>
@@ -1254,68 +1255,68 @@
                         </sl-menu>
                     </sl-dropdown>
                 `;
-                tr.appendChild(menuCell);
-                
-                // Add event listener for menu selection
-                const dropdown = menuCell.querySelector('sl-dropdown');
-                const menu = dropdown.querySelector('sl-menu');
-                
-                // Handle dropdown show/hide with overlay
-                dropdown.addEventListener('sl-show', () => {
-                    // Close any other open dropdown first
-                    if (currentOpenDropdown && currentOpenDropdown !== dropdown) {
-                        currentOpenDropdown.hide();
-                    }
-                    
-                    currentOpenDropdown = dropdown;
-                    showDropdownOverlay();
-                });
-                
-                dropdown.addEventListener('sl-hide', () => {
-                    currentOpenDropdown = null;
-                    hideDropdownOverlay();
-                });
-                
-                menu.addEventListener('sl-select', (event) => {
-                    const actionName = event.detail.item.getAttribute('data-action');
-                    const action = menuActions.find(a => a.actionName === actionName);
-                    if (action) {
-                        rowMenuItemSelected(action, row);
-                    }
-                });
-                
-                // Add checkbox cell
-                const checkboxCell = document.createElement('td');
-                checkboxCell.innerHTML = '<sl-checkbox class="row-select"></sl-checkbox>';
-                const rowCheckbox = checkboxCell.querySelector('sl-checkbox');
-                // Set checked state from selection set
-                rowCheckbox.checked = selectedRowIds.has(row.id);
-                rowCheckbox.addEventListener('sl-change', (e) => {
-                    handleRowCheckboxChange(row.id, e.target.checked);
-                    // Stop the row click from firing
-                    e.stopPropagation();
-                });
-                tr.appendChild(checkboxCell);
+                    tr.appendChild(menuCell);
 
-                // Add data cells based on visible column definitions
-                visibleColumns.forEach(col => {
-                    const td = document.createElement('td');
-                    
-                    // Apply text alignment
-                    if (col.align) {
-                        td.style.textAlign = col.align;
-                    }
-                    
-                    td.textContent = row[col.key];
-                    tr.appendChild(td);
-                });
+                    // Add event listener for menu selection
+                    const dropdown = menuCell.querySelector('sl-dropdown');
+                    const menu = dropdown.querySelector('sl-menu');
+
+                    // Handle dropdown show/hide with overlay
+                    dropdown.addEventListener('sl-show', () => {
+                        // Close any other open dropdown first
+                        if (currentOpenDropdown && currentOpenDropdown !== dropdown) {
+                            currentOpenDropdown.hide();
+                        }
+
+                        currentOpenDropdown = dropdown;
+                        showDropdownOverlay();
+                    });
+
+                    dropdown.addEventListener('sl-hide', () => {
+                        currentOpenDropdown = null;
+                        hideDropdownOverlay();
+                    });
+
+                    menu.addEventListener('sl-select', (event) => {
+                        const actionName = event.detail.item.getAttribute('data-action');
+                        const action = menuActions.find(a => a.actionName === actionName);
+                        if (action) {
+                            rowMenuItemSelected(action, row);
+                        }
+                    });
+
+                    // Add checkbox cell
+                    const checkboxCell = document.createElement('td');
+                    checkboxCell.innerHTML = '<sl-checkbox class="row-select"></sl-checkbox>';
+                    const rowCheckbox = checkboxCell.querySelector('sl-checkbox');
+                    // Set checked state from selection set
+                    rowCheckbox.checked = selectedRowIds.has(row.id);
+                    rowCheckbox.addEventListener('sl-change', (e) => {
+                        handleRowCheckboxChange(row.id, e.target.checked);
+                        // Stop the row click from firing
+                        e.stopPropagation();
+                    });
+                    tr.appendChild(checkboxCell);
+
+                    // Add data cells based on visible column definitions
+                    visibleColumns.forEach(col => {
+                        const td = document.createElement('td');
+
+                        // Apply text alignment
+                        if (col.align) {
+                            td.style.textAlign = col.align;
+                        }
+
+                        td.textContent = row[col.key];
+                        tr.appendChild(td);
+                    });
 
 
-                
-                // Add row click handler
-                tr.addEventListener('click', rowClicked);
 
-                tbody.appendChild(tr);
+                    // Add row click handler
+                    tr.addEventListener('click', rowClicked);
+
+                    tbody.appendChild(tr);
                 });
             }
 
@@ -1338,15 +1339,15 @@
             if (!createTableHeaders()) {
                 return false;
             }
-            
+
             // Populate rows
             if (!populateTableRows()) {
                 return false;
             }
-            
+
             // Update pagination UI after populating table
             updatePaginationUI();
-            
+
             return true;
         }
 
@@ -1424,11 +1425,11 @@
             const sortedColumns = columnDefinitions
                 .filter(col => !unshowableColumns.includes(col.key))
                 .sort((a, b) => a.order - b.order);
-                
+
             sortedColumns.forEach(col => {
                 const menuItem = document.createElement('sl-menu-item');
                 menuItem.type = 'checkbox';
-                
+
                 // Create column text with filter icon if filtered
                 const hasFilter = columnFilters[col.key] && columnFilters[col.key].trim() !== '';
                 const filterIcon = hasFilter ? `
@@ -1437,7 +1438,7 @@
                     </svg>
                 ` : '';
                 menuItem.innerHTML = `${col.title}${filterIcon}`;
-                
+
                 menuItem.setAttribute('data-column-key', col.key);
                 // Set checkbox state based on column visibility
                 menuItem.checked = col.visible;
@@ -1486,7 +1487,7 @@
                     col.visible = false;
                 } else if (preselectedColumns.includes(col.key) || unhideableColumns.includes(col.key)) {
                     col.visible = true;
-                } else  {
+                } else {
                     col.visible = false;
                 }
             });
@@ -1501,13 +1502,13 @@
                 const keepKey = (firstVisible || activeSorts[0]).key;
                 clearOtherSorts(keepKey);
             }
-            
+
             // Initialize filtered data
             filteredData = tableData.slice(); // Start with all data
-            
+
             // Create columns menu
             createColumnsMenu();
-            
+
             // Populate table
             populateTable();
 
@@ -1530,7 +1531,7 @@
                     }
                 });
             }
-            
+
             // Add focus behavior when dropdown opens
             const columnsDropdown = document.querySelector('sl-dropdown');
             if (columnsDropdown) {
@@ -1552,10 +1553,10 @@
                     const selectedItem = event.detail.item;
                     const action = selectedItem?.getAttribute('data-action');
                     const columnKey = selectedItem?.getAttribute('data-column-key');
-                    
+
                     // Clear the column filter whenever any menu item is selected
                     clearColumnFilter();
-                    
+
                     // Handle special actions
                     if (action === 'clear-filters') {
                         clearAllFilters();
@@ -1567,18 +1568,18 @@
                         clearAllColumns();
                         return;
                     }
-                    
+
                     if (columnKey) {
                         // Find the column definition
                         const columnDef = columnDefinitions.find(col => col.key === columnKey);
-                        
+
                         if (columnDef) {
                             // Skip processing if item is disabled (unhideable columns)
                             if (selectedItem.disabled) {
                                 event.preventDefault();
                                 return;
                             }
-                            
+
                             // Check if an unhideable column is being unselected (backup protection)
                             if (selectedItem.hasAttribute('data-unhideable') && unhideableColumns.includes(columnKey)) {
                                 // Prevent unselecting unhideable columns
@@ -1589,22 +1590,22 @@
                                     return;
                                 }
                             }
-                            
+
                             // Update the column visibility in definition
                             columnDef.visible = selectedItem.checked;
                         }
                     }
-                    
+
                     populateTable();
                 });
             }
 
             // Add pagination event listeners
             setupPaginationListeners();
-            
+
             // Initialize dropdown overlay
             initializeDropdownOverlay();
-            
+
             // Add global keyboard shortcuts
             document.addEventListener('keydown', (event) => {
                 // Ctrl+Shift+C to clear all filters
@@ -1651,7 +1652,7 @@
                 return getVisibleColumns();
             }
             // all columns except unshowable? For export we'll include all definitions that exist
-            return columnDefinitions.slice().sort((a,b)=>a.order-b.order);
+            return columnDefinitions.slice().sort((a, b) => a.order - b.order);
         }
 
         function buildExportDataset(rows, cols) {
@@ -1720,7 +1721,7 @@
             rowsGroup.value = '';
             rowsGroup.innerHTML = '';
             if (needRowsChoice) {
-                const addRadio = (value, label, disabled=false) => {
+                const addRadio = (value, label, disabled = false) => {
                     const r = document.createElement('sl-radio');
                     r.setAttribute('value', value);
                     r.textContent = label;
@@ -1969,13 +1970,13 @@
             if (pagerButtons.length >= 4) {
                 // First page button (index 0)
                 pagerButtons[0].addEventListener('click', () => goToPage(1));
-                
+
                 // Previous page button (index 1)
                 pagerButtons[1].addEventListener('click', () => goToPage(currentPage - 1));
-                
+
                 // Next page button (index 2)
                 pagerButtons[2].addEventListener('click', () => goToPage(currentPage + 1));
-                
+
                 // Last page button (index 3)
                 pagerButtons[3].addEventListener('click', () => goToPage(getTotalPages()));
             }
@@ -2005,15 +2006,17 @@
         <!-- Toolbar -->
         <div class="toolbar">
             <div>
-                <sl-button variant="success" circle>
-                    <sl-icon name="plus"></sl-icon>
-                </sl-button>
+                <sl-tooltip content="Nový záznam">
+                    <sl-button variant="primary">
+                        <sl-icon name="plus-lg"></sl-icon>
+                    </sl-button>
+                </sl-tooltip>
             </div>
             <div class="toolbar-center">
                 <div class="selection-menu-container selection-menu-container-hidden">
                     <sl-dropdown>
                         <sl-button id="selection-dropdown-trigger" slot="trigger">
-                            Selection (0)
+                            <sl-icon name="rocket-takeoff"></sl-icon>
                             <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>
                         </sl-button>
                         <sl-menu class="selection-menu">
@@ -2021,23 +2024,31 @@
                         </sl-menu>
                     </sl-dropdown>
                 </div>
-                <sl-button id="import-excel-btn" variant="default">Import from Excel</sl-button>
-                <sl-button id="export-excel-btn">Export to Excel</sl-button>
+                <sl-tooltip content="Importovat z Excelu">
+                    <sl-button id="import-excel-btn" variant="danger">
+                        <sl-icon name="upload"></sl-icon>
+                    </sl-button>
+                </sl-tooltip>
+                <sl-tooltip content="Exportovat do Excelu">
+                    <sl-button id="export-excel-btn" variant="success">
+                        <sl-icon name="download"></sl-icon>
+                    </sl-button>
+                </sl-tooltip>
             </div>
             <div>
-               
-                    <sl-dropdown>
-                        <sl-button slot="trigger" caret>
-                            <sl-icon name="gear"></sl-icon>
-                        </sl-button>
-                        <sl-menu class="columns-menu">
-                            <!-- Menu items will be created dynamically by createColumnsMenu() function -->
-                        </sl-menu>
-                    </sl-dropdown>
-               
+
+                <sl-dropdown>
+                    <sl-button slot="trigger" caret>
+                        <sl-icon name="gear"></sl-icon>
+                    </sl-button>
+                    <sl-menu class="columns-menu">
+                        <!-- Menu items will be created dynamically by createColumnsMenu() function -->
+                    </sl-menu>
+                </sl-dropdown>
+
             </div>
         </div>
-    <!-- Export dialog -->
+        <!-- Export dialog -->
         <sl-dialog id="export-dialog" label="Export to Excel">
             <div class="export-options">
                 <div id="export-rows-section" class="export-section export-rows-section">
