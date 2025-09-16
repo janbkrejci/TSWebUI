@@ -1826,6 +1826,10 @@
                     }
                     return { __index: idx + 2, data: obj }; // +2 for header + 1-index
                 });
+                console.log('Total rows in Excel:', json.length);
+                console.log('Mapped rows:', mapped.length);
+                console.log('First few mapped indices:', mapped.slice(0, 5).map(m => m.__index));
+                console.log('Last few mapped indices:', mapped.slice(-5).map(m => m.__index));
 
                 // Dummy categorization stats; call processImport for each
                 let added = 0, updated = 0, rejected = 0, skipped = 0;
@@ -1834,6 +1838,7 @@
                     processImport(data);
                     // Dummy decision: alternate status for preview
                     const mod = __index % 4;
+                    console.log(`Row ${__index}: mod = ${mod}, will be ${mod === 1 ? 'added' : mod === 2 ? 'updated' : mod === 3 ? 'rejected' : 'skipped'}`);
                     if (mod === 1) added++;
                     else if (mod === 2) updated++;
                     else if (mod === 3) { rejected++; rejectedRows.push(__index); }
@@ -1846,17 +1851,42 @@
                 const rejSec = document.getElementById('import-rejected-section');
                 const rejList = document.getElementById('import-rejected-list');
                 const rejPrev = document.getElementById('import-rejected-preview');
+                
+                // Update summary text - handle Shoelace alert component
                 if (sumText) {
                     sumText.textContent = `${added} řádků bylo přidáno, ${updated} bylo upraveno, ${rejected} bylo zamítnuto, ${skipped} bylo přeskočeno - žádná změna.`;
+                } else {
+                    // Fallback: try to find the alert content
+                    const alert = sumDlg?.querySelector('sl-alert');
+                    if (alert) {
+                        const alertContent = alert.querySelector('#import-summary-text') || alert;
+                        if (alertContent) {
+                            alertContent.textContent = `${added} řádků bylo přidáno, ${updated} bylo upraveno, ${rejected} bylo zamítnuto, ${skipped} bylo přeskočeno - žádná změna.`;
+                        }
+                    }
                 }
                 if (rejectedRows.length > 0) {
-                    if (rejSec) rejSec.style.display = '';
-                    if (rejList) rejList.textContent = 'Čísla řádků: ' + rejectedRows.join(', ');
-                    // Dummy preview of first few rejected rows
-                    const preview = mapped.filter(m => rejectedRows.includes(m.__index)).slice(0, 5).map(m => m.data);
+                    console.log('Showing rejected rows section, count:', rejectedRows.length);
+                    console.log('Rejected rows indices:', rejectedRows);
+                    if (rejSec) {
+                        rejSec.classList.remove('nodisplay');
+                        rejSec.style.display = '';
+                        console.log('Rejected section should now be visible');
+                    }
+                    if (rejList) {
+                        rejList.textContent = 'Čísla řádků: ' + rejectedRows.join(', ');
+                        console.log('Rejected list text:', rejList.textContent);
+                    }
+                    // Dummy preview of all rejected rows
+                    const preview = mapped.filter(m => rejectedRows.includes(m.__index)).map(m => m.data);
+                    console.log('Preview will show', preview.length, 'rejected rows');
                     if (rejPrev) rejPrev.textContent = JSON.stringify(preview, null, 2);
                 } else {
-                    if (rejSec) rejSec.style.display = 'none';
+                    console.log('No rejected rows, hiding section');
+                    if (rejSec) {
+                        rejSec.classList.add('nodisplay');
+                        rejSec.style.display = 'none';
+                    }
                 }
                 if (sumDlg) {
                     const okBtn = document.getElementById('import-summary-close-btn');
@@ -1864,26 +1894,46 @@
                     const saveBtn = document.getElementById('import-rejected-save-btn');
                     if (saveBtn) {
                         if (rejectedRows.length === 0) {
-                            saveBtn.style.display = 'none';
-                            saveBtn.onclick = null;
+                            console.log('No rejected rows, hiding save button');
+                            saveBtn.classList.add('nodisplay');
+                            saveBtn.removeEventListener('click', saveBtn._saveHandler);
                         } else {
-                            saveBtn.style.display = '';
-                            saveBtn.onclick = async () => {
-                                const XLSX = await ensureSheetJS();
-                                // Ensure ID is included first if present
-                                const idCol = columnDefinitions.find(c => c.key === 'id');
-                                const colsSet = new Set();
-                                const cols = [];
-                                if (idCol) { cols.push(idCol); colsSet.add('id'); }
-                                expectedCols.forEach(c => { if (!colsSet.has(c.key)) { cols.push(c); colsSet.add(c.key); } });
-                                const headers = cols.map(c => c.key);
-                                const rejectedData = mapped.filter(m => rejectedRows.includes(m.__index)).map(m => m.data);
-                                const aoa = [headers, ...rejectedData.map(obj => cols.map(c => obj[c.key] ?? ''))];
-                                const ws = XLSX.utils.aoa_to_sheet(aoa);
-                                const wb = XLSX.utils.book_new();
-                                XLSX.utils.book_append_sheet(wb, ws, 'Zamítnuté');
-                                XLSX.writeFile(wb, formatRejectedFilename());
+                            console.log('Rejected rows found, showing save button');
+                            saveBtn.classList.remove('nodisplay');
+                            const saveHandler = async () => {
+                                try {
+                                    console.log('Save button clicked, preparing to save rejected rows');
+                                    console.log('columnDefinitions available:', !!columnDefinitions);
+                                    console.log('columnDefinitions length:', columnDefinitions?.length);
+                                    console.log('rejectedRows:', rejectedRows);
+                                    console.log('mapped length:', mapped?.length);
+                                    const XLSX = await ensureSheetJS();
+                                    // Ensure ID is included first if present
+                                    const idCol = columnDefinitions.find(c => c.key === 'id');
+                                    const colsSet = new Set();
+                                    const cols = [];
+                                    if (idCol) { cols.push(idCol); colsSet.add('id'); }
+                                    columnDefinitions.forEach(c => { if (!colsSet.has(c.key)) { cols.push(c); colsSet.add(c.key); } });
+                                    const headers = cols.map(c => c.key);
+                                    const rejectedData = mapped.filter(m => rejectedRows.includes(m.__index)).map(m => m.data);
+                                    console.log('Creating Excel file with', rejectedData.length, 'rejected rows');
+                                    console.log('Expected rejected rows count:', rejectedRows.length);
+                                    console.log('Mapped rows that match rejected indices:', mapped.filter(m => rejectedRows.includes(m.__index)).length);
+                                    console.log('Headers:', headers);
+                                    console.log('Rejected data sample:', rejectedData.slice(0, 2));
+                                    const aoa = [headers, ...rejectedData.map(obj => cols.map(c => obj[c.key] ?? ''))];
+                                    const ws = XLSX.utils.aoa_to_sheet(aoa);
+                                    const wb = XLSX.utils.book_new();
+                                    XLSX.utils.book_append_sheet(wb, ws, 'Zamítnuté');
+                                    XLSX.writeFile(wb, formatRejectedFilename());
+                                    console.log('Rejected rows saved successfully');
+                                } catch (error) {
+                                    console.error('Error saving rejected rows:', error);
+                                    alert('Chyba při ukládání zamítnutých řádků: ' + error.message);
+                                }
                             };
+                            saveBtn._saveHandler = saveHandler;
+                            saveBtn.addEventListener('click', saveHandler);
                         }
                     }
                     sumDlg.show();
@@ -2078,7 +2128,7 @@
                 <sl-icon slot="icon" name="info-circle" class="large-icon"></sl-icon>
                 <div id="import-summary-text">Souhrn importu</div>
             </sl-alert>
-            <div id="import-rejected-section" class="import-rejected-section-hidden">
+            <div id="import-rejected-section" class="nodisplay">
                 <div class="rejected-title">Zamítnuté řádky</div>
                 <div id="import-rejected-list" class="rejected-list"></div>
                 <div class="rejected-preview-title">Náhled zamítnutých (ukázka)</div>

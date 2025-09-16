@@ -13,6 +13,11 @@
     visibility: hidden !important;
 }
 
+/* Utility: no display helper */
+.nodisplay {
+    display: none;
+}
+
 /* Utility: base container styles */
 .base-container {
     padding: 1em;
@@ -456,6 +461,17 @@ th[data-column-key]:hover .column-ordering-controls {
     margin-bottom: 6px;
 }
 
+/* Add spacing between radio buttons in export dialog */
+#export-rows-group sl-radio,
+#export-columns-group sl-radio {
+    margin-bottom: 8px;
+}
+
+#export-rows-group sl-radio:last-child,
+#export-columns-group sl-radio:last-child {
+    margin-bottom: 0;
+}
+
 .large-icon {
     font-size: 32px;
 }
@@ -463,11 +479,6 @@ th[data-column-key]:hover .column-ordering-controls {
 .import-missing-columns {
     margin-top: 8px;
     font-size: var(--sl-font-size-small);
-}
-
-.import-rejected-section-hidden {
-    margin-top: 12px;
-    display: none;
 }
 
 .rejected-title {
