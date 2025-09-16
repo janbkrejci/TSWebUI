@@ -1533,7 +1533,8 @@
             }
 
             // Add focus behavior when dropdown opens
-            const columnsDropdown = document.querySelector('sl-dropdown');
+            const columnsMenuForFocus = document.querySelector('.columns-menu');
+            const columnsDropdown = columnsMenuForFocus ? columnsMenuForFocus.closest('sl-dropdown') : null;
             if (columnsDropdown) {
                 columnsDropdown.addEventListener('sl-show', () => {
                     // Small delay to ensure the dropdown content is rendered
