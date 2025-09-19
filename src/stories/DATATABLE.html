@@ -770,6 +770,13 @@
                 input.value = '';
             });
 
+            // Clear all filter dropdowns (boolean columns)
+            const filterDropdowns = document.querySelectorAll('.filter-row sl-dropdown sl-button[data-column-key]');
+            filterDropdowns.forEach(button => {
+                // Reset to default state (show "Všechny")
+                button.innerHTML = 'Všechny<sl-icon name="chevron-down" slot="suffix"></sl-icon>';
+            });
+
             // Reset to first page and update table
             currentPage = 1;
             populateTableRows();
@@ -1148,6 +1155,11 @@
 
                 th.style.textAlign = 'left';
                 
+                // Set minimum width for boolean columns to accommodate ordering controls
+                if (col.type === 'boolean') {
+                    th.style.minWidth = '140px';
+                }
+                
                 // Add data attribute for column identification
                 th.setAttribute('data-column-key', col.key);
 
@@ -1244,17 +1256,42 @@
                     th.style.textAlign = col.align;
                 }
 
+                // Set minimum width for boolean columns to accommodate ordering controls
+                if (col.type === 'boolean') {
+                    th.style.minWidth = '140px';
+                }
+
                 if (col.filterable) {
                     const inputId = `filter-${col.key}`;
-                    th.innerHTML = `<sl-input id="${inputId}" size="small" placeholder="${col.filterPlaceholder}" autocomplete="off" data-column-key="${col.key}"></sl-input>`;
+                    if (col.type === 'boolean') {
+                        // Use dropdown for boolean columns
+                        th.innerHTML = `
+                            <sl-dropdown style="width: 100%;">
+                                <sl-button slot="trigger" size="small" variant="default" id="${inputId}" data-column-key="${col.key}" style="width: 100%; justify-content: space-between;">
+                                    Všechny<sl-icon name="chevron-down" slot="suffix"></sl-icon>
+                                </sl-button>
+                                <sl-menu>
+                                    <sl-menu-item data-value="">Všechny</sl-menu-item>
+                                    <sl-menu-item data-value="true">Ano</sl-menu-item>
+                                    <sl-menu-item data-value="false">Ne</sl-menu-item>
+                                </sl-menu>
+                            </sl-dropdown>
+                        `;
+                    } else {
+                        // Use text input for other column types
+                        th.innerHTML = `<sl-input id="${inputId}" size="small" placeholder="${col.filterPlaceholder}" autocomplete="off" data-column-key="${col.key}" style="width: 100%;"></sl-input>`;
+                    }
                 }
                 filterRow.appendChild(th);
             });
 
             thead.appendChild(filterRow);
 
-            // Add event handlers for filter inputs
+            // Add event handlers for filter inputs and dropdowns
             const filterInputs = filterRow.querySelectorAll('sl-input[data-column-key]');
+            const filterDropdowns = filterRow.querySelectorAll('sl-dropdown sl-button[data-column-key]');
+
+            // Handle text inputs
             filterInputs.forEach(input => {
                 const columnKey = input.getAttribute('data-column-key');
 
@@ -1283,6 +1320,38 @@
                 // Restore filter value if it exists
                 if (columnFilters[columnKey]) {
                     input.value = columnFilters[columnKey];
+                }
+            });
+
+            // Handle dropdown filters
+            filterDropdowns.forEach(button => {
+                const columnKey = button.getAttribute('data-column-key');
+                const dropdown = button.closest('sl-dropdown');
+                const menu = dropdown.querySelector('sl-menu');
+
+                // Handle menu selection
+                menu.addEventListener('sl-select', (event) => {
+                    const selectedValue = event.detail.item.getAttribute('data-value');
+                    const selectedText = event.detail.item.textContent;
+
+                    // Update button text
+                    button.innerHTML = `${selectedText}<sl-icon name="chevron-down" slot="suffix"></sl-icon>`;
+
+                    // Apply filter
+                    setColumnFilter(columnKey, selectedValue);
+                });
+
+                // Restore filter value if it exists
+                if (columnFilters[columnKey]) {
+                    const currentValue = columnFilters[columnKey];
+                    const menuItem = menu.querySelector(`sl-menu-item[data-value="${currentValue}"]`);
+                    if (menuItem) {
+                        const selectedText = menuItem.textContent;
+                        button.innerHTML = `${selectedText}<sl-icon name="chevron-down" slot="suffix"></sl-icon>`;
+                    }
+                } else {
+                    // No filter applied, show default "Všechny"
+                    button.innerHTML = 'Všechny<sl-icon name="chevron-down" slot="suffix"></sl-icon>';
                 }
             });
 
@@ -1424,6 +1493,11 @@
                         // Apply text alignment
                         if (col.align) {
                             td.style.textAlign = col.align;
+                        }
+
+                        // Set minimum width for boolean columns to accommodate ordering controls
+                        if (col.type === 'boolean') {
+                            td.style.minWidth = '140px';
                         }
 
                         // Use Shoelace format components for special columns
