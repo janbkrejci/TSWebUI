@@ -403,11 +403,11 @@ th[data-column-key]:hover .column-ordering-controls {
 }
 
 /* No data found row */
-.no-data-row {
+.no-data-row td {
     text-align: center;
     color: var(--sl-color-neutral-500);
     font-style: italic;
-    padding: 2rem;
+    padding: 0.75em 1.25em; /* Same as normal td */
 }
 
 /* Column filter inputs */

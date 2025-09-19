@@ -1810,23 +1810,12 @@
                 const tr = document.createElement('tr');
                 tr.className = 'no-data-row';
 
-                // Add empty checkbox cell
-                const checkboxCell = document.createElement('td');
-                checkboxCell.innerHTML = '&nbsp;';
-                tr.appendChild(checkboxCell);
+                const td = document.createElement('td');
+                td.colSpan = visibleColumns.length + 2; // +2 for checkbox and menu columns
+                td.textContent = 'Nenalezeny žádné záznamy';
+                td.className = 'no-data-row';
 
-                // Add empty menu cell
-                const menuCell = document.createElement('td');
-                menuCell.innerHTML = '&nbsp;';
-                tr.appendChild(menuCell);
-
-                // Add empty data cells for each visible column
-                visibleColumns.forEach(col => {
-                    const td = document.createElement('td');
-                    td.innerHTML = '&nbsp;';
-                    tr.appendChild(td);
-                });
-
+                tr.appendChild(td);
                 tbody.appendChild(tr);
             } else {
                 // Add actual data rows (paginated)
