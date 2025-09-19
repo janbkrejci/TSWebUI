@@ -1146,11 +1146,8 @@
                     th.className = col.className;
                 }
 
-                // Apply text alignment
-                if (col.align) {
-                    th.style.textAlign = col.align;
-                }
-
+                th.style.textAlign = 'left';
+                
                 // Add data attribute for column identification
                 th.setAttribute('data-column-key', col.key);
 
