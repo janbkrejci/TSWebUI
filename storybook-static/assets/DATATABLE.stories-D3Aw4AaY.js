@@ -1,0 +1,2838 @@
+const r=`<div class="sl-theme-{{theme}} base-container main-container">
+    <script>
+        // Utility functions for page number input
+        let pageNumberClick = (event) => {
+            event.target.select();
+            event.preventDefault();
+        };
+
+        let pageNumberKeyDown = (event) => {
+            if (!/[0-9]/.test(event.key) && event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
+                event.preventDefault();
+            }
+            if (event.key === 'Enter') {
+                event.target.blur();
+            }
+        };
+
+        let pageNumberBlur = (event) => {
+            const value = parseInt(event.target.value);
+            const totalPages = getTotalPages();
+            if (isNaN(value) || value < 1) {
+                event.target.value = 1;
+            } else if (value > totalPages) {
+                event.target.value = totalPages;
+            } else if (value !== currentPage) {
+                goToPage(value);
+            }
+        };
+
+        // Pagination state
+        let currentPage = 1;
+        let itemsPerPage = 5;
+        const availablePageSizes = [5, 10, 20, 50, 100];
+
+        // Column filtering state
+        let columnFilters = {}; // Object to store active filters by column key
+        let filteredData = []; // Cached filtered data
+        let filterTimeout = null; // Timeout for debouncing
+        const FILTER_DEBOUNCE_DELAY = 500; // Half second debounce
+
+        // Row selection state
+        let selectedRowIds = new Set();
+        // Selection view mode for filtering by selection
+        // Possible values: 'all' | 'selected' | 'unselected'
+        let selectionViewMode = 'all';
+
+        // Table data - expanded dataset for pagination testing
+        const tableData = [
+            {
+                id: 1,
+                name: "Jana Nováková",
+                username: "jana_n",
+                email: "jana@example.com",
+                city: "Praha",
+                phone: "555-1234",
+                website: "www.jananovakova.com",
+                company: "Novák s.r.o.",
+                turnover: 125000.50,
+                contractDate: "2022-03-15",
+                approved: true
+            },
+            {
+                id: 2,
+                name: "Petr Svoboda",
+                username: "petr_s",
+                email: "petr@example.com",
+                city: "Brno",
+                phone: "555-5678",
+                website: "www.petrsvoboda.com",
+                company: "Svoboda a.s.",
+                turnover: 89000.75,
+                contractDate: "2019-07-22",
+                approved: false
+            },
+            {
+                id: 3,
+                name: "Marie Černá",
+                username: "marie_c",
+                email: "marie@example.com",
+                city: "Ostrava",
+                phone: "555-8765",
+                website: "www.mariecerna.com",
+                company: "Černá spol. s r.o.",
+                turnover: 234000.25,
+                contractDate: "2024-01-10",
+                approved: true
+            },
+            {
+                id: 4,
+                name: "Tomáš Dvořák",
+                username: "tomas_d",
+                email: "tomas@example.com",
+                city: "Plzeň",
+                phone: "555-4321",
+                website: "www.tomasdvorak.com",
+                company: "Dvořák s.r.o.",
+                turnover: 156000.00,
+                contractDate: "2020-05-08",
+                approved: true
+            },
+            {
+                id: 5,
+                name: "Eva Procházková",
+                username: "eva_p",
+                email: "eva@example.com",
+                city: "České Budějovice",
+                phone: "555-2468",
+                website: "www.evaprocha.com",
+                company: "Procházka a syn",
+                turnover: 78000.90,
+                contractDate: "2018-09-14",
+                approved: false
+            },
+            {
+                id: 6,
+                name: "Jiří Krejčí",
+                username: "jiri_k",
+                email: "jiri@example.com",
+                city: "Hradec Králové",
+                phone: "555-1357",
+                website: "www.jirikrejci.com",
+                company: "Krejčí Group s.r.o.",
+                turnover: 312000.45,
+                contractDate: "2021-02-28",
+                approved: true
+            },
+            {
+                id: 7,
+                name: "Alena Horáková",
+                username: "alena_h",
+                email: "alena@example.com",
+                city: "Pardubice",
+                phone: "555-9753",
+                website: "www.alenahorak.com",
+                company: "Horák s.r.o.",
+                turnover: 187000.30,
+                contractDate: "2025-11-03",
+                approved: false
+            },
+            {
+                id: 8,
+                name: "Pavel Němeček",
+                username: "pavel_n",
+                email: "pavel@example.com",
+                city: "Liberec",
+                phone: "555-8642",
+                website: "www.pavelnemecek.com",
+                company: "Němeček a partneři",
+                turnover: 95000.60,
+                contractDate: "2019-06-19",
+                approved: true
+            },
+            {
+                id: 9,
+                name: "Tereza Poláková",
+                username: "tereza_p",
+                email: "tereza@example.com",
+                city: "Olomouc",
+                phone: "555-7531",
+                website: "www.terezapolak.com",
+                company: "Polák Group s.r.o.",
+                turnover: 268000.80,
+                contractDate: "2023-04-12",
+                approved: true
+            },
+            {
+                id: 10,
+                name: "Martin Veselý",
+                username: "martin_v",
+                email: "martin@example.com",
+                city: "Zlín",
+                phone: "555-1597",
+                website: "www.martinvesely.com",
+                company: "Veselý a.s.",
+                turnover: 134000.15,
+                contractDate: "2020-08-27",
+                approved: false
+            },
+            {
+                id: 11,
+                name: "Kateřina Svobodová",
+                username: "katerina_s",
+                email: "katerina@example.com",
+                city: "Jihlava",
+                phone: "555-2001",
+                website: "www.katkasvoboda.com",
+                company: "Svoboda Industries s.r.o.",
+                turnover: 445000.00,
+                contractDate: "2024-12-01",
+                approved: true
+            },
+            {
+                id: 12,
+                name: "Lukáš Machala",
+                username: "lukas_m",
+                email: "lukas@example.com",
+                city: "Frýdek-Místek",
+                phone: "555-2002",
+                website: "www.lukasmachala.com",
+                company: "Machala Corp a.s.",
+                turnover: 178000.40,
+                contractDate: "2018-10-16",
+                approved: false
+            },
+            {
+                id: 13,
+                name: "Zuzana Bartošová",
+                username: "zuzana_b",
+                email: "zuzana@example.com",
+                city: "Karviná",
+                phone: "555-2003",
+                website: "www.zuzanabartosh.com",
+                company: "Bartoš LLC s.r.o.",
+                turnover: 223000.70,
+                contractDate: "2021-07-30",
+                approved: true
+            },
+            {
+                id: 14,
+                name: "Jakub Říha",
+                username: "jakub_r",
+                email: "jakub@example.com",
+                city: "Teplice",
+                phone: "555-2004",
+                website: "www.jakubriha.com",
+                company: "Říha Group s.r.o.",
+                turnover: 112000.25,
+                contractDate: "2019-03-22",
+                approved: true
+            },
+            {
+                id: 15,
+                name: "Veronika Horáčková",
+                username: "veronika_h",
+                email: "veronika@example.com",
+                city: "Děčín",
+                phone: "555-2005",
+                website: "www.veronikahoracek.com",
+                company: "Horáček Inc s.r.o.",
+                turnover: 289000.90,
+                contractDate: "2025-11-18",
+                approved: false
+            },
+            {
+                id: 16,
+                name: "Michaela Čechová",
+                username: "michaela_c",
+                email: "michaela@example.com",
+                city: "Prostějov",
+                phone: "555-2006",
+                website: "www.michaelacech.com",
+                company: "Čech Ltd s.r.o.",
+                turnover: 167000.35,
+                contractDate: "2022-09-05",
+                approved: true
+            },
+            {
+                id: 17,
+                name: "Radek Kolář",
+                username: "radek_k",
+                email: "radek@example.com",
+                city: "Přerov",
+                phone: "555-2007",
+                website: "www.radekkolar.com",
+                company: "Kolář Enterprises s.r.o.",
+                turnover: 356000.55,
+                contractDate: "2020-05-29",
+                approved: false
+            },
+            {
+                id: 18,
+                name: "Simona Kratochvílová",
+                username: "simona_k",
+                email: "simona@example.com",
+                city: "Vsetín",
+                phone: "555-2008",
+                website: "www.simonakratochvil.com",
+                company: "Kratochvíl Co s.r.o.",
+                turnover: 89000.20,
+                contractDate: "2024-12-07",
+                approved: true
+            },
+            {
+                id: 19,
+                name: "Ondřej Pešek",
+                username: "ondrej_p",
+                email: "ondrej@example.com",
+                city: "Uherské Hradiště",
+                phone: "555-2009",
+                website: "www.ondrejpesek.com",
+                company: "Pešek Group s.r.o.",
+                turnover: 245000.85,
+                contractDate: "2018-08-11",
+                approved: false
+            },
+            {
+                id: 20,
+                name: "Barbora Konečná",
+                username: "barbora_k",
+                email: "barbora@example.com",
+                city: "Kroměříž",
+                phone: "555-2010",
+                website: "www.barborakonecna.com",
+                company: "Konečný Inc a.s.",
+                turnover: 134000.60,
+                contractDate: "2021-06-03",
+                approved: true
+            },
+            {
+                id: 21,
+                name: "Filip Štěpánek",
+                username: "filip_s",
+                email: "filip@example.com",
+                city: "Třebíč",
+                phone: "555-2011",
+                website: "www.filipstepanek.com",
+                company: "Štěpánek Corp a.s.",
+                turnover: 201000.45,
+                contractDate: "2019-10-25",
+                approved: true
+            },
+            {
+                id: 22,
+                name: "Klára Doležalová",
+                username: "klara_d",
+                email: "klara@example.com",
+                city: "Znojmo",
+                phone: "555-2012",
+                website: "www.klaradolezal.com",
+                company: "Doležal LLC s.r.o.",
+                turnover: 178000.30,
+                contractDate: "2022-04-17",
+                approved: false
+            },
+            {
+                id: 23,
+                name: "Marek Blažek",
+                username: "marek_b",
+                email: "marek@example.com",
+                city: "Blansko",
+                phone: "555-2013",
+                website: "www.marekblazek.com",
+                company: "Blažek Group s.r.o.",
+                turnover: 267000.75,
+                contractDate: "2025-11-09",
+                approved: true
+            },
+            {
+                id: 24,
+                name: "Nikola Fialová",
+                username: "nikola_f",
+                email: "nikola@example.com",
+                city: "Hodonín",
+                phone: "555-2014",
+                website: "www.nikolafiala.com",
+                company: "Fiala Industries a.s.",
+                turnover: 312000.20,
+                contractDate: "2018-07-14",
+                approved: false
+            },
+            {
+                id: 25,
+                name: "Daniel Urban",
+                username: "daniel_u",
+                email: "daniel@example.com",
+                city: "Břeclav",
+                phone: "555-2015",
+                website: "www.danielurban.com",
+                company: "Urban Inc a.s.",
+                turnover: 145000.95,
+                contractDate: "2024-12-20",
+                approved: true
+            }
+        ];
+
+        // Row menu actions configuration
+        const menuActions = [
+            { actionName: 'edit', label: 'Edit' },
+            { actionName: 'duplicate', label: 'Duplicate' },
+            { actionName: 'delete', label: 'Delete' },
+            { actionName: 'view_details', label: 'View Details' },
+            { actionName: 'export', label: 'Export Row' }
+        ];
+
+        // Actions for Selection dropdown in toolbar
+        const selectionMenuItems = [
+            // singleOnly items appear only when exactly one row is selected
+            { name: 'edit', title: 'Edit record', singleOnly: true },
+            { name: 'duplicate', title: 'Duplicate record', singleOnly: true },
+            // multi-capable items appear for any selection count >= 1
+            { name: 'delete', title: 'Delete selected', singleOnly: false },
+            { name: 'export', title: 'Export selected', singleOnly: false }
+        ];
+
+        function selectionMenuItemSelected(item, selectedRows) {
+            console.log('Selection menu action:', item, 'on rows:', selectedRows);
+        }
+
+        // Function to handle row menu item selection
+        function rowMenuItemSelected(menuAction, rowData) {
+            console.log('Selected action:', menuAction, 'for row:', rowData);
+        }
+
+        // Column definitions for dynamic table creation
+        const columnDefinitions = [
+            {
+                key: 'id',
+                title: 'ID',
+                type: 'number',
+                sortable: false,
+                sortDirection: 'none',
+                className: 'id-column',
+                filterable: true,
+                filterPlaceholder: 'Filtr ID',
+                visible: false,
+                align: 'right',
+                order: 0
+            },
+            {
+                key: 'name',
+                title: 'Jméno',
+                type: 'text',
+                sortable: true,
+                sortDirection: 'asc',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr jména',
+                visible: true,
+                align: 'left',
+                order: 1
+            },
+            {
+                key: 'username',
+                title: 'Uživatelské jméno',
+                type: 'text',
+                sortable: true,
+                sortDirection: 'desc',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr uživatelského jména',
+                visible: false,
+                align: 'left',
+                order: 2
+            },
+            {
+                key: 'email',
+                title: 'E-mail',
+                type: 'text',
+                sortable: false,
+                sortDirection: 'none',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr e-mailu',
+                visible: false,
+                align: 'left',
+                order: 3
+            },
+            {
+                key: 'city',
+                title: 'Město',
+                type: 'text',
+                sortable: false,
+                sortDirection: 'none',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr města',
+                visible: false,
+                align: 'left',
+                order: 4
+            },
+            {
+                key: 'phone',
+                title: 'Telefon',
+                type: 'text',
+                sortable: false,
+                sortDirection: 'none',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr telefonu',
+                visible: false,
+                align: 'center',
+                order: 5
+            },
+            {
+                key: 'website',
+                title: 'Webové stránky',
+                type: 'text',
+                sortable: false,
+                sortDirection: 'none',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr webových stránek',
+                visible: false,
+                align: 'left',
+                order: 6
+            },
+            {
+                key: 'company',
+                title: 'Firma',
+                type: 'text',
+                sortable: false,
+                sortDirection: 'none',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr firmy',
+                visible: false,
+                align: 'left',
+                order: 7
+            },
+            {
+                key: 'turnover',
+                title: 'Obrat',
+                type: 'number',
+                sortable: true,
+                sortDirection: 'none',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr obratu',
+                visible: true,
+                align: 'right',
+                order: 8
+            },
+            {
+                key: 'contractDate',
+                title: 'Datum smlouvy',
+                type: 'date',
+                sortable: true,
+                sortDirection: 'none',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr data smlouvy',
+                visible: true,
+                align: 'right',
+                order: 9
+            },
+            {
+                key: 'approved',
+                title: 'Schváleno',
+                type: 'boolean',
+                sortable: true,
+                sortDirection: 'none',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr schválení',
+                visible: true,
+                align: 'center',
+                order: 10
+            }
+        ];
+
+        // Column visibility configuration
+        const preselectedColumns = ['name', 'email', 'turnover', 'contractDate', 'approved'];
+        const unhideableColumns = ['name', 'email'];
+        const unshowableColumns = ['id']; // These columns are hidden and cannot be shown in column selection menu
+
+        // Function to get visible columns based on column definitions, sorted by order
+        function getVisibleColumns() {
+            return columnDefinitions
+                .filter(col => col.visible)
+                .sort((a, b) => a.order - b.order);
+        }
+
+        // Function to move column left in order
+        function moveColumnLeft(columnKey) {
+            const currentCol = columnDefinitions.find(col => col.key === columnKey);
+            if (!currentCol) return;
+
+            // Find the visible column that is immediately to the left
+            const visibleColumns = getVisibleColumns();
+            const currentIndex = visibleColumns.findIndex(col => col.key === columnKey);
+
+            if (currentIndex > 0) {
+                const leftCol = visibleColumns[currentIndex - 1];
+                // Swap order values
+                const tempOrder = currentCol.order;
+                currentCol.order = leftCol.order;
+                leftCol.order = tempOrder;
+
+                // Refresh table and menu
+                populateTable();
+                createColumnsMenu();
+            }
+        }
+
+        // Function to move column right in order
+        function moveColumnRight(columnKey) {
+            const currentCol = columnDefinitions.find(col => col.key === columnKey);
+            if (!currentCol) return;
+
+            // Find the visible column that is immediately to the right
+            const visibleColumns = getVisibleColumns();
+            const currentIndex = visibleColumns.findIndex(col => col.key === columnKey);
+
+            if (currentIndex < visibleColumns.length - 1) {
+                const rightCol = visibleColumns[currentIndex + 1];
+                // Swap order values
+                const tempOrder = currentCol.order;
+                currentCol.order = rightCol.order;
+                rightCol.order = tempOrder;
+
+                // Refresh table and menu
+                populateTable();
+                createColumnsMenu();
+            }
+        }
+
+        // ---- Sorting helpers ----
+        function getActiveSortColumn() {
+            // Prefer first VISIBLE sortable column with active sort, ordered by 'order'
+            const visibleActive = columnDefinitions
+                .filter(c => c.visible && c.sortable && c.sortDirection && c.sortDirection !== 'none')
+                .sort((a, b) => a.order - b.order);
+            if (visibleActive.length > 0) return visibleActive[0];
+
+            // Fallback: any active sortable column
+            const anyActive = columnDefinitions.find(c => c.sortable && c.sortDirection && c.sortDirection !== 'none');
+            return anyActive || null;
+        }
+
+        function clearOtherSorts(exceptKey) {
+            columnDefinitions.forEach(c => {
+                if (c.key !== exceptKey) c.sortDirection = 'none';
+            });
+        }
+
+        // ---- Date Range Parsing Functions ----
+        
+        /**
+         * Parses date range filter input and returns start and end dates
+         * @param {string} input - The filter input string
+         * @returns {Array<Date|null>} - Array of [startDate, endDate] or [null, null] if unparseable
+         */
+        function parseDateRange(input) {
+            if (!input || typeof input !== 'string') {
+                return [null, null];
+            }
+
+            let trimmed = input.trim();
+            if (!trimmed) {
+                return [null, null];
+            }
+
+            // Normalize date separators: convert / and - to periods
+            trimmed = trimmed.replace(/[\\/\\-]/g, '.');
+
+            // Check for invalid input patterns
+            // 1. Input cannot start or end with a period (except for range notation "..")
+            if ((trimmed.startsWith('.') && !trimmed.startsWith('..')) || 
+                (trimmed.endsWith('.') && !trimmed.endsWith('..'))) {
+                return [new Date('2099-12-31'), new Date('1900-01-01')]; // Unsatisfyable range
+            }
+
+            // 2. Check for months or days with more than 2 digits
+            // Split by range notation first, then check each part
+            const rangeParts = trimmed.split('..');
+            for (let rangePart of rangeParts) {
+                if (rangePart) {
+                    const dateParts = rangePart.split('.');
+                    for (let i = 0; i < dateParts.length; i++) {
+                        const part = dateParts[i].trim();
+                        if (part && /^\\d+$/.test(part)) {
+                            // For 4-digit years, allow them (typically position 0 for yyyy format, or last position for dd.mm.yyyy)
+                            const isLikelyYear = part.length === 4;
+                            // For non-year parts (months/days), maximum 2 digits
+                            if (!isLikelyYear && part.length > 2) {
+                                return [new Date('2099-12-31'), new Date('1900-01-01')]; // Unsatisfyable range
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 2. More than two subsequent periods (e.g., "...", "....")
+            if (/\\.{3,}/.test(trimmed)) {
+                return [new Date('2099-12-31'), new Date('1900-01-01')]; // Unsatisfyable range
+            }
+            
+            // 3. More than one sequence of two periods (e.g., "2020..2021..2022")
+            const doublePeriodMatches = trimmed.match(/\\.\\./g);
+            if (doublePeriodMatches && doublePeriodMatches.length > 1) {
+                return [new Date('2099-12-31'), new Date('1900-01-01')]; // Unsatisfyable range
+            }
+
+            try {
+                // Handle range patterns with ".."
+                if (trimmed.includes('..')) {
+                    const parts = trimmed.split('..');
+                    
+                    // Handle patterns like "..yyyy" or "..dd.mm.yyyy" (before or at)
+                    if (parts[0] === '' && parts[1]) {
+                        const endDate = parseSingleDate(parts[1], 'end');
+                        return [null, endDate];
+                    }
+                    
+                    // Handle patterns like "yyyy.." or "dd.mm.yyyy.." (after or at)
+                    if (parts[1] === '' && parts[0]) {
+                        const startDate = parseSingleDate(parts[0], 'start');
+                        return [startDate, null];
+                    }
+                    
+                    // Handle patterns like "yyyy..yyyy" or "dd.mm.yyyy..dd.mm.yyyy" (between)
+                    if (parts[0] && parts[1]) {
+                        const startDate = parseSingleDate(parts[0], 'start');
+                        const endDate = parseSingleDate(parts[1], 'end');
+                        return [startDate, endDate];
+                    }
+                }
+
+                // Handle single date/period patterns
+                const singleDate = parseSingleDate(trimmed, 'both');
+                if (singleDate && singleDate.start && singleDate.end) {
+                    return [singleDate.start, singleDate.end];
+                }
+
+                return [null, null];
+            } catch (error) {
+                return [null, null];
+            }
+        }
+
+        /**
+         * Parses a single date specification
+         * @param {string} dateStr - Date string (yyyy, mm.yyyy, dd.mm.yyyy)
+         * @param {string} mode - 'start', 'end', or 'both'
+         * @returns {Date|Object} - Date for start/end modes, {start, end} for both mode
+         */
+        function parseSingleDate(dateStr, mode = 'both') {
+            const parts = dateStr.split('.');
+            
+            if (parts.length === 1) {
+                // Format: yyyy
+                const year = parseInt(parts[0]);
+                if (isNaN(year) || year < 1900 || year > 2100) return null;
+                
+                const startDate = new Date(year, 0, 1); // January 1st
+                const endDate = new Date(year, 11, 31, 23, 59, 59, 999); // December 31st
+                
+                if (mode === 'start') return startDate;
+                if (mode === 'end') return endDate;
+                return { start: startDate, end: endDate };
+            }
+            
+            if (parts.length === 2) {
+                // Format: mm.yyyy
+                const month = parseInt(parts[0]);
+                const year = parseInt(parts[1]);
+                
+                if (isNaN(month) || isNaN(year) || month < 1 || month > 12 || year < 1900 || year > 2100) {
+                    return null;
+                }
+                
+                const startDate = new Date(year, month - 1, 1); // First day of month
+                const endDate = new Date(year, month, 0, 23, 59, 59, 999); // Last day of month
+                
+                if (mode === 'start') return startDate;
+                if (mode === 'end') return endDate;
+                return { start: startDate, end: endDate };
+            }
+            
+            if (parts.length === 3) {
+                // Format: dd.mm.yyyy
+                const day = parseInt(parts[0]);
+                const month = parseInt(parts[1]);
+                const year = parseInt(parts[2]);
+                
+                if (isNaN(day) || isNaN(month) || isNaN(year) || 
+                    day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 || year > 2100) {
+                    return null;
+                }
+                
+                const startDate = new Date(year, month - 1, day); // Start of day
+                const endDate = new Date(year, month - 1, day, 23, 59, 59, 999); // End of day
+                
+                if (mode === 'start') return startDate;
+                if (mode === 'end') return endDate;
+                return { start: startDate, end: endDate };
+            }
+            
+            return null;
+        }
+
+        /**
+         * Checks if a date is within the specified range
+         * @param {Array<Date|null>} range - Array of [startDate, endDate]
+         * @param {Date|string} dateValue - The date to check
+         * @returns {boolean} - True if date is in range
+         */
+        function isInDateRange(range, dateValue) {
+            if (!range || range.length !== 2) return false;
+            
+            const [startDate, endDate] = range;
+            
+            // Convert dateValue to Date object if it's a string
+            let targetDate;
+            if (typeof dateValue === 'string') {
+                targetDate = new Date(dateValue);
+            } else if (dateValue instanceof Date) {
+                targetDate = dateValue;
+            } else {
+                return false;
+            }
+            
+            // Check if target date is valid
+            if (isNaN(targetDate.getTime())) return false;
+            
+            // Check range conditions
+            if (startDate && endDate) {
+                // Between start and end (inclusive)
+                return targetDate >= startDate && targetDate <= endDate;
+            } else if (startDate) {
+                // On or after start date
+                return targetDate >= startDate;
+            } else if (endDate) {
+                // On or before end date
+                return targetDate <= endDate;
+            }
+            
+            // No range specified
+            return false;
+        }
+
+        // ---- Number Range Parsing Functions ----
+        
+        /**
+         * Parses number range filter input and returns min and max values
+         * @param {string} input - The filter input string
+         * @returns {Array<number|null>} - Array of [minValue, maxValue] or [null, null] if unparseable
+         */
+        function parseNumberRange(input) {
+            if (!input || typeof input !== 'string') {
+                return [null, null];
+            }
+
+            const trimmed = input.trim();
+            if (!trimmed) {
+                return [null, null];
+            }
+
+            // Check for invalid period sequences
+            // 1. More than two subsequent periods (e.g., "...", "....")
+            if (/\\.{3,}/.test(trimmed)) {
+                return [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER]; // Unsatisfyable range
+            }
+            
+            // 2. More than one sequence of two periods (e.g., "100..200..300")
+            const doublePeriodMatches = trimmed.match(/\\.\\./g);
+            if (doublePeriodMatches && doublePeriodMatches.length > 1) {
+                return [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER]; // Unsatisfyable range
+            }
+
+            try {
+                // Handle range patterns with ".."
+                if (trimmed.includes('..')) {
+                    const parts = trimmed.split('..');
+                    
+                    // Handle patterns like "..1000" (less than or equal to)
+                    if (parts[0] === '' && parts[1]) {
+                        const maxValue = parseNumber(parts[1]);
+                        return [null, maxValue];
+                    }
+                    
+                    // Handle patterns like "1000.." (greater than or equal to)
+                    if (parts[1] === '' && parts[0]) {
+                        const minValue = parseNumber(parts[0]);
+                        return [minValue, null];
+                    }
+                    
+                    // Handle patterns like "1000..5000" (between)
+                    if (parts[0] && parts[1]) {
+                        const minValue = parseNumber(parts[0]);
+                        const maxValue = parseNumber(parts[1]);
+                        return [minValue, maxValue];
+                    }
+                }
+
+                // Handle single number - exact match or contains
+                const singleNumber = parseNumber(trimmed);
+                if (singleNumber !== null) {
+                    // For exact matching, we'll use a small epsilon for floating point comparison
+                    return [singleNumber, singleNumber];
+                }
+
+                return [null, null];
+            } catch (error) {
+                return [null, null];
+            }
+        }
+
+        /**
+         * Parses a number string with flexible formatting
+         * @param {string} numberStr - Number string with potential spaces and different decimal separators
+         * @returns {number|null} - Parsed number or null if invalid
+         */
+        function parseNumber(numberStr) {
+            if (!numberStr || typeof numberStr !== 'string') {
+                return null;
+            }
+
+            try {
+                // Remove all spaces
+                let cleaned = numberStr.replace(/\\s/g, '');
+                
+                // Handle empty string after cleaning
+                if (!cleaned) {
+                    return null;
+                }
+                
+                // Replace comma with dot for decimal separator
+                cleaned = cleaned.replace(',', '.');
+                
+                // Handle trailing decimal separator (e.g., "1000." should become "1000")
+                if (cleaned.endsWith('.')) {
+                    cleaned = cleaned.slice(0, -1);
+                }
+                
+                // Validate that we have a valid number format
+                // Allow optional minus sign, digits, optional decimal point and digits
+                if (!/^-?\\d+(\\.\\d+)?$/.test(cleaned)) {
+                    return null;
+                }
+                
+                const parsed = parseFloat(cleaned);
+                
+                // Check if parsing was successful
+                if (isNaN(parsed)) {
+                    return null;
+                }
+                
+                return parsed;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        /**
+         * Checks if a number is within the specified range
+         * @param {Array<number|null>} range - Array of [minValue, maxValue]
+         * @param {number|string} numberValue - The number to check
+         * @returns {boolean} - True if number is in range
+         */
+        function isInNumberRange(range, numberValue) {
+            if (!range || range.length !== 2) return false;
+            
+            const [minValue, maxValue] = range;
+            
+            // Convert numberValue to number if it's a string
+            let targetNumber;
+            if (typeof numberValue === 'string') {
+                targetNumber = parseNumber(numberValue);
+            } else if (typeof numberValue === 'number') {
+                targetNumber = numberValue;
+            } else {
+                return false;
+            }
+            
+            // Check if target number is valid
+            if (targetNumber === null || isNaN(targetNumber)) return false;
+            
+            // Check range conditions
+            if (minValue !== null && maxValue !== null) {
+                // Between min and max (inclusive)
+                if (minValue === maxValue) {
+                    // Exact match - use small epsilon for floating point comparison
+                    const epsilon = 1e-10;
+                    return Math.abs(targetNumber - minValue) < epsilon;
+                } else {
+                    return targetNumber >= minValue && targetNumber <= maxValue;
+                }
+            } else if (minValue !== null) {
+                // Greater than or equal to min
+                return targetNumber >= minValue;
+            } else if (maxValue !== null) {
+                // Less than or equal to max
+                return targetNumber <= maxValue;
+            }
+            
+            // No range specified
+            return false;
+        }
+
+        // ---- Text Pattern Matching Functions ----
+        
+        /**
+         * Checks if text matches a pattern with wildcard support
+         * @param {string} pattern - Pattern with * wildcards, ** for literal *, . prefix for start-of-string match
+         * @param {string} text - Text to match against
+         * @returns {boolean} - True if text matches the pattern
+         */
+        function matchTextPattern(pattern, text) {
+            if (!pattern || typeof pattern !== 'string') return true;
+            if (!text || typeof text !== 'string') return false;
+            
+            // Normalize to lowercase for Czech locale case-insensitive comparison
+            const normalizedPattern = pattern.toLowerCase();
+            const normalizedText = text.toLowerCase();
+            
+            // Handle start-of-string matching (pattern begins with .)
+            let isStartMatch = false;
+            let workingPattern = normalizedPattern;
+            
+            if (normalizedPattern.startsWith('.')) {
+                isStartMatch = true;
+                workingPattern = normalizedPattern.substring(1);
+            }
+            
+            // Convert pattern to regex
+            const regexPattern = convertPatternToRegex(workingPattern);
+            
+            if (isStartMatch) {
+                // Match must be at the beginning
+                return new RegExp('^' + regexPattern).test(normalizedText);
+            } else {
+                // Match can be anywhere
+                return new RegExp(regexPattern).test(normalizedText);
+            }
+        }
+        
+        /**
+         * Converts a wildcard pattern to a regex pattern
+         * @param {string} pattern - Pattern with * wildcards and ** for literal *
+         * @returns {string} - Regex pattern string
+         */
+        function convertPatternToRegex(pattern) {
+            // Escape special regex characters except * which we'll handle specially
+            let escaped = pattern.replace(/[.+?^\${}()|[\\]\\\\]/g, '\\\\$&');
+            
+            // Handle ** (literal asterisk) - replace with placeholder
+            escaped = escaped.replace(/\\*\\*/g, '###LITERAL_ASTERISK###');
+            
+            // Handle * (wildcard) - replace with .*
+            escaped = escaped.replace(/\\*/g, '.*');
+            
+            // Restore literal asterisks
+            escaped = escaped.replace(/###LITERAL_ASTERISK###/g, '\\\\*');
+            
+            return escaped;
+        }
+
+        function toggleSort(columnKey) {
+            const col = columnDefinitions.find(c => c.key === columnKey);
+            if (!col || !col.sortable) return;
+
+            // Cycle: none -> asc -> desc -> none
+            const next = col.sortDirection === 'none' || !col.sortDirection
+                ? 'asc'
+                : col.sortDirection === 'asc'
+                    ? 'desc'
+                    : 'none';
+
+            col.sortDirection = next;
+            // Single-column sort: clear others
+            clearOtherSorts(col.key);
+
+            // Keep current page but ensure rows + headers reflect sort
+            createTableHeaders();
+            populateTableRows();
+            updatePaginationUI();
+        }
+
+        function compareValues(aVal, bVal) {
+            const aNull = aVal === null || aVal === undefined;
+            const bNull = bVal === null || bVal === undefined;
+            if (aNull && bNull) return 0;
+            if (aNull) return 1; // nulls last
+            if (bNull) return -1;
+
+            if (typeof aVal === 'number' && typeof bVal === 'number') {
+                return aVal - bVal;
+            }
+
+            // String compare (case-insensitive, numeric aware)
+            return String(aVal).localeCompare(String(bVal), undefined, { numeric: true, sensitivity: 'base' });
+        }
+
+        function getSortedData(data) {
+            const activeCol = getActiveSortColumn();
+            if (!activeCol || activeCol.sortDirection === 'none') return data;
+
+            const key = activeCol.key;
+            const dir = activeCol.sortDirection;
+            const sorted = data.slice().sort((a, b) => {
+                const cmp = compareValues(a[key], b[key]);
+                return dir === 'asc' ? cmp : -cmp;
+            });
+            return sorted;
+        }
+
+        // Column filtering functions
+        function showLoadingOverlay() {
+            const overlay = document.getElementById('table-loading-overlay');
+            const table = document.getElementById('data-table');
+
+            if (overlay && table) {
+                const thead = table.querySelector('thead');
+
+                if (thead) {
+                    // Calculate the height of thead to position overlay correctly
+                    const theadHeight = thead.offsetHeight;
+                    overlay.style.top = theadHeight + 'px';
+                }
+
+                overlay.classList.remove('hidden');
+                overlay.classList.add('visible');
+            }
+        }
+
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('table-loading-overlay');
+            if (overlay) {
+                overlay.classList.remove('visible');
+                overlay.classList.add('hidden');
+            }
+            // Focus is automatically preserved since filter inputs are not regenerated
+        }
+
+        function applyFilters() {
+            // Show loading overlay
+            showLoadingOverlay();
+
+            // Filter data based on active column filters
+            filteredData = tableData.filter(row => {
+                return Object.keys(columnFilters).every(columnKey => {
+                    const filterValue = columnFilters[columnKey];
+                    if (!filterValue) return true; // Empty filter passes all
+
+                    const cellValue = row[columnKey];
+                    if (cellValue === null || cellValue === undefined) return false;
+
+                    // Get column definition for type-specific filtering
+                    const column = columnDefinitions.find(col => col.key === columnKey);
+                    
+                    // Handle date column filtering with smart date ranges
+                    if (column && column.type === 'date') {
+                        const dateRange = parseDateRange(filterValue);
+                        return isInDateRange(dateRange, cellValue);
+                    }
+
+                    // Handle number column filtering with smart number ranges
+                    if (column && column.type === 'number') {
+                        const numberRange = parseNumberRange(filterValue);
+                        return isInNumberRange(numberRange, cellValue);
+                    }
+
+                    // Handle text column filtering with pattern matching (wildcards, case-insensitive)
+                    return matchTextPattern(filterValue, cellValue.toString());
+                });
+            });
+
+            // Reset to first page when filters change
+            currentPage = 1;
+
+            // Update only table rows and pagination (no need to regenerate headers)
+            populateTableRows();
+            updatePaginationUI();
+
+            // Update column menu to refresh filter icons
+            createColumnsMenu();
+
+            // Hide loading overlay (focus is preserved since headers are not regenerated)
+            hideLoadingOverlay();
+        }
+
+        function setColumnFilter(columnKey, filterValue) {
+            // Clear existing timeout
+            if (filterTimeout) {
+                clearTimeout(filterTimeout);
+            }
+
+            // Update filter value
+            if (filterValue && filterValue.trim()) {
+                columnFilters[columnKey] = filterValue.trim();
+            } else {
+                delete columnFilters[columnKey];
+            }
+
+            // If clearing filter, apply immediately
+            if (!filterValue || !filterValue.trim()) {
+                applyFilters();
+                return;
+            }
+
+            // Show loading overlay immediately when user starts typing
+            showLoadingOverlay();
+
+            // Debounce the filtering
+            filterTimeout = setTimeout(() => {
+                applyFilters();
+            }, FILTER_DEBOUNCE_DELAY);
+        }
+
+        function clearAllFilters() {
+            columnFilters = {};
+            filteredData = [];
+
+            // Clear all filter inputs
+            const filterInputs = document.querySelectorAll('.filter-row sl-input');
+            filterInputs.forEach(input => {
+                input.value = '';
+            });
+
+            // Clear all filter dropdowns (boolean columns)
+            const filterDropdowns = document.querySelectorAll('.filter-row sl-dropdown sl-button[data-column-key]');
+            filterDropdowns.forEach(button => {
+                // Reset to default state (show "Všechny")
+                button.innerHTML = 'Všechny<sl-icon name="chevron-down" slot="suffix"></sl-icon>';
+            });
+
+            // Reset to first page and update table
+            currentPage = 1;
+            populateTableRows();
+            updatePaginationUI();
+
+            // Update column menu to refresh filter icons
+            createColumnsMenu();
+        }
+
+        // ---- Row selection helpers ----
+        function getHeaderCheckbox() {
+            return document.getElementById('header-select-all');
+        }
+
+        function updateHeaderCheckboxState() {
+            const headerCb = getHeaderCheckbox();
+            if (!headerCb) return;
+            const activeData = getActiveData();
+            const total = activeData.length;
+            if (total === 0) {
+                headerCb.checked = false;
+                headerCb.indeterminate = false;
+                return;
+            }
+            let selectedCount = 0;
+            for (const row of activeData) {
+                if (selectedRowIds.has(row.id)) selectedCount++;
+            }
+            if (selectedCount === 0) {
+                headerCb.checked = false;
+                headerCb.indeterminate = false;
+            } else if (selectedCount === total) {
+                headerCb.checked = true;
+                headerCb.indeterminate = false;
+            } else {
+                headerCb.checked = false;
+                headerCb.indeterminate = true;
+            }
+        }
+
+        function handleRowCheckboxChange(rowId, checked) {
+            if (checked) {
+                selectedRowIds.add(rowId);
+            } else {
+                selectedRowIds.delete(rowId);
+            }
+            updateHeaderCheckboxState();
+            // If we are in a filtered-by-selection mode, re-render rows so that the row disappears/appears immediately
+            if (selectionViewMode !== 'all') {
+                populateTableRows();
+                updatePaginationUI();
+            }
+            updateSelectionMenuUI();
+            updateSelectionViewToggleUI();
+        }
+
+        function selectAllActive() {
+            const activeData = getActiveData();
+            activeData.forEach(row => selectedRowIds.add(row.id));
+        }
+
+        function deselectAllActive() {
+            const activeData = getActiveData();
+            activeData.forEach(row => selectedRowIds.delete(row.id));
+        }
+
+        function clearAllSelectedRecords() {
+            selectedRowIds.clear();
+            populateTableRows();
+            updatePaginationUI();
+            // Reset selection view mode and UI when no rows are selected
+            selectionViewMode = 'all';
+            updateSelectionViewToggleUI();
+        }
+
+        function handleHeaderCheckboxChange(event) {
+            const checked = event.target.checked;
+            if (checked) {
+                selectAllActive();
+            } else {
+                deselectAllActive();
+            }
+            // Re-render current page checkboxes to reflect new state
+            populateTableRows();
+            updatePaginationUI();
+            updateSelectionMenuUI();
+        }
+
+        function getSelectedRows() {
+            return tableData.filter(r => selectedRowIds.has(r.id));
+        }
+
+        function updateSelectionMenuUI() {
+            const container = document.querySelector('.selection-menu-container');
+            const triggerBtn = document.getElementById('selection-dropdown-trigger');
+            const menuEl = document.querySelector('.selection-menu');
+            if (!container || !triggerBtn || !menuEl) return;
+
+            const selectedCount = selectedRowIds.size;
+            if (selectedCount > 0) {
+                container.classList.remove('selection-menu-container-hidden');
+                container.style.display = '';
+                triggerBtn.textContent = '';
+                triggerBtn.innerHTML = \`<sl-icon name="rocket-takeoff"></sl-icon> (\${selectedCount}) <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>\`;
+
+                // Build menu
+                menuEl.innerHTML = '';
+                const unselectItem = document.createElement('sl-menu-item');
+                unselectItem.setAttribute('data-action', 'unselect-all');
+                unselectItem.textContent = 'Unselect all records';
+                menuEl.appendChild(unselectItem);
+
+                const dividerTop = document.createElement('sl-divider');
+                menuEl.appendChild(dividerTop);
+
+                const exactlyOne = selectedCount === 1;
+                selectionMenuItems.forEach(item => {
+                    if (item.singleOnly && !exactlyOne) return;
+                    const mi = document.createElement('sl-menu-item');
+                    mi.setAttribute('data-name', item.name);
+                    mi.textContent = item.title;
+                    menuEl.appendChild(mi);
+                });
+            } else {
+                container.classList.add('selection-menu-container-hidden');
+                container.style.display = 'none';
+                triggerBtn.innerHTML = \`<sl-icon name="rocket-takeoff"></sl-icon> <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>\`;
+            }
+            // Keep the selection view toggle in sync
+            updateSelectionViewToggleUI();
+        }
+
+        // Pagination functions
+        function getActiveData() {
+            // Base data: filtered or all
+            const base = Object.keys(columnFilters).length > 0 ? filteredData : tableData;
+            // Apply selection view mode filter on top
+            if (selectionViewMode === 'selected') {
+                return base.filter(r => selectedRowIds.has(r.id));
+            }
+            if (selectionViewMode === 'unselected') {
+                return base.filter(r => !selectedRowIds.has(r.id));
+            }
+            return base;
+        }
+
+        function getTotalPages() {
+            const activeData = getActiveData();
+            return Math.ceil(activeData.length / itemsPerPage);
+        }
+
+        function getCurrentPageData() {
+            const activeData = getActiveData();
+            const sorted = getSortedData(activeData);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            return sorted.slice(startIndex, endIndex);
+        }
+
+        function updatePaginationUI() {
+            const totalPages = getTotalPages();
+
+            // Update page number input
+            const pageInput = document.getElementById('page-number');
+            if (pageInput) {
+                pageInput.value = currentPage;
+                pageInput.max = totalPages;
+            }
+
+            // Update page info
+            const pageInfo = document.getElementById('page-info');
+            if (pageInfo) {
+                pageInfo.querySelector('sl-input').nextSibling.textContent = \` / \${totalPages}\`;
+            }
+
+            // Update item count
+            const itemCount = document.getElementById('item-count');
+            if (itemCount) {
+                const activeData = getActiveData();
+                const startItem = activeData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
+                const endItem = Math.min(currentPage * itemsPerPage, activeData.length);
+                const totalItems = activeData.length;
+                const filterText = Object.keys(columnFilters).length > 0 ? \` (filtrováno z \${tableData.length})\` : '';
+                itemCount.textContent = \`Zobrazeno \${startItem}-\${endItem} z \${totalItems}\${filterText}\`;
+            }
+
+            // Update items per page dropdown
+            const itemsPerPageButton = document.querySelector('.items-per-page sl-button');
+            if (itemsPerPageButton) {
+                itemsPerPageButton.textContent = '';
+                itemsPerPageButton.innerHTML = \`\${itemsPerPage}<sl-icon name="chevron-down" class="chevron-icon"></sl-icon>\`;
+            }
+
+            // Update navigation buttons
+            const prevButtons = document.querySelectorAll('.pager sl-button-group:first-child sl-button');
+            const nextButtons = document.querySelectorAll('.pager sl-button-group:last-child sl-button');
+
+            // First page and previous page buttons
+            prevButtons.forEach(btn => {
+                btn.disabled = currentPage <= 1;
+            });
+
+            // Next page and last page buttons
+            nextButtons.forEach(btn => {
+                btn.disabled = currentPage >= totalPages;
+            });
+        }
+
+        function goToPage(page) {
+            const totalPages = getTotalPages();
+            if (page >= 1 && page <= totalPages && page !== currentPage) {
+                currentPage = page;
+                populateTableRows();
+                updatePaginationUI();
+            }
+        }
+
+        function changeItemsPerPage(newSize) {
+            // Prevent unnecessary rerendering if the same size is selected
+            if (itemsPerPage === newSize) {
+                return;
+            }
+
+            itemsPerPage = newSize;
+            currentPage = 1; // Reset to first page
+            populateTableRows();
+            updatePaginationUI();
+        }
+
+        // Function to select all columns (respecting unhideable and unshowable columns)
+        function selectAllColumns() {
+            // Update column definitions
+            columnDefinitions.forEach(col => {
+                if (!unshowableColumns.includes(col.key)) {
+                    col.visible = true;
+                }
+            });
+
+            // Recreate menu to reflect changes
+            createColumnsMenu();
+            populateTable();
+        }
+
+        // Function to clear all columns (respecting unhideable columns, unshowable columns stay hidden)
+        function clearAllColumns() {
+            // Update column definitions (keep unhideable columns visible, unshowable columns stay hidden)
+            columnDefinitions.forEach(col => {
+                if (unshowableColumns.includes(col.key)) {
+                    // Keep unshowable columns hidden
+                    col.visible = false;
+                } else if (!unhideableColumns.includes(col.key)) {
+                    col.visible = false;
+                }
+            });
+
+            // Recreate menu to reflect changes
+            createColumnsMenu();
+            populateTable();
+        }
+
+        // Track open dropdown for overlay management
+        let currentOpenDropdown = null;
+
+        // Initialize overlay event listener
+        function initializeDropdownOverlay() {
+            const overlay = document.getElementById('dropdown-overlay');
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    if (currentOpenDropdown) {
+                        currentOpenDropdown.hide();
+                    }
+                });
+            }
+        }
+
+        // Show overlay
+        function showDropdownOverlay() {
+            const overlay = document.getElementById('dropdown-overlay');
+            if (overlay) {
+                overlay.classList.remove('hidden');
+                overlay.classList.add('visible');
+            }
+        }
+
+        // Hide overlay
+        function hideDropdownOverlay() {
+            const overlay = document.getElementById('dropdown-overlay');
+            if (overlay) {
+                overlay.classList.remove('visible');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        // Handle row clicks
+        let rowClicked = (event) => {
+            // Don't fire row clicked if clicking on checkbox or dropdown elements
+            if (event.target.closest('sl-checkbox') || event.target.tagName === 'SL-CHECKBOX' ||
+                event.target.closest('sl-dropdown') || event.target.closest('.menu-column')) {
+                return;
+            }
+
+            let row = event.currentTarget;
+            const rowId = parseInt(row.getAttribute('data-row-id'));
+
+            // Find the corresponding full data entry from tableData array
+            const rowData = tableData.find(item => item.id === rowId);
+
+            if (rowData) {
+                console.log('Row clicked - Full table data entry:', rowData);
+            } else {
+                console.log('Row clicked but data not found for ID:', rowId);
+            }
+        };
+
+        // Function to create sort indicator SVG
+        function createSortIndicator(sortable = false, direction = 'none') {
+            if (!sortable) return '';
+
+            const upColor = direction === 'asc' ? 'var(--sl-color-neutral-500)' : 'var(--sl-color-neutral-300)';
+            const downColor = direction === 'desc' ? 'var(--sl-color-neutral-500)' : 'var(--sl-color-neutral-300)';
+
+            return \`
+                <span class="sort-indicator">
+                    <svg width="10" height="16" viewBox="0 0 10 16" class="sort-svg">
+                        <polygon points="5,3 1,7 9,7" fill="\${upColor}" />
+                        <polygon points="5,13 1,9 9,9" fill="\${downColor}" />
+                    </svg>
+                </span>
+            \`;
+        }
+
+        // Function to create table headers dynamically
+        function createTableHeaders() {
+            const table = document.getElementById('data-table');
+            if (!table) return false;
+
+            const thead = table.querySelector('thead');
+            if (!thead) return false;
+
+            // Clear existing headers
+            thead.innerHTML = '';
+
+            // Create main header row
+            const headerRow = document.createElement('tr');
+
+            // Add checkbox column with selection view toggle in header row (tri-state checkbox lives in filter row below)
+            const checkboxHeader = document.createElement('th');
+            checkboxHeader.className = 'checkbox-column';
+            checkboxHeader.innerHTML = \`
+                <div id="selection-view-toggle" class="selection-view-toggle invisible">
+                    <sl-tooltip content="">
+                        <div class="selection-view-toggle-btn-wrapper">
+                            <sl-icon-button id="selection-view-toggle-btn" name="funnel" size="small" title=""></sl-icon-button>
+                            <sl-icon id="selection-view-badge" class="selection-view-badge selection-view-badge-hidden" name="" ></sl-icon>
+                        </div>
+                    </sl-tooltip>
+                </div>
+            \`;
+            headerRow.appendChild(checkboxHeader);
+
+            // Add menu column
+            const menuHeader = document.createElement('th');
+            menuHeader.className = 'menu-column';
+            headerRow.appendChild(menuHeader);
+
+            // Get visible columns
+            const visibleColumns = getVisibleColumns();
+
+            // Add column headers from visible definitions
+            visibleColumns.forEach((col, index) => {
+                const th = document.createElement('th');
+                if (col.className) {
+                    th.className = col.className;
+                }
+
+                th.style.textAlign = 'left';
+                
+                // Set minimum width for boolean columns to accommodate ordering controls
+                if (col.type === 'boolean') {
+                    th.style.minWidth = '140px';
+                }
+                
+                // Add data attribute for column identification
+                th.setAttribute('data-column-key', col.key);
+
+                // Create header content with title and sort indicator
+                const headerContent = \`
+                    <span class="column-header-content">
+                        \${col.title}
+                        \${createSortIndicator(col.sortable, col.sortDirection)}
+                    </span>
+                    <span class="column-ordering-controls column-ordering-controls-hidden">
+                        \${index > 0 ? \`<sl-icon-button name="arrow-left" size="small" class="move-column-left" data-column-key="\${col.key}" title="Move left"></sl-icon-button>\` : ''}
+                        \${index < visibleColumns.length - 1 ? \`<sl-icon-button name="arrow-right" size="small" class="move-column-right" data-column-key="\${col.key}" title="Move right"></sl-icon-button>\` : ''}
+                    </span>
+                \`;
+
+                th.innerHTML = headerContent;
+
+                // Add mouse events for showing/hiding ordering controls
+                th.addEventListener('mouseenter', () => {
+                    const controls = th.querySelector('.column-ordering-controls');
+                    if (controls) {
+                        controls.style.display = 'inline-block';
+                    }
+                });
+
+                th.addEventListener('mouseleave', () => {
+                    const controls = th.querySelector('.column-ordering-controls');
+                    if (controls) {
+                        controls.style.display = 'none';
+                    }
+                });
+
+                headerRow.appendChild(th);
+            });
+
+            // Add event listeners for column ordering buttons and sorting on header click
+            headerRow.addEventListener('click', (event) => {
+                // Handle move column buttons first (clicks might land on nested elements)
+                const moveLeftBtn = event.target.closest('.move-column-left');
+                const moveRightBtn = event.target.closest('.move-column-right');
+                if (moveLeftBtn) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const columnKey = moveLeftBtn.getAttribute('data-column-key');
+                    moveColumnLeft(columnKey);
+                    return;
+                }
+                if (moveRightBtn) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const columnKey = moveRightBtn.getAttribute('data-column-key');
+                    moveColumnRight(columnKey);
+                    return;
+                }
+
+                // Otherwise, toggle sort if clicking on a sortable header cell
+                const th = event.target.closest('th');
+                if (!th) return;
+                const columnKey = th.getAttribute('data-column-key');
+                if (!columnKey) return;
+
+                const colDef = columnDefinitions.find(c => c.key === columnKey);
+                if (!colDef || !colDef.sortable) return;
+
+                toggleSort(columnKey);
+            });
+
+            thead.appendChild(headerRow);
+
+            // Create filter row
+            const filterRow = document.createElement('tr');
+            filterRow.className = 'filter-row';
+
+            // Add checkbox column for filter row
+            const checkboxFilter = document.createElement('th');
+            checkboxFilter.className = 'checkbox-column';
+            // Tri-state select-all checkbox belongs to the filter row
+            checkboxFilter.innerHTML = '<sl-checkbox id="header-select-all"></sl-checkbox>';
+            filterRow.appendChild(checkboxFilter);
+
+            // Add empty menu column for filter row
+            const menuFilter = document.createElement('th');
+            menuFilter.className = 'menu-column';
+            filterRow.appendChild(menuFilter);
+
+
+
+            // Add filter inputs for each visible column
+            visibleColumns.forEach((col, index) => {
+                const th = document.createElement('th');
+
+                // Apply text alignment to filter row
+                if (col.align) {
+                    th.style.textAlign = col.align;
+                }
+
+                // Set minimum width for boolean columns to accommodate ordering controls
+                if (col.type === 'boolean') {
+                    th.style.minWidth = '140px';
+                }
+
+                if (col.filterable) {
+                    const inputId = \`filter-\${col.key}\`;
+                    if (col.type === 'boolean') {
+                        // Use dropdown for boolean columns
+                        th.innerHTML = \`
+                            <sl-dropdown style="width: 100%;">
+                                <sl-button slot="trigger" size="small" variant="default" id="\${inputId}" data-column-key="\${col.key}" style="width: 100%; justify-content: space-between;">
+                                    Všechny<sl-icon name="chevron-down" slot="suffix"></sl-icon>
+                                </sl-button>
+                                <sl-menu>
+                                    <sl-menu-item data-value="">Všechny</sl-menu-item>
+                                    <sl-menu-item data-value="true">Ano</sl-menu-item>
+                                    <sl-menu-item data-value="false">Ne</sl-menu-item>
+                                </sl-menu>
+                            </sl-dropdown>
+                        \`;
+                    } else {
+                        // Use text input for other column types
+                        th.innerHTML = \`<sl-input id="\${inputId}" size="small" placeholder="\${col.filterPlaceholder}" autocomplete="off" data-column-key="\${col.key}" style="width: 100%;"></sl-input>\`;
+                    }
+                }
+                filterRow.appendChild(th);
+            });
+
+            thead.appendChild(filterRow);
+
+            // Add event handlers for filter inputs and dropdowns
+            const filterInputs = filterRow.querySelectorAll('sl-input[data-column-key]');
+            const filterDropdowns = filterRow.querySelectorAll('sl-dropdown sl-button[data-column-key]');
+
+            // Handle text inputs
+            filterInputs.forEach(input => {
+                const columnKey = input.getAttribute('data-column-key');
+
+                // Handle input events for filtering
+                input.addEventListener('input', (event) => {
+                    const filterValue = event.target.value;
+                    setColumnFilter(columnKey, filterValue);
+                });
+
+                // Handle focus to select all content
+                input.addEventListener('focus', (event) => {
+                    // Use setTimeout to ensure the focus event completes first
+                    setTimeout(() => {
+                        event.target.select();
+                    }, 0);
+                });
+
+                // Handle escape key to clear filter
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape') {
+                        event.target.value = '';
+                        setColumnFilter(columnKey, '');
+                    }
+                });
+
+                // Restore filter value if it exists
+                if (columnFilters[columnKey]) {
+                    input.value = columnFilters[columnKey];
+                }
+            });
+
+            // Handle dropdown filters
+            filterDropdowns.forEach(button => {
+                const columnKey = button.getAttribute('data-column-key');
+                const dropdown = button.closest('sl-dropdown');
+                const menu = dropdown.querySelector('sl-menu');
+
+                // Handle menu selection
+                menu.addEventListener('sl-select', (event) => {
+                    const selectedValue = event.detail.item.getAttribute('data-value');
+                    const selectedText = event.detail.item.textContent;
+
+                    // Update button text
+                    button.innerHTML = \`\${selectedText}<sl-icon name="chevron-down" slot="suffix"></sl-icon>\`;
+
+                    // Apply filter
+                    setColumnFilter(columnKey, selectedValue);
+                });
+
+                // Restore filter value if it exists
+                if (columnFilters[columnKey]) {
+                    const currentValue = columnFilters[columnKey];
+                    const menuItem = menu.querySelector(\`sl-menu-item[data-value="\${currentValue}"]\`);
+                    if (menuItem) {
+                        const selectedText = menuItem.textContent;
+                        button.innerHTML = \`\${selectedText}<sl-icon name="chevron-down" slot="suffix"></sl-icon>\`;
+                    }
+                } else {
+                    // No filter applied, show default "Všechny"
+                    button.innerHTML = 'Všechny<sl-icon name="chevron-down" slot="suffix"></sl-icon>';
+                }
+            });
+
+            // Wire header select-all checkbox
+            const headerSelect = document.getElementById('header-select-all');
+            if (headerSelect) {
+                headerSelect.addEventListener('sl-change', handleHeaderCheckboxChange);
+                // Initialize its tri-state state
+                updateHeaderCheckboxState();
+            }
+
+            // Wire selection view toggle button
+            const viewToggleBtn = document.getElementById('selection-view-toggle-btn');
+            if (viewToggleBtn) {
+                viewToggleBtn.addEventListener('click', () => {
+                    // Cycle modes only if at least one row is selected
+                    if (selectedRowIds.size === 0) return;
+                    selectionViewMode = selectionViewMode === 'all' ? 'selected' : selectionViewMode === 'selected' ? 'unselected' : 'all';
+                    currentPage = 1; // reset pagination when mode changes
+                    populateTableRows();
+                    updatePaginationUI();
+                    updateSelectionViewToggleUI();
+                });
+            }
+
+            // Initialize selection view toggle UI state
+            updateSelectionViewToggleUI();
+
+            return true;
+        }
+
+        // Function to populate only table rows (tbody) - used for filtering/pagination
+        function populateTableRows() {
+            const table = document.getElementById('data-table');
+            if (!table) {
+                return false;
+            }
+
+            const tbody = table.querySelector('tbody');
+            if (!tbody) {
+                return false;
+            }
+
+            // Clear existing rows
+            tbody.innerHTML = '';
+
+            // Get visible columns
+            const visibleColumns = getVisibleColumns();
+
+            // Get current page data for pagination
+            const currentPageData = getCurrentPageData();
+
+            // Check if there's no data to display
+            if (currentPageData.length === 0) {
+                const tr = document.createElement('tr');
+                tr.className = 'no-data-row';
+
+                const td = document.createElement('td');
+                td.colSpan = visibleColumns.length + 2; // +2 for checkbox and menu columns
+                td.textContent = 'Nenalezeny žádné záznamy';
+                td.className = 'no-data-row';
+
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+            } else {
+                // Add actual data rows (paginated)
+                currentPageData.forEach((row, index) => {
+                    const tr = document.createElement('tr');
+
+                    // Store the row ID as a data attribute for later retrieval
+                    tr.setAttribute('data-row-id', row.id);
+
+                    // Add checkbox cell
+                    const checkboxCell = document.createElement('td');
+                    checkboxCell.innerHTML = '<sl-checkbox class="row-select"></sl-checkbox>';
+                    const rowCheckbox = checkboxCell.querySelector('sl-checkbox');
+                    // Set checked state from selection set
+                    rowCheckbox.checked = selectedRowIds.has(row.id);
+                    rowCheckbox.addEventListener('sl-change', (e) => {
+                        handleRowCheckboxChange(row.id, e.target.checked);
+                        // Stop the row click from firing
+                        e.stopPropagation();
+                    });
+                    tr.appendChild(checkboxCell);
+
+                    // Add menu cell with dropdown
+                    const menuCell = document.createElement('td');
+                    menuCell.className = 'menu-column';
+
+                    const dropdownId = \`row-menu-\${row.id}\`;
+                    const menuItems = menuActions.map(action =>
+                        \`<sl-menu-item data-action="\${action.actionName}">\${action.label}</sl-menu-item>\`
+                    ).join('');
+
+                    menuCell.innerHTML = \`
+                    <sl-dropdown hoist id="\${dropdownId}">
+                        <sl-button slot="trigger" size="small" variant="text" circle>
+                            <sl-icon name="three-dots-vertical"></sl-icon>
+                        </sl-button>
+                        <sl-menu>
+                            \${menuItems}
+                        </sl-menu>
+                    </sl-dropdown>
+                \`;
+                    tr.appendChild(menuCell);
+
+                    // Add event listener for menu selection
+                    const dropdown = menuCell.querySelector('sl-dropdown');
+                    const menu = dropdown.querySelector('sl-menu');
+
+                    // Handle dropdown show/hide with overlay
+                    dropdown.addEventListener('sl-show', () => {
+                        // Close any other open dropdown first
+                        if (currentOpenDropdown && currentOpenDropdown !== dropdown) {
+                            currentOpenDropdown.hide();
+                        }
+
+                        currentOpenDropdown = dropdown;
+                        showDropdownOverlay();
+                    });
+
+                    dropdown.addEventListener('sl-hide', () => {
+                        currentOpenDropdown = null;
+                        hideDropdownOverlay();
+                    });
+
+                    menu.addEventListener('sl-select', (event) => {
+                        const actionName = event.detail.item.getAttribute('data-action');
+                        const action = menuActions.find(a => a.actionName === actionName);
+                        if (action) {
+                            rowMenuItemSelected(action, row);
+                        }
+                    });
+
+                    // Add data cells based on visible column definitions
+                    visibleColumns.forEach(col => {
+                        const td = document.createElement('td');
+
+                        // Apply text alignment
+                        if (col.align) {
+                            td.style.textAlign = col.align;
+                        }
+
+                        // Set minimum width for boolean columns to accommodate ordering controls
+                        if (col.type === 'boolean') {
+                            td.style.minWidth = '140px';
+                        }
+
+                        // Use Shoelace format components for special columns
+                        if (col.key === 'turnover') {
+                            td.innerHTML = \`<sl-format-number value="\${row[col.key]}" type="decimal" minimum-fraction-digits="2" maximum-fraction-digits="2"></sl-format-number>\`;
+                        } else if (col.key === 'contractDate') {
+                            td.innerHTML = \`<sl-format-date date="\${row[col.key]}"></sl-format-date>\`;
+                        } else if (col.key === 'approved') {
+                            const checkedAttr = row[col.key] ? 'checked' : '';
+                            td.innerHTML = \`<sl-switch \${checkedAttr} disabled></sl-switch>\`;
+                        } else {
+                            td.textContent = row[col.key];
+                        }
+
+                        tr.appendChild(td);
+                    });
+
+
+
+                    // Add row click handler
+                    tr.addEventListener('click', rowClicked);
+
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // After rows are rendered, update header tri-state and selection menu UI
+            updateHeaderCheckboxState();
+            updateSelectionMenuUI();
+            updateSelectionViewToggleUI();
+            return true;
+        }
+
+        // Full table population function - creates headers and rows
+        function populateTable() {
+            // Find table using specific ID
+            const table = document.getElementById('data-table');
+            if (!table) {
+                return false;
+            }
+
+            // Create headers dynamically
+            if (!createTableHeaders()) {
+                return false;
+            }
+
+            // Populate rows
+            if (!populateTableRows()) {
+                return false;
+            }
+
+            // Update pagination UI after populating table
+            updatePaginationUI();
+
+            return true;
+        }
+
+        // Function to clear the column search filter
+        function clearColumnFilter() {
+            const searchInput = document.querySelector('.columns-menu #column-search');
+            if (searchInput) {
+                searchInput.value = '';
+                filterColumnMenu('');
+            }
+        }
+
+        // Function to filter column menu items by hiding/showing
+        function filterColumnMenu(searchTerm) {
+            const columnsMenu = document.querySelector('.columns-menu');
+            if (!columnsMenu) {
+                return;
+            }
+
+            const menuItems = columnsMenu.querySelectorAll('sl-menu-item[role="menuitemcheckbox"]');
+            const lowerSearchTerm = searchTerm.toLowerCase();
+            menuItems.forEach(item => {
+                const columnTitle = item.textContent.toLowerCase();
+                if (columnTitle.includes(lowerSearchTerm)) {
+                    item.classList.remove('column-filter-hidden');
+                } else {
+                    item.classList.add('column-filter-hidden');
+                }
+            });
+        }
+
+        // Function to create columns menu dynamically
+        function createColumnsMenu() {
+            const columnsMenu = document.querySelector('.columns-menu');
+            if (!columnsMenu) return false;
+
+            // Clear existing menu items
+            columnsMenu.innerHTML = '';
+
+            // Add filter management section only if filters are active
+            const hasActiveFilters = Object.keys(columnFilters).length > 0;
+            if (hasActiveFilters) {
+                const clearFilters = document.createElement('sl-menu-item');
+                clearFilters.textContent = 'Vymazat všechny filtry';
+                clearFilters.setAttribute('data-action', 'clear-filters');
+                columnsMenu.appendChild(clearFilters);
+
+                const filterDivider = document.createElement('sl-divider');
+                columnsMenu.appendChild(filterDivider);
+            }
+
+            // Add standard column menu items
+            const selectAll = document.createElement('sl-menu-item');
+            selectAll.textContent = 'Vybrat vše';
+            selectAll.setAttribute('data-action', 'select-all');
+            columnsMenu.appendChild(selectAll);
+
+            const clearAll = document.createElement('sl-menu-item');
+            clearAll.textContent = 'Zrušit výběr';
+            clearAll.setAttribute('data-action', 'clear-all');
+            columnsMenu.appendChild(clearAll);
+
+            const divider = document.createElement('sl-divider');
+            columnsMenu.appendChild(divider);
+
+            const searchInput = document.createElement('sl-input');
+            searchInput.autofocus = true;
+            searchInput.placeholder = 'Hledat sloupce...';
+            searchInput.className = 'search-input';
+            searchInput.setAttribute('id', 'column-search');
+            searchInput.setAttribute('autocomplete', 'off');
+            columnsMenu.appendChild(searchInput);
+
+            // Add column items from definitions (excluding unshowable columns), sorted by order
+            const sortedColumns = columnDefinitions
+                .filter(col => !unshowableColumns.includes(col.key))
+                .sort((a, b) => a.order - b.order);
+
+            sortedColumns.forEach(col => {
+                const menuItem = document.createElement('sl-menu-item');
+                menuItem.type = 'checkbox';
+
+                // Create column text with filter icon if filtered
+                const hasFilter = columnFilters[col.key] && columnFilters[col.key].trim() !== '';
+                const filterIcon = hasFilter ? \`
+                    <svg width="12" height="12" viewBox="0 0 16 16" class="filter-icon">
+                        <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z"/>
+                    </svg>
+                \` : '';
+                menuItem.innerHTML = \`\${col.title}\${filterIcon}\`;
+
+                menuItem.setAttribute('data-column-key', col.key);
+                // Set checkbox state based on column visibility
+                menuItem.checked = col.visible;
+                // Mark unhideable columns as disabled
+                if (unhideableColumns.includes(col.key)) {
+                    menuItem.setAttribute('data-unhideable', 'true');
+                    menuItem.disabled = true;
+                }
+                columnsMenu.appendChild(menuItem);
+            });
+
+            // Add search functionality
+            const searchElement = columnsMenu.querySelector('#column-search');
+            if (searchElement) {
+                ['input', 'sl-input', 'keyup', 'change'].forEach(eventType => {
+                    searchElement.addEventListener(eventType, (event) => {
+                        const value = event.target.value || '';
+                        // Small delay to ensure DOM is ready
+                        setTimeout(() => filterColumnMenu(value), 10);
+                    });
+                });
+
+                // Add escape key handler for column search
+                searchElement.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape') {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        event.target.value = '';
+                        filterColumnMenu('');
+                    }
+                });
+            } else {
+                console.error('Search element not found!');
+            }
+
+            return true;
+        }
+
+        // Initialize table with retry logic
+        function initializeTable() {
+            // set preselected columns visibility in columns definitions
+            columnDefinitions.forEach(col => {
+                if (unshowableColumns.includes(col.key)) {
+                    // Unshowable columns are always hidden
+                    col.visible = false;
+                } else if (preselectedColumns.includes(col.key) || unhideableColumns.includes(col.key)) {
+                    col.visible = true;
+                } else {
+                    col.visible = false;
+                }
+            });
+
+            // Normalize sort state: ensure at most one active sort (prefer first visible one)
+            const activeSorts = columnDefinitions.filter(c => c.sortable && c.sortDirection && c.sortDirection !== 'none');
+            if (activeSorts.length > 1) {
+                // Keep the first visible by order, otherwise the first in list
+                const firstVisible = columnDefinitions
+                    .filter(c => c.visible && c.sortable && c.sortDirection && c.sortDirection !== 'none')
+                    .sort((a, b) => a.order - b.order)[0];
+                const keepKey = (firstVisible || activeSorts[0]).key;
+                clearOtherSorts(keepKey);
+            }
+
+            // Initialize filtered data
+            filteredData = tableData.slice(); // Start with all data
+
+            // Create columns menu
+            createColumnsMenu();
+
+            // Populate table
+            populateTable();
+
+            // Initialize selection menu listeners
+            const selectionMenu = document.querySelector('.selection-menu');
+            if (selectionMenu) {
+                selectionMenu.addEventListener('sl-select', (event) => {
+                    const action = event.detail.item?.getAttribute('data-action');
+                    if (action === 'unselect-all') {
+                        clearAllSelectedRecords();
+                        updateSelectionMenuUI();
+                        return;
+                    }
+                    const name = event.detail.item?.getAttribute('data-name');
+                    if (name) {
+                        const item = selectionMenuItems.find(it => it.name === name);
+                        if (item) {
+                            selectionMenuItemSelected(item, getSelectedRows());
+                        }
+                    }
+                });
+            }
+
+            // Add focus behavior when dropdown opens
+            const columnsMenuForFocus = document.querySelector('.columns-menu');
+            const columnsDropdown = columnsMenuForFocus ? columnsMenuForFocus.closest('sl-dropdown') : null;
+            if (columnsDropdown) {
+                columnsDropdown.addEventListener('sl-show', () => {
+                    // Small delay to ensure the dropdown content is rendered
+                    setTimeout(() => {
+                        const searchInput = document.querySelector('.columns-menu #column-search');
+                        if (searchInput) {
+                            searchInput.focus();
+                        }
+                    }, 50);
+                });
+            }
+
+            // Add listener to column menu sl-select event
+            const columnsMenu = document.querySelector('.columns-menu');
+            if (columnsMenu) {
+                columnsMenu.addEventListener('sl-select', (event) => {
+                    const selectedItem = event.detail.item;
+                    const action = selectedItem?.getAttribute('data-action');
+                    const columnKey = selectedItem?.getAttribute('data-column-key');
+
+                    // Clear the column filter whenever any menu item is selected
+                    clearColumnFilter();
+
+                    // Handle special actions
+                    if (action === 'clear-filters') {
+                        clearAllFilters();
+                        return;
+                    } else if (action === 'select-all') {
+                        selectAllColumns();
+                        return;
+                    } else if (action === 'clear-all') {
+                        clearAllColumns();
+                        return;
+                    }
+
+                    if (columnKey) {
+                        // Find the column definition
+                        const columnDef = columnDefinitions.find(col => col.key === columnKey);
+
+                        if (columnDef) {
+                            // Skip processing if item is disabled (unhideable columns)
+                            if (selectedItem.disabled) {
+                                event.preventDefault();
+                                return;
+                            }
+
+                            // Check if an unhideable column is being unselected (backup protection)
+                            if (selectedItem.hasAttribute('data-unhideable') && unhideableColumns.includes(columnKey)) {
+                                // Prevent unselecting unhideable columns
+                                if (!selectedItem.checked) {
+                                    selectedItem.checked = true;
+                                    columnDef.visible = true;
+                                    event.preventDefault();
+                                    return;
+                                }
+                            }
+
+                            // Update the column visibility in definition
+                            columnDef.visible = selectedItem.checked;
+                        }
+                    }
+
+                    populateTable();
+                });
+            }
+
+            // Add pagination event listeners
+            setupPaginationListeners();
+
+            // Initialize dropdown overlay
+            initializeDropdownOverlay();
+
+            // Add global keyboard shortcuts
+            document.addEventListener('keydown', (event) => {
+                // Ctrl+Shift+C to clear all filters
+                if (event.ctrlKey && event.shiftKey && event.key === 'C') {
+                    event.preventDefault();
+                    clearAllFilters();
+                }
+            });
+
+            // Wire Export to Excel button
+            const exportBtn = document.getElementById('export-excel-btn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', onExportClick);
+            }
+
+            // Wire Import from Excel button
+            const importBtn = document.getElementById('import-excel-btn');
+            const importInput = document.getElementById('import-file-input');
+            if (importBtn && importInput) {
+                importBtn.addEventListener('click', () => {
+                    importInput.value = '';
+                    importInput.click();
+                });
+                importInput.addEventListener('change', onImportFileSelected);
+            }
+        }
+
+        // --- Export helpers ---
+        function getExportableRows(option) {
+            // option: 'all' | 'filtered' | 'selected'
+            if (option === 'selected') {
+                const selected = tableData.filter(r => selectedRowIds.has(r.id));
+                return selected;
+            }
+            if (option === 'filtered') {
+                return getActiveData();
+            }
+            return tableData;
+        }
+
+        function getExportableColumns(option) {
+            // option: 'all' | 'visible'
+            if (option === 'visible') {
+                return getVisibleColumns();
+            }
+            // all columns except unshowable? For export we'll include all definitions that exist
+            return columnDefinitions.slice().sort((a, b) => a.order - b.order);
+        }
+
+        function buildExportDataset(rows, cols) {
+            const headers = cols.map(c => c.key);
+            const data = rows.map(r => cols.map(c => r[c.key]));
+            return { headers, data };
+        }
+
+        async function ensureSheetJS() {
+            if (window.XLSX) return window.XLSX;
+            await new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = 'https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js';
+                s.onload = resolve;
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+            return window.XLSX;
+        }
+
+        function formatExportFilename() {
+            const d = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            const y = d.getFullYear();
+            const m = pad(d.getMonth() + 1);
+            const day = pad(d.getDate());
+            return \`\${y}-\${m}-\${day} Export.xlsx\`;
+        }
+
+        async function performExport(rowsOption, colsOption) {
+            const rows = getExportableRows(rowsOption);
+            const cols = getExportableColumns(colsOption);
+            const { headers, data } = buildExportDataset(rows, cols);
+
+            const XLSX = await ensureSheetJS();
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Export');
+            XLSX.writeFile(wb, formatExportFilename());
+        }
+
+        function onExportClick() {
+            const anyFilter = Object.keys(columnFilters).length > 0;
+            const anySelected = selectedRowIds.size > 0;
+            const allVisible = getVisibleColumns().length === columnDefinitions.filter(c => !unshowableColumns.includes(c.key)).length;
+
+            // Decide if dialog is needed
+            const needRowsChoice = anyFilter || anySelected; // otherwise always all
+            const needColsChoice = !allVisible; // otherwise all columns visible == all
+
+            // If no choices needed, export immediately with defaults
+            if (!needRowsChoice && !needColsChoice) {
+                performExport('all', 'visible');
+                return;
+            }
+
+            // Build dialog options dynamically
+            const dlg = document.getElementById('export-dialog');
+            const rowsGroup = document.getElementById('export-rows-group');
+            const colsGroup = document.getElementById('export-columns-group');
+            const rowsSection = document.getElementById('export-rows-section');
+            const colsSection = document.getElementById('export-columns-section');
+            if (!dlg || !rowsGroup || !colsGroup || !rowsSection || !colsSection) return;
+
+            // Rows options
+            rowsGroup.value = '';
+            rowsGroup.innerHTML = '';
+            if (needRowsChoice) {
+                const addRadio = (value, label, disabled = false) => {
+                    const r = document.createElement('sl-radio');
+                    r.setAttribute('value', value);
+                    r.textContent = label;
+                    if (disabled) r.disabled = true;
+                    rowsGroup.appendChild(r);
+                };
+                addRadio('all', 'Všechny řádky', false);
+                addRadio('filtered', 'Podle filtrů', !anyFilter);
+                addRadio('selected', 'Jen vybrané', !anySelected);
+                rowsSection.style.display = '';
+            } else {
+                rowsSection.style.display = 'none';
+                // keep group empty; defaults will be applied on confirm
+                rowsGroup.innerHTML = '';
+            }
+
+            // Columns options
+            colsGroup.value = '';
+            colsGroup.innerHTML = '';
+            if (needColsChoice) {
+                const addRadio = (value, label) => {
+                    const r = document.createElement('sl-radio');
+                    r.setAttribute('value', value);
+                    r.textContent = label;
+                    colsGroup.appendChild(r);
+                };
+                addRadio('all', 'Všechny sloupce');
+                addRadio('visible', 'Jen viditelné sloupce');
+                colsSection.style.display = '';
+            } else {
+                colsSection.style.display = 'none';
+                // keep group empty; defaults will be applied on confirm
+                colsGroup.innerHTML = '';
+            }
+
+            // Hook up buttons
+            const cancelBtn = document.getElementById('export-cancel-btn');
+            const confirmBtn = document.getElementById('export-confirm-btn');
+            if (cancelBtn) cancelBtn.onclick = () => dlg.hide();
+            if (confirmBtn) confirmBtn.onclick = async () => {
+                // Defaults when nothing selected: rows -> all; columns -> visible
+                let rowsValue = rowsGroup.value || rowsGroup.querySelector('sl-radio[checked]')?.getAttribute('value');
+                let colsValue = colsGroup.value || colsGroup.querySelector('sl-radio[checked]')?.getAttribute('value');
+                if (!rowsValue) rowsValue = 'all';
+                if (!colsValue) colsValue = 'visible';
+                dlg.hide();
+                await performExport(rowsValue, colsValue);
+            };
+
+            dlg.show();
+        }
+
+        // --- Import helpers ---
+        function processImport(obj) {
+            console.log('processImport:', obj);
+        }
+
+        function formatRejectedFilename() {
+            const d = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            const y = d.getFullYear();
+            const m = pad(d.getMonth() + 1);
+            const day = pad(d.getDate());
+            return \`\${y}-\${m}-\${day} Zamítnuté řádky.xlsx\`;
+        }
+
+        async function onImportFileSelected(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            try {
+                const XLSX = await ensureSheetJS();
+                const data = await file.arrayBuffer();
+                const wb = XLSX.read(data, { type: 'array' });
+                const sheetName = wb.SheetNames[0];
+                const ws = wb.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+                // Validate columns: require all exportable columns to be present by header KEY
+                const headersInFile = Object.keys(json[0] || {});
+                const missing = [];
+                for (const col of columnDefinitions) {
+                    if (!headersInFile.includes(col.key)) missing.push(col.key);
+                }
+                if (missing.length > 0) {
+                    const errDlg = document.getElementById('import-error-dialog');
+                    const list = document.getElementById('import-missing-columns');
+                    if (list) list.textContent = 'Chybějící sloupce: ' + missing.join(', ');
+                    if (errDlg) {
+                        const closeBtn = document.getElementById('import-error-close-btn');
+                        if (closeBtn) closeBtn.onclick = () => errDlg.hide();
+                        errDlg.show();
+                    }
+                    return;
+                }
+
+                // Map rows: copy only known keys from columnDefinitions (includes hidden 'id')
+                const knownKeys = new Set(columnDefinitions.map(c => c.key));
+                const mapped = json.map((row, idx) => {
+                    const obj = {};
+                    for (const [key, val] of Object.entries(row)) {
+                        if (knownKeys.has(key)) obj[key] = val;
+                    }
+                    return { __index: idx + 2, data: obj }; // +2 for header + 1-index
+                });
+                console.log('Total rows in Excel:', json.length);
+                console.log('Mapped rows:', mapped.length);
+                console.log('First few mapped indices:', mapped.slice(0, 5).map(m => m.__index));
+                console.log('Last few mapped indices:', mapped.slice(-5).map(m => m.__index));
+
+                // Dummy categorization stats; call processImport for each
+                let added = 0, updated = 0, rejected = 0, skipped = 0;
+                const rejectedRows = [];
+                mapped.forEach(({ __index, data }) => {
+                    processImport(data);
+                    // Dummy decision: alternate status for preview
+                    const mod = __index % 4;
+                    console.log(\`Row \${__index}: mod = \${mod}, will be \${mod === 1 ? 'added' : mod === 2 ? 'updated' : mod === 3 ? 'rejected' : 'skipped'}\`);
+                    if (mod === 1) added++;
+                    else if (mod === 2) updated++;
+                    else if (mod === 3) { rejected++; rejectedRows.push(__index); }
+                    else skipped++;
+                });
+
+                // Show summary dialog
+                const sumDlg = document.getElementById('import-summary-dialog');
+                const sumText = document.getElementById('import-summary-text');
+                const rejSec = document.getElementById('import-rejected-section');
+                const rejList = document.getElementById('import-rejected-list');
+                const rejPrev = document.getElementById('import-rejected-preview');
+                
+                // Update summary text - handle Shoelace alert component
+                if (sumText) {
+                    sumText.textContent = \`\${added} řádků bylo přidáno, \${updated} bylo upraveno, \${rejected} bylo zamítnuto, \${skipped} bylo přeskočeno - žádná změna.\`;
+                } else {
+                    // Fallback: try to find the alert content
+                    const alert = sumDlg?.querySelector('sl-alert');
+                    if (alert) {
+                        const alertContent = alert.querySelector('#import-summary-text') || alert;
+                        if (alertContent) {
+                            alertContent.textContent = \`\${added} řádků bylo přidáno, \${updated} bylo upraveno, \${rejected} bylo zamítnuto, \${skipped} bylo přeskočeno - žádná změna.\`;
+                        }
+                    }
+                }
+                if (rejectedRows.length > 0) {
+                    console.log('Showing rejected rows section, count:', rejectedRows.length);
+                    console.log('Rejected rows indices:', rejectedRows);
+                    if (rejSec) {
+                        rejSec.classList.remove('nodisplay');
+                        rejSec.style.display = '';
+                        console.log('Rejected section should now be visible');
+                    }
+                    if (rejList) {
+                        rejList.textContent = 'Čísla řádků: ' + rejectedRows.join(', ');
+                        console.log('Rejected list text:', rejList.textContent);
+                    }
+                    // Dummy preview of all rejected rows
+                    const preview = mapped.filter(m => rejectedRows.includes(m.__index)).map(m => m.data);
+                    console.log('Preview will show', preview.length, 'rejected rows');
+                    if (rejPrev) rejPrev.textContent = JSON.stringify(preview, null, 2);
+                } else {
+                    console.log('No rejected rows, hiding section');
+                    if (rejSec) {
+                        rejSec.classList.add('nodisplay');
+                        rejSec.style.display = 'none';
+                    }
+                }
+                if (sumDlg) {
+                    const okBtn = document.getElementById('import-summary-close-btn');
+                    if (okBtn) okBtn.onclick = () => sumDlg.hide();
+                    const saveBtn = document.getElementById('import-rejected-save-btn');
+                    if (saveBtn) {
+                        if (rejectedRows.length === 0) {
+                            console.log('No rejected rows, hiding save button');
+                            saveBtn.classList.add('nodisplay');
+                            saveBtn.removeEventListener('click', saveBtn._saveHandler);
+                        } else {
+                            console.log('Rejected rows found, showing save button');
+                            saveBtn.classList.remove('nodisplay');
+                            const saveHandler = async () => {
+                                try {
+                                    console.log('Save button clicked, preparing to save rejected rows');
+                                    console.log('columnDefinitions available:', !!columnDefinitions);
+                                    console.log('columnDefinitions length:', columnDefinitions?.length);
+                                    console.log('rejectedRows:', rejectedRows);
+                                    console.log('mapped length:', mapped?.length);
+                                    const XLSX = await ensureSheetJS();
+                                    // Ensure ID is included first if present
+                                    const idCol = columnDefinitions.find(c => c.key === 'id');
+                                    const colsSet = new Set();
+                                    const cols = [];
+                                    if (idCol) { cols.push(idCol); colsSet.add('id'); }
+                                    columnDefinitions.forEach(c => { if (!colsSet.has(c.key)) { cols.push(c); colsSet.add(c.key); } });
+                                    const headers = cols.map(c => c.key);
+                                    const rejectedData = mapped.filter(m => rejectedRows.includes(m.__index)).map(m => m.data);
+                                    console.log('Creating Excel file with', rejectedData.length, 'rejected rows');
+                                    console.log('Expected rejected rows count:', rejectedRows.length);
+                                    console.log('Mapped rows that match rejected indices:', mapped.filter(m => rejectedRows.includes(m.__index)).length);
+                                    console.log('Headers:', headers);
+                                    console.log('Rejected data sample:', rejectedData.slice(0, 2));
+                                    const aoa = [headers, ...rejectedData.map(obj => cols.map(c => obj[c.key] ?? ''))];
+                                    const ws = XLSX.utils.aoa_to_sheet(aoa);
+                                    const wb = XLSX.utils.book_new();
+                                    XLSX.utils.book_append_sheet(wb, ws, 'Zamítnuté');
+                                    XLSX.writeFile(wb, formatRejectedFilename());
+                                    console.log('Rejected rows saved successfully');
+                                } catch (error) {
+                                    console.error('Error saving rejected rows:', error);
+                                    alert('Chyba při ukládání zamítnutých řádků: ' + error.message);
+                                }
+                            };
+                            saveBtn._saveHandler = saveHandler;
+                            saveBtn.addEventListener('click', saveHandler);
+                        }
+                    }
+                    sumDlg.show();
+                }
+            } catch (e) {
+                console.error('Import failed', e);
+                const errDlg = document.getElementById('import-error-dialog');
+                const list = document.getElementById('import-missing-columns');
+                if (list) list.textContent = 'Chyba při čtení souboru.';
+                if (errDlg) {
+                    const closeBtn = document.getElementById('import-error-close-btn');
+                    if (closeBtn) closeBtn.onclick = () => errDlg.hide();
+                    errDlg.show();
+                }
+            }
+        }
+
+        // Update selection view toggle (icon, tooltip, and visibility)
+        function updateSelectionViewToggleUI() {
+            const container = document.getElementById('selection-view-toggle');
+            const btn = document.getElementById('selection-view-toggle-btn');
+            const tooltip = container ? container.querySelector('sl-tooltip') : null;
+            const badge = document.getElementById('selection-view-badge');
+            if (!container || !btn) return;
+
+            const selectedCount = selectedRowIds.size;
+            if (selectedCount === 0) {
+                // Reset mode to all when nothing is selected and hide control
+                if (selectionViewMode !== 'all') {
+                    selectionViewMode = 'all';
+                    // Rows may need to be repopulated if we were previously filtered
+                    populateTableRows();
+                    updatePaginationUI();
+                }
+                container.classList.add('invisible');
+                if (badge) badge.classList.add('selection-view-badge-hidden');
+                return;
+            }
+
+            // Show control
+            container.classList.remove('invisible');
+
+            // Update tooltip/title based on current mode
+            let label = '';
+            if (selectionViewMode === 'all') {
+                label = 'Režim zobrazení: všechny řádky';
+                if (badge) badge.classList.add('selection-view-badge-hidden');
+            } else if (selectionViewMode === 'selected') {
+                label = 'Režim zobrazení: jen vybrané řádky';
+                if (badge) {
+                    badge.classList.remove('selection-view-badge-hidden');
+                    badge.name = 'check';
+                    badge.style.color = 'var(--sl-color-success-600)';
+                }
+            } else {
+                label = 'Režim zobrazení: jen nevybrané řádky';
+                if (badge) {
+                    badge.classList.remove('selection-view-badge-hidden');
+                    badge.name = 'x';
+                    badge.style.color = 'var(--sl-color-danger-600)';
+                }
+            }
+            btn.title = label;
+            if (tooltip) {
+                tooltip.setAttribute('content', label);
+            }
+        }
+
+        // Function to setup pagination event listeners
+        function setupPaginationListeners() {
+            // Items per page dropdown
+            const itemsPerPageMenu = document.querySelector('.items-per-page sl-menu');
+            if (itemsPerPageMenu) {
+                itemsPerPageMenu.addEventListener('sl-select', (event) => {
+                    const selectedValue = parseInt(event.detail.item.textContent);
+                    if (availablePageSizes.includes(selectedValue)) {
+                        changeItemsPerPage(selectedValue);
+                    }
+                });
+            }
+
+            // Page navigation buttons
+            const pagerButtons = document.querySelectorAll('.pager sl-button');
+            if (pagerButtons.length >= 4) {
+                // First page button (index 0)
+                pagerButtons[0].addEventListener('click', () => goToPage(1));
+
+                // Previous page button (index 1)
+                pagerButtons[1].addEventListener('click', () => goToPage(currentPage - 1));
+
+                // Next page button (index 2)
+                pagerButtons[2].addEventListener('click', () => goToPage(currentPage + 1));
+
+                // Last page button (index 3)
+                pagerButtons[3].addEventListener('click', () => goToPage(getTotalPages()));
+            }
+
+            // Page number input blur event (already has onblur in HTML, but let's enhance it)
+            const pageInput = document.getElementById('page-number');
+            if (pageInput) {
+                pageInput.addEventListener('blur', (event) => {
+                    const newPage = parseInt(event.target.value);
+                    const totalPages = getTotalPages();
+                    if (!isNaN(newPage) && newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
+                        goToPage(newPage);
+                    } else {
+                        // Reset to current page if invalid or unchanged
+                        event.target.value = currentPage;
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTable();
+        });
+    <\/script>
+    <div id="container">
+        <!-- DATATABLE -->
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div>
+                <sl-tooltip content="Nový záznam">
+                    <sl-button variant="primary" circle>
+                        <sl-icon name="plus-lg"></sl-icon>
+                    </sl-button>
+                </sl-tooltip>
+            </div>
+            <div class="toolbar-center">
+                <div class="selection-menu-container selection-menu-container-hidden">
+                    <sl-dropdown>
+                        <sl-button id="selection-dropdown-trigger" slot="trigger">
+                            <sl-icon name="rocket-takeoff"></sl-icon>
+                            <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>
+                        </sl-button>
+                        <sl-menu class="selection-menu">
+                            <!-- Will be populated dynamically in updateSelectionMenuUI() -->
+                        </sl-menu>
+                    </sl-dropdown>
+                </div>
+                <sl-tooltip content="Importovat z Excelu">
+                    <sl-button id="import-excel-btn" variant="danger">
+                        <sl-icon name="upload"></sl-icon>
+                    </sl-button>
+                </sl-tooltip>
+                <sl-tooltip content="Exportovat do Excelu">
+                    <sl-button id="export-excel-btn" variant="success">
+                        <sl-icon name="download"></sl-icon>
+                    </sl-button>
+                </sl-tooltip>
+            </div>
+            <div>
+                <sl-tooltip content="Výběr sloupců">
+                    <sl-dropdown>
+                        <sl-button slot="trigger" caret>
+                            <sl-icon name="gear"></sl-icon>
+                        </sl-button>
+                        <sl-menu class="columns-menu">
+                            <!-- Menu items will be created dynamically by createColumnsMenu() function -->
+                        </sl-menu>
+                    </sl-dropdown>
+                </sl-tooltip>
+            </div>
+        </div>
+        <!-- Export dialog -->
+        <sl-dialog id="export-dialog" label="Export to Excel">
+            <div class="export-options">
+                <div id="export-rows-section" class="export-section export-rows-section">
+                    <div class="export-section-title">Řádky</div>
+                    <sl-radio-group id="export-rows-group"></sl-radio-group>
+                </div>
+                <div id="export-columns-section" class="export-section">
+                    <div class="export-section-title">Sloupce</div>
+                    <sl-radio-group id="export-columns-group"></sl-radio-group>
+                </div>
+            </div>
+            <sl-button slot="footer" variant="default" id="export-cancel-btn">Zrušit</sl-button>
+            <sl-button slot="footer" variant="primary" id="export-confirm-btn">Exportovat</sl-button>
+        </sl-dialog>
+        <!-- Import error dialog -->
+        <sl-dialog id="import-error-dialog" label="Import z Excelu">
+            <sl-alert open variant="danger">
+                <sl-icon slot="icon" name="exclamation-octagon" class="large-icon"></sl-icon>
+                Struktura souboru neodpovídá. Import nebude proveden.
+                <div id="import-missing-columns" class="import-missing-columns"></div>
+            </sl-alert>
+            <sl-button slot="footer" variant="default" id="import-error-close-btn">Zavřít</sl-button>
+        </sl-dialog>
+        <!-- Import summary dialog -->
+        <sl-dialog id="import-summary-dialog" label="Import z Excelu">
+            <sl-alert open variant="primary">
+                <sl-icon slot="icon" name="info-circle" class="large-icon"></sl-icon>
+                <div id="import-summary-text">Souhrn importu</div>
+            </sl-alert>
+            <div id="import-rejected-section" class="nodisplay">
+                <div class="rejected-title">Zamítnuté řádky</div>
+                <div id="import-rejected-list" class="rejected-list"></div>
+                <div class="rejected-preview-title">Náhled zamítnutých (ukázka)</div>
+                <pre id="import-rejected-preview" class="rejected-preview"></pre>
+            </div>
+            <sl-button slot="footer" variant="default" id="import-rejected-save-btn">Uložit</sl-button>
+            <sl-button slot="footer" variant="primary" id="import-summary-close-btn">OK</sl-button>
+        </sl-dialog>
+        <div class="table-container">
+            <table id="data-table">
+                <thead>
+                    <!-- Headers will be created dynamically by createTableHeaders() function -->
+                </thead>
+                <tbody>
+                    <!-- Table rows will be populated dynamically by populateTable() function -->
+                </tbody>
+            </table>
+            <!-- Loading overlay for filtering positioned over table body area -->
+            <div id="table-loading-overlay" class="table-loading-overlay hidden">
+            </div>
+            <!-- Hidden file input for importing Excel -->
+            <input type="file" id="import-file-input" accept=".xlsx" class="import-file-input-hidden" />
+        </div>
+        <!-- FOOTER -->
+        <div class="footer">
+            <div id="item-count">Zobrazeno 1-5 z 25</div>
+            <div class="items-per-page">
+                Zobrazit
+                <sl-dropdown>
+                    <sl-button slot="trigger">
+                        5
+                        <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>
+                    </sl-button>
+
+                    <sl-menu>
+                        <sl-menu-item>5</sl-menu-item>
+                        <sl-menu-item>10</sl-menu-item>
+                        <sl-menu-item>20</sl-menu-item>
+                        <sl-menu-item>50</sl-menu-item>
+                        <sl-menu-item>100</sl-menu-item>
+                    </sl-menu>
+                </sl-dropdown>
+                na stránku
+            </div>
+            <!-- PAGER -->
+            <div class="pager">
+                <sl-button-group>
+                    <sl-button disabled>
+                        <sl-icon name="chevron-bar-left"></sl-icon>
+                    </sl-button>
+                    <sl-button disabled>
+                        <sl-icon name="chevron-left"></sl-icon>
+                    </sl-button>
+                </sl-button-group>
+                <div id="page-info" variant="none">
+                    Stránka
+                    <sl-input id="page-number" size="small" value="1" onclick="pageNumberClick(event)"
+                        onkeydown="pageNumberKeyDown(event)" onblur="pageNumberBlur(event)"></sl-input>
+                    / 5
+                </div>
+
+                <sl-button-group>
+                    <sl-button>
+                        <sl-icon name="chevron-right"></sl-icon>
+                    </sl-button>
+                    <sl-button>
+                        <sl-icon name="chevron-bar-right"></sl-icon>
+                    </sl-button>
+                </sl-button-group>
+            </div>
+        </div>
+        <!-- Dropdown overlay for modal behavior -->
+        <div id="dropdown-overlay" class="dropdown-overlay hidden"></div>
+    </div>
+</div>`,{fn:i}=__STORYBOOK_MODULE_TEST__,s={title:"TSWebUI/DATATABLE",tags:["autodocs"],render:({label:t,selectedColumns:o,...e})=>{const a=e.dark?"dark":"light",l=o||["Name","Username","Email"];return r.replace(/\{\{label\}\}/g,t).replace(/\{\{theme\}\}/g,a).replace(/\{\{selectedColumns\}\}/g,JSON.stringify(l)).replace(/\{\{args\}\}/g,JSON.stringify(e,null,2)).replace(/\{\{variant\}\}/g,e.variant?`variant="${e.variant}"`:"")},argTypes:{dark:{control:"boolean"}}},n={};n.parameters={...n.parameters,docs:{...n.parameters?.docs,source:{originalSource:"{}",...n.parameters?.docs?.source}}};const c=["DEFAULT"];export{n as DEFAULT,c as __namedExportsOrder,s as default};
