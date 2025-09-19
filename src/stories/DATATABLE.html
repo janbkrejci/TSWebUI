@@ -528,7 +528,7 @@
                 sortDirection: 'none',
                 className: '',
                 filterable: true,
-                filterPlaceholder: 'e.g. 2023, 12.2023, 01.12.2023, 2020..2023',
+                filterPlaceholder: 'e.g. 2023, 12/2023, 01-12-2023, 2020..2023',
                 visible: true,
                 align: 'right',
                 order: 9
@@ -635,9 +635,24 @@
                 return [null, null];
             }
 
-            const trimmed = input.trim();
+            let trimmed = input.trim();
             if (!trimmed) {
                 return [null, null];
+            }
+
+            // Normalize date separators: convert / and - to periods
+            trimmed = trimmed.replace(/[\/\-]/g, '.');
+
+            // Check for invalid period sequences
+            // 1. More than two subsequent periods (e.g., "...", "....")
+            if (/\.{3,}/.test(trimmed)) {
+                return [new Date('2099-12-31'), new Date('1900-01-01')]; // Unsatisfyable range
+            }
+            
+            // 2. More than one sequence of two periods (e.g., "2020..2021..2022")
+            const doublePeriodMatches = trimmed.match(/\.\./g);
+            if (doublePeriodMatches && doublePeriodMatches.length > 1) {
+                return [new Date('2099-12-31'), new Date('1900-01-01')]; // Unsatisfyable range
             }
 
             try {
@@ -793,6 +808,18 @@
             const trimmed = input.trim();
             if (!trimmed) {
                 return [null, null];
+            }
+
+            // Check for invalid period sequences
+            // 1. More than two subsequent periods (e.g., "...", "....")
+            if (/\.{3,}/.test(trimmed)) {
+                return [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER]; // Unsatisfyable range
+            }
+            
+            // 2. More than one sequence of two periods (e.g., "100..200..300")
+            const doublePeriodMatches = trimmed.match(/\.\./g);
+            if (doublePeriodMatches && doublePeriodMatches.length > 1) {
+                return [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER]; // Unsatisfyable range
             }
 
             try {
