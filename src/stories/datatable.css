@@ -125,16 +125,18 @@ th {
     min-width: 0;
 }
 
-/* Menu column (first column) */
+/* checkbox column (first column) */
 th:first-child,
 td:first-child {
     text-align: center;
+    padding: 0;
 }
 
-/* Checkbox column (second column) */
+/* menu column (second column) */
 th:nth-child(2),
 td:nth-child(2) {
     text-align: center;
+    padding: 0;
 }
 
 /* ID column will be third column when visible */
