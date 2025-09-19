@@ -1997,7 +1997,7 @@
             const hasActiveFilters = Object.keys(columnFilters).length > 0;
             if (hasActiveFilters) {
                 const clearFilters = document.createElement('sl-menu-item');
-                clearFilters.textContent = 'Clear All Filters';
+                clearFilters.textContent = 'Vymazat všechny filtry';
                 clearFilters.setAttribute('data-action', 'clear-filters');
                 columnsMenu.appendChild(clearFilters);
 
@@ -2007,12 +2007,12 @@
 
             // Add standard column menu items
             const selectAll = document.createElement('sl-menu-item');
-            selectAll.textContent = 'Select All';
+            selectAll.textContent = 'Vybrat vše';
             selectAll.setAttribute('data-action', 'select-all');
             columnsMenu.appendChild(selectAll);
 
             const clearAll = document.createElement('sl-menu-item');
-            clearAll.textContent = 'Clear All';
+            clearAll.textContent = 'Zrušit výběr';
             clearAll.setAttribute('data-action', 'clear-all');
             columnsMenu.appendChild(clearAll);
 
@@ -2021,7 +2021,7 @@
 
             const searchInput = document.createElement('sl-input');
             searchInput.autofocus = true;
-            searchInput.placeholder = 'Search columns...';
+            searchInput.placeholder = 'Hledat sloupce...';
             searchInput.className = 'search-input';
             searchInput.setAttribute('id', 'column-search');
             searchInput.setAttribute('autocomplete', 'off');
@@ -2693,16 +2693,16 @@
                 </sl-tooltip>
             </div>
             <div>
-
-                <sl-dropdown>
-                    <sl-button slot="trigger" caret>
-                        <sl-icon name="gear"></sl-icon>
-                    </sl-button>
-                    <sl-menu class="columns-menu">
-                        <!-- Menu items will be created dynamically by createColumnsMenu() function -->
-                    </sl-menu>
-                </sl-dropdown>
-
+                <sl-tooltip content="Výběr sloupců">
+                    <sl-dropdown>
+                        <sl-button slot="trigger" caret>
+                            <sl-icon name="gear"></sl-icon>
+                        </sl-button>
+                        <sl-menu class="columns-menu">
+                            <!-- Menu items will be created dynamically by createColumnsMenu() function -->
+                        </sl-menu>
+                    </sl-dropdown>
+                </sl-tooltip>
             </div>
         </div>
         <!-- Export dialog -->
