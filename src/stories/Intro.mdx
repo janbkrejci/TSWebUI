@@ -1,7 +1,77 @@
 import { Meta } from "@storybook/addon-docs/blocks";
 
-<Meta title="Welcome to TSWebUI" />
+<Meta title="TSGrid" />
 
-# Welcome to TSWebUI
+# TSGrid - prototyp
 
-This is a collection of components used in GtTS project.
+Javascript, CSS a HTML plus Shoelace z CDN.
+
+Žádný framework (React apod.), žádný bundler (Webpack).
+
+Veškerý kód je vidět přímo ve stránce.
+
+## Podporuje:
+
+* stránkování (zkuste napsat dole do inputu neexistující číslo stránky),
+* řazení podle jednoho sloupce (3 stavy - vzestupně, sestupně, neřadit),
+* schovávání a změnu pořadí sloupců,
+* řádkovou nabídku,
+* filtrování (inteligentní, viz dále)
+* formátování sloupců typu datum a číslo podle české lokalizace
+* výběr řádků a akční menu adaptivní pro jeden vybraný prvek i více vybraných prvků
+* export do Excelu a demo importu z Excelu (dopiš si svou logiku)
+* klikatelný každý řádek (např. pro přechod na detail)
+* dark/light mód
+
+## Filtrování:
+
+Pokud je vybrán (checkboxem) aspoň jeden řádek, lze filtrovat i podle stavu výběru řádků (tedy zobrazit jen vybrané, jen nevybrané).
+
+Při focusu vstupního pole pro zadání filtru se vybere celý obsah vstupního pole pro rychlé přepsání celé hodnoty.
+
+Escape vymaže vstupní pole.
+
+Filtr pro číselné sloupce:
+
+* ignoruje mezery, dovolí desetinnou čárku i tečku,
+* umožňuje použít range operátor ```..```
+    * ```..číslo``` zobrazí vše menší nebo rovné číslu
+    * ```číslo..``` zobrazí vše větší nebo rovné číslu
+    * ```číslo..číslo``` zobrazí vše v uzavřeném intervalu mezi čísly včetně
+
+Filtr pro sloupce typu Datum
+
+* ignoruje mezery
+* umožňuje jako oddělovač dnů, měsíců a roků použít tečku, lomítko nebo pomlčku
+* lze zadat:
+    ** ```rrrr```
+    ** ```mm.rrrr```
+    ** ```dd.mm.rrrr```
+    ** a použít operátor range jako u číselné
+
+Filtr pro textové sloupce
+
+* hvězdička jako zástupný znak pro libovolnou i prázdnou sekvenci znaků
+* dvě hvězdičky jako skutečná hvězdička v textu, pokud ji potřebujete hledat
+* tečka na začátku znamená hledej od začátku
+* hledá podřetězec, case insensitive včetně české diakritiky
+
+
+
+## Výběr řádků:
+
+Individuálně nebo hromadně - v záhlaví tabulky je tri-state checkbox, který vybere vše, odvybere vše.
+Respektuje při tom aktivní filtry.
+
+## Volba a řazení zobrazených sloupců:
+
+Toto by mělo být intuitivní, stačí vědět, že to jde, přijdete na to, jak se to dělá.
+
+Jen poznámka - pokud si nastavíte filtr u některého sloupce a pak ho schováte,
+nezoufejte, filtr lze vymazat v pravém horním seznamu fiditelných sloupců.
+
+# Licence
+
+UNLICENSED - dělejte si s tím co chcete, ale nic po mně nechtějte :-)
+
+

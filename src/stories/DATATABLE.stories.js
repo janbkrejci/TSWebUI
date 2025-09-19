@@ -36,16 +36,17 @@ export default {
 };
 
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
-export const DARK = {
-  args: {
-    dark: true,
-  },
-};
+// export const DARK = {
+//   args: {
+//     dark: true,
+//   },
+// };
 
-export const LIGHT = {
-  args: {
-    dark: false,
-  },
-};
+// export const LIGHT = {
+//   args: {
+//     dark: false,
+//   },
+// };
+export const DEFAULT = {};
 
 
