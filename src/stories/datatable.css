@@ -208,13 +208,13 @@ tbody tr {
 
 /* Table header styles */
 .menu-column {
-    width: 32px;
-    min-width: 32px;
-    max-width: 32px;
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
     text-align: center;
     padding: 0.5em 0.25em;
 }
-
+/* 
 .menu-column sl-dropdown {
     display: inline-block;
 }
@@ -228,7 +228,7 @@ tbody tr {
 
 .menu-column sl-button:hover {
     color: var(--sl-color-neutral-700);
-}
+} */
 
 .checkbox-column {
     width: 40px;
