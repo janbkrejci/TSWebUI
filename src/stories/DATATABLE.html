@@ -530,7 +530,7 @@
                 filterable: true,
                 filterPlaceholder: 'Filter Contract Date',
                 visible: true,
-                align: 'center',
+                align: 'right',
                 order: 9
             },
             {
@@ -1435,9 +1435,8 @@
                         } else if (col.key === 'contractDate') {
                             td.innerHTML = `<sl-format-date date="${row[col.key]}"></sl-format-date>`;
                         } else if (col.key === 'approved') {
-                            const iconName = row[col.key] ? 'check-circle-fill' : 'x-circle-fill';
-                            const iconColor = row[col.key] ? 'var(--sl-color-success-600)' : 'var(--sl-color-danger-600)';
-                            td.innerHTML = `<sl-icon name="${iconName}" style="color: ${iconColor}; font-size: 1.2em;"></sl-icon>`;
+                            const checkedAttr = row[col.key] ? 'checked' : '';
+                            td.innerHTML = `<sl-switch ${checkedAttr} disabled></sl-switch>`;
                         } else {
                             td.textContent = row[col.key];
                         }
