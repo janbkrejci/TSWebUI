@@ -643,13 +643,39 @@
             // Normalize date separators: convert / and - to periods
             trimmed = trimmed.replace(/[\/\-]/g, '.');
 
-            // Check for invalid period sequences
-            // 1. More than two subsequent periods (e.g., "...", "....")
+            // Check for invalid input patterns
+            // 1. Input cannot start or end with a period (except for range notation "..")
+            if ((trimmed.startsWith('.') && !trimmed.startsWith('..')) || 
+                (trimmed.endsWith('.') && !trimmed.endsWith('..'))) {
+                return [new Date('2099-12-31'), new Date('1900-01-01')]; // Unsatisfyable range
+            }
+
+            // 2. Check for months or days with more than 2 digits
+            // Split by range notation first, then check each part
+            const rangeParts = trimmed.split('..');
+            for (let rangePart of rangeParts) {
+                if (rangePart) {
+                    const dateParts = rangePart.split('.');
+                    for (let i = 0; i < dateParts.length; i++) {
+                        const part = dateParts[i].trim();
+                        if (part && /^\d+$/.test(part)) {
+                            // For 4-digit years, allow them (typically position 0 for yyyy format, or last position for dd.mm.yyyy)
+                            const isLikelyYear = part.length === 4;
+                            // For non-year parts (months/days), maximum 2 digits
+                            if (!isLikelyYear && part.length > 2) {
+                                return [new Date('2099-12-31'), new Date('1900-01-01')]; // Unsatisfyable range
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 2. More than two subsequent periods (e.g., "...", "....")
             if (/\.{3,}/.test(trimmed)) {
                 return [new Date('2099-12-31'), new Date('1900-01-01')]; // Unsatisfyable range
             }
             
-            // 2. More than one sequence of two periods (e.g., "2020..2021..2022")
+            // 3. More than one sequence of two periods (e.g., "2020..2021..2022")
             const doublePeriodMatches = trimmed.match(/\.\./g);
             if (doublePeriodMatches && doublePeriodMatches.length > 1) {
                 return [new Date('2099-12-31'), new Date('1900-01-01')]; // Unsatisfyable range
@@ -2663,7 +2689,7 @@
         <div class="toolbar">
             <div>
                 <sl-tooltip content="Nový záznam">
-                    <sl-button variant="primary">
+                    <sl-button variant="primary" circle>
                         <sl-icon name="plus-lg"></sl-icon>
                     </sl-button>
                 </sl-tooltip>
