@@ -411,7 +411,7 @@
                 sortDirection: 'none',
                 className: 'id-column',
                 filterable: true,
-                filterPlaceholder: 'Filter ID',
+                filterPlaceholder: 'e.g. 5, 1..10, 15.., ..20',
                 visible: false,
                 align: 'right',
                 order: 0
@@ -515,7 +515,7 @@
                 sortDirection: 'none',
                 className: '',
                 filterable: true,
-                filterPlaceholder: 'Filter Turnover',
+                filterPlaceholder: 'e.g. 100000, 50000..200000, 300000..',
                 visible: true,
                 align: 'right',
                 order: 8
@@ -778,6 +778,153 @@
             return false;
         }
 
+        // ---- Number Range Parsing Functions ----
+        
+        /**
+         * Parses number range filter input and returns min and max values
+         * @param {string} input - The filter input string
+         * @returns {Array<number|null>} - Array of [minValue, maxValue] or [null, null] if unparseable
+         */
+        function parseNumberRange(input) {
+            if (!input || typeof input !== 'string') {
+                return [null, null];
+            }
+
+            const trimmed = input.trim();
+            if (!trimmed) {
+                return [null, null];
+            }
+
+            try {
+                // Handle range patterns with ".."
+                if (trimmed.includes('..')) {
+                    const parts = trimmed.split('..');
+                    
+                    // Handle patterns like "..1000" (less than or equal to)
+                    if (parts[0] === '' && parts[1]) {
+                        const maxValue = parseNumber(parts[1]);
+                        return [null, maxValue];
+                    }
+                    
+                    // Handle patterns like "1000.." (greater than or equal to)
+                    if (parts[1] === '' && parts[0]) {
+                        const minValue = parseNumber(parts[0]);
+                        return [minValue, null];
+                    }
+                    
+                    // Handle patterns like "1000..5000" (between)
+                    if (parts[0] && parts[1]) {
+                        const minValue = parseNumber(parts[0]);
+                        const maxValue = parseNumber(parts[1]);
+                        return [minValue, maxValue];
+                    }
+                }
+
+                // Handle single number - exact match or contains
+                const singleNumber = parseNumber(trimmed);
+                if (singleNumber !== null) {
+                    // For exact matching, we'll use a small epsilon for floating point comparison
+                    return [singleNumber, singleNumber];
+                }
+
+                return [null, null];
+            } catch (error) {
+                return [null, null];
+            }
+        }
+
+        /**
+         * Parses a number string with flexible formatting
+         * @param {string} numberStr - Number string with potential spaces and different decimal separators
+         * @returns {number|null} - Parsed number or null if invalid
+         */
+        function parseNumber(numberStr) {
+            if (!numberStr || typeof numberStr !== 'string') {
+                return null;
+            }
+
+            try {
+                // Remove all spaces
+                let cleaned = numberStr.replace(/\s/g, '');
+                
+                // Handle empty string after cleaning
+                if (!cleaned) {
+                    return null;
+                }
+                
+                // Replace comma with dot for decimal separator
+                cleaned = cleaned.replace(',', '.');
+                
+                // Handle trailing decimal separator (e.g., "1000." should become "1000")
+                if (cleaned.endsWith('.')) {
+                    cleaned = cleaned.slice(0, -1);
+                }
+                
+                // Validate that we have a valid number format
+                // Allow optional minus sign, digits, optional decimal point and digits
+                if (!/^-?\d+(\.\d+)?$/.test(cleaned)) {
+                    return null;
+                }
+                
+                const parsed = parseFloat(cleaned);
+                
+                // Check if parsing was successful
+                if (isNaN(parsed)) {
+                    return null;
+                }
+                
+                return parsed;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        /**
+         * Checks if a number is within the specified range
+         * @param {Array<number|null>} range - Array of [minValue, maxValue]
+         * @param {number|string} numberValue - The number to check
+         * @returns {boolean} - True if number is in range
+         */
+        function isInNumberRange(range, numberValue) {
+            if (!range || range.length !== 2) return false;
+            
+            const [minValue, maxValue] = range;
+            
+            // Convert numberValue to number if it's a string
+            let targetNumber;
+            if (typeof numberValue === 'string') {
+                targetNumber = parseNumber(numberValue);
+            } else if (typeof numberValue === 'number') {
+                targetNumber = numberValue;
+            } else {
+                return false;
+            }
+            
+            // Check if target number is valid
+            if (targetNumber === null || isNaN(targetNumber)) return false;
+            
+            // Check range conditions
+            if (minValue !== null && maxValue !== null) {
+                // Between min and max (inclusive)
+                if (minValue === maxValue) {
+                    // Exact match - use small epsilon for floating point comparison
+                    const epsilon = 1e-10;
+                    return Math.abs(targetNumber - minValue) < epsilon;
+                } else {
+                    return targetNumber >= minValue && targetNumber <= maxValue;
+                }
+            } else if (minValue !== null) {
+                // Greater than or equal to min
+                return targetNumber >= minValue;
+            } else if (maxValue !== null) {
+                // Less than or equal to max
+                return targetNumber <= maxValue;
+            }
+            
+            // No range specified
+            return false;
+        }
+
         function toggleSort(columnKey) {
             const col = columnDefinitions.find(c => c.key === columnKey);
             if (!col || !col.sortable) return;
@@ -875,6 +1022,12 @@
                     if (column && column.type === 'date') {
                         const dateRange = parseDateRange(filterValue);
                         return isInDateRange(dateRange, cellValue);
+                    }
+
+                    // Handle number column filtering with smart number ranges
+                    if (column && column.type === 'number') {
+                        const numberRange = parseNumberRange(filterValue);
+                        return isInNumberRange(numberRange, cellValue);
                     }
 
                     // Simple substring search for other column types (case-insensitive)
