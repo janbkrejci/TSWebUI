@@ -382,14 +382,14 @@
             { actionName: 'export', label: 'Export Row' }
         ];
 
-        // Actions for Selection dropdown in toolbar
+        // Actions for Selection dropdown in toolbar (CZ)
         const selectionMenuItems = [
             // singleOnly items appear only when exactly one row is selected
-            { name: 'edit', title: 'Edit record', singleOnly: true },
-            { name: 'duplicate', title: 'Duplicate record', singleOnly: true },
+            { name: 'edit', title: 'Upravit záznam', singleOnly: true },
+            { name: 'duplicate', title: 'Duplikovat záznam', singleOnly: true },
             // multi-capable items appear for any selection count >= 1
-            { name: 'delete', title: 'Delete selected', singleOnly: false },
-            { name: 'export', title: 'Export selected', singleOnly: false }
+            { name: 'delete', title: 'Smazat vybrané', singleOnly: false },
+            { name: 'export', title: 'Exportovat vybrané', singleOnly: false }
         ];
 
         function selectionMenuItemSelected(item, selectedRows) {
@@ -1506,7 +1506,7 @@
                 menuEl.innerHTML = '';
                 const unselectItem = document.createElement('sl-menu-item');
                 unselectItem.setAttribute('data-action', 'unselect-all');
-                unselectItem.textContent = 'Unselect all records';
+                unselectItem.textContent = 'Zrušit výběr všech řádků';
                 menuEl.appendChild(unselectItem);
 
                 const dividerTop = document.createElement('sl-divider');
@@ -1921,7 +1921,7 @@
                         // Use dropdown for boolean columns
                         th.innerHTML = `
                             <div class="filter-cell-inner">
-                                <sl-dropdown style="width: 100%;">
+                                <sl-dropdown hoist placement="bottom" style="width: 100%;">
                                     <sl-button slot="trigger" size="small" variant="default" id="${inputId}" data-column-key="${col.key}" style="width: 100%; justify-content: space-between;">
                                         Všechny<sl-icon name="chevron-down" slot="suffix"></sl-icon>
                                     </sl-button>
@@ -2937,7 +2937,7 @@
             </div>
             <div class="toolbar-center">
                 <div class="selection-menu-container selection-menu-container-hidden">
-                    <sl-dropdown>
+                    <sl-dropdown hoist>
                         <sl-button id="selection-dropdown-trigger" slot="trigger">
                             <sl-icon name="rocket-takeoff"></sl-icon>
                             <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>
