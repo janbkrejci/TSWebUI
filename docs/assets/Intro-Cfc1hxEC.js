@@ -1,4 +1,4 @@
-import{j as e,M as r}from"./blocks-DVsZR4Zr.js";import{useMDXComponents as i}from"./index-DyLM6lwW.js";import"./preload-helper-D9Z9MdNV.js";import"./iframe-Cl67XbuG.js";function l(o){const n={code:"code",h1:"h1",h2:"h2",li:"li",p:"p",ul:"ul",...i(),...o.components};return e.jsxs(e.Fragment,{children:[e.jsx(r,{title:"TSGrid"}),`
+import{j as e,M as r}from"./blocks-DXX0jpgd.js";import{useMDXComponents as o}from"./index-DOftvH7S.js";import"./preload-helper-D9Z9MdNV.js";import"./iframe-CZnfhY1X.js";function i(l){const n={code:"code",h1:"h1",h2:"h2",li:"li",p:"p",ul:"ul",...o(),...l.components};return e.jsxs(e.Fragment,{children:[e.jsx(r,{title:"TSGrid"}),`
 `,e.jsx(n.h1,{id:"tsgrid---prototyp",children:"TSGrid - prototyp"}),`
 `,e.jsx(n.p,{children:"Javascript, CSS a HTML plus Shoelace z CDN."}),`
 `,e.jsx(n.p,{children:"Žádný framework (React apod.), žádný bundler (Webpack)."}),`
@@ -15,6 +15,7 @@ import{j as e,M as r}from"./blocks-DVsZR4Zr.js";import{useMDXComponents as i}fro
 `,e.jsx(n.li,{children:"export do Excelu a demo importu z Excelu (dopiš si svou logiku)"}),`
 `,e.jsx(n.li,{children:"klikatelný každý řádek (např. pro přechod na detail)"}),`
 `,e.jsx(n.li,{children:"dark/light mód"}),`
+`,e.jsx(n.li,{children:"změnu šířky sloupců"}),`
 `]}),`
 `,e.jsx(n.h2,{id:"filtrování",children:"Filtrování:"}),`
 `,e.jsx(n.p,{children:"Pokud je vybrán (checkboxem) aspoň jeden řádek, lze filtrovat i podle stavu výběru řádků (tedy zobrazit jen vybrané, jen nevybrané)."}),`
@@ -35,11 +36,14 @@ import{j as e,M as r}from"./blocks-DVsZR4Zr.js";import{useMDXComponents as i}fro
 `,e.jsxs(n.ul,{children:[`
 `,e.jsx(n.li,{children:"ignoruje mezery"}),`
 `,e.jsx(n.li,{children:"umožňuje jako oddělovač dnů, měsíců a roků použít tečku, lomítko nebo pomlčku"}),`
-`,e.jsxs(n.li,{children:[`lze zadat:
-** `,e.jsx(n.code,{children:"rrrr"}),`
-** `,e.jsx(n.code,{children:"mm.rrrr"}),`
-** `,e.jsx(n.code,{children:"dd.mm.rrrr"}),`
-** a použít operátor range jako u číselné`]}),`
+`,e.jsxs(n.li,{children:["lze zadat:",`
+`,e.jsxs(n.ul,{children:[`
+`,e.jsx(n.li,{children:e.jsx(n.code,{children:"rrrr"})}),`
+`,e.jsx(n.li,{children:e.jsx(n.code,{children:"mm.rrrr"})}),`
+`,e.jsx(n.li,{children:e.jsx(n.code,{children:"dd.mm.rrrr"})}),`
+`,e.jsx(n.li,{children:"a použít operátor range jako u číselného sloupce"}),`
+`]}),`
+`]}),`
 `]}),`
 `,e.jsx(n.p,{children:"Filtr pro textové sloupce"}),`
 `,e.jsxs(n.ul,{children:[`
@@ -56,4 +60,4 @@ Respektuje při tom aktivní filtry.`}),`
 `,e.jsx(n.p,{children:`Jen poznámka - pokud si nastavíte filtr u některého sloupce a pak ho schováte,
 nezoufejte, filtr lze vymazat v pravém horním seznamu fiditelných sloupců.`}),`
 `,e.jsx(n.h1,{id:"licence",children:"Licence"}),`
-`,e.jsx(n.p,{children:"UNLICENSED - dělejte si s tím co chcete, ale nic po mně nechtějte :-)"})]})}function a(o={}){const{wrapper:n}={...i(),...o.components};return n?e.jsx(n,{...o,children:e.jsx(l,{...o})}):l(o)}export{a as default};
+`,e.jsx(n.p,{children:"UNLICENSED - dělejte si s tím co chcete, ale nic po mně nechtějte :-)"})]})}function a(l={}){const{wrapper:n}={...o(),...l.components};return n?e.jsx(n,{...l,children:e.jsx(i,{...l})}):i(l)}export{a as default};
