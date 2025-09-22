@@ -1,4 +1,4 @@
-import{j as e,M as r}from"./blocks-CUOeAvBM.js";import{useMDXComponents as i}from"./index-B5MMSrBv.js";import"./preload-helper-D9Z9MdNV.js";import"./iframe-DJCz6Ic6.js";function l(o){const n={code:"code",h1:"h1",h2:"h2",li:"li",p:"p",ul:"ul",...i(),...o.components};return e.jsxs(e.Fragment,{children:[e.jsx(r,{title:"TSGrid"}),`
+import{j as e,M as r}from"./blocks-Dmzu1afu.js";import{useMDXComponents as i}from"./index-CTBz25FS.js";import"./preload-helper-D9Z9MdNV.js";import"./iframe-DzO-jFep.js";function l(o){const n={code:"code",h1:"h1",h2:"h2",li:"li",p:"p",ul:"ul",...i(),...o.components};return e.jsxs(e.Fragment,{children:[e.jsx(r,{title:"TSGrid"}),`
 `,e.jsx(n.h1,{id:"tsgrid---prototyp",children:"TSGrid - prototyp"}),`
 `,e.jsx(n.p,{children:"Javascript, CSS a HTML plus Shoelace z CDN."}),`
 `,e.jsx(n.p,{children:"Žádný framework (React apod.), žádný bundler (Webpack)."}),`

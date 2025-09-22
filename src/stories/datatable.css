@@ -264,7 +264,7 @@ tbody tr {
     vertical-align: middle;
     margin-left: 0.25em;
     position: relative;
-    top: -1px; /* nudge up to align with column ordering arrows */
+    top: -2px; /* nudge up to align with column ordering arrows */
 }
 
 .sort-svg {

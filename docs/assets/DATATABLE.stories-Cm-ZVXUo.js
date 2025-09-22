@@ -1057,6 +1057,198 @@ const r=`<div class="sl-theme-{{theme}} base-container main-container">
             updatePaginationUI();
         }
 
+        // ---- Column Resize Logic ----
+        let isResizing = false;
+        let resizeColKey = null;
+        let startX = 0;
+    let startWidth = 0;
+    let lastResizeEnd = 0;
+
+        function getColumnDefByKey(key) {
+            return columnDefinitions.find(c => c.key === key);
+        }
+
+        function onResizerDown(e) {
+            const handle = e.target.closest('.col-resizer');
+            if (!handle) return;
+            const key = handle.getAttribute('data-column-key');
+            if (!key) return;
+
+            const colDef = getColumnDefByKey(key);
+            if (!colDef) return;
+
+            // Compute current width of the corresponding col element or header cell
+            const table = document.getElementById('data-table');
+            const colEl = table?.querySelector(\`col[data-column-key="\${key}"]\`);
+            const th = handle.closest('th');
+            const currentWidth = (colEl?.offsetWidth || th?.offsetWidth || 150);
+
+            isResizing = true;
+            resizeColKey = key;
+            startX = (e.touches?.[0]?.clientX ?? e.clientX);
+            startWidth = currentWidth;
+
+            document.body.classList.add('col-resizing');
+            handle.classList.add('active');
+            document._activeColResizer = handle;
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function onResizerMove(e) {
+            if (!isResizing || !resizeColKey) return;
+            const clientX = (e.touches?.[0]?.clientX ?? e.clientX);
+            const dx = clientX - startX;
+            const minWidth = 60; // minimal practical width
+            const newWidth = Math.max(minWidth, Math.round(startWidth + dx));
+            const colDef = getColumnDefByKey(resizeColKey);
+            if (!colDef) return;
+            colDef.width = newWidth; // persist
+            rebuildColgroup();
+        }
+
+        function onResizerUp() {
+            if (!isResizing) return;
+            isResizing = false;
+            resizeColKey = null;
+            document.body.classList.remove('col-resizing');
+            if (document._activeColResizer) {
+                document._activeColResizer.classList.remove('active');
+                document._activeColResizer = null;
+            }
+            lastResizeEnd = performance.now();
+        }
+
+        function wireResizers(theadEl) {
+            const resizers = theadEl.querySelectorAll('.col-resizer');
+            resizers.forEach(h => {
+                // mouse
+                h.addEventListener('mousedown', onResizerDown, { passive: false });
+                // touch
+                h.addEventListener('touchstart', onResizerDown, { passive: false });
+                // double click -> auto-fit
+                h.addEventListener('dblclick', (e) => {
+                    const key = h.getAttribute('data-column-key');
+                    if (!key) return;
+                    autoFitColumnWidth(key);
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            });
+
+            // Global listeners (add once)
+            if (!document._colResizeWired) {
+                document.addEventListener('mousemove', onResizerMove, { passive: true });
+                document.addEventListener('mouseup', onResizerUp, { passive: true });
+                document.addEventListener('touchmove', onResizerMove, { passive: false });
+                document.addEventListener('touchend', onResizerUp, { passive: true });
+                document._colResizeWired = true;
+            }
+        }
+
+        // Header-wide hover sync: highlight arrows and both resizers when pointer is in any header row cell of a column
+        function setupTheadHover(theadEl) {
+            let lastKey = null;
+            const clear = () => {
+                // remove resizer hover classes
+                theadEl.querySelectorAll('.col-resizer.hover').forEach(el => el.classList.remove('hover'));
+                // remove header th column-hover
+                theadEl.querySelectorAll('th.column-hover').forEach(th => th.classList.remove('column-hover'));
+                lastKey = null;
+            };
+            const applyForKey = (key) => {
+                if (!key) return;
+                // mark header th (first header row) for this key
+                const headerTh = theadEl.querySelector(\`tr:not(.filter-row) th[data-column-key="\${key}"]\`);
+                if (headerTh) headerTh.classList.add('column-hover');
+                // highlight both resizers (header + filter row)
+                theadEl.querySelectorAll(\`.col-resizer[data-column-key="\${key}"]\`).forEach(el => el.classList.add('hover'));
+            };
+            theadEl.addEventListener('mousemove', (e) => {
+                // find th (either header row or filter row) with data-column-key
+                const th = e.target.closest('th[data-column-key]');
+                const withinThead = th && theadEl.contains(th);
+                if (!withinThead) { clear(); return; }
+                const key = th.getAttribute('data-column-key');
+                if (!key || key === lastKey) return;
+                clear();
+                lastKey = key;
+                applyForKey(key);
+            });
+            theadEl.addEventListener('mouseleave', clear);
+        }
+
+        // Auto-fit width by content (entire dataset + header)
+        function autoFitColumnWidth(columnKey) {
+            const table = document.getElementById('data-table');
+            if (!table) return;
+            const minWidth = 60;
+            const maxWidth = 600; // prevent extreme expansion
+
+            // Measure header content width
+            const th = table.querySelector(\`thead th[data-column-key="\${columnKey}"] .column-header-content\`);
+            let headerWidth = 0;
+            if (th) {
+                const tmp = th.cloneNode(true);
+                tmp.style.position = 'absolute';
+                tmp.style.visibility = 'hidden';
+                tmp.style.whiteSpace = 'nowrap';
+                document.body.appendChild(tmp);
+                headerWidth = Math.ceil(tmp.getBoundingClientRect().width) + 20; // include padding and sort icon
+                document.body.removeChild(tmp);
+            }
+
+            // Measure values from entire dataset for this column
+            const colIndex = getVisibleColumns().findIndex(c => c.key === columnKey);
+            if (colIndex < 0) return;
+            const visibleCols = getVisibleColumns();
+            const columnDef = visibleCols[colIndex];
+            const measureContainer = document.createElement('div');
+            measureContainer.style.position = 'absolute';
+            measureContainer.style.left = '-99999px';
+            measureContainer.style.top = '0';
+            measureContainer.style.visibility = 'hidden';
+            document.body.appendChild(measureContainer);
+
+            const sampleTd = table.querySelector('tbody td');
+            const sampleFont = sampleTd ? getComputedStyle(sampleTd).font : getComputedStyle(document.body).font;
+            let maxCell = 0;
+            const formatter = (val) => {
+                // approximate rendering for special columns
+                if (columnDef.key === 'turnover' && typeof val === 'number') {
+                    // emulate 2-decimal formatting
+                    return val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                }
+                if (columnDef.key === 'contractDate' && typeof val === 'string') {
+                    // format as short date
+                    try { return new Date(val).toLocaleDateString(); } catch { return val; }
+                }
+                if (columnDef.key === 'approved') {
+                    return val ? 'Zapnuto' : 'Vypnuto'; // switch proxy width
+                }
+                return (val ?? '').toString();
+            };
+            for (const row of tableData) {
+                const text = formatter(row[columnKey]);
+                const el = document.createElement('div');
+                el.style.whiteSpace = 'nowrap';
+                el.style.font = sampleFont;
+                el.textContent = text;
+                measureContainer.appendChild(el);
+                const w = Math.ceil(el.getBoundingClientRect().width) + 28; // padding + buffer
+                if (w > maxCell) maxCell = w;
+                measureContainer.removeChild(el);
+            }
+            document.body.removeChild(measureContainer);
+
+            const newWidth = Math.min(maxWidth, Math.max(minWidth, Math.max(headerWidth, maxCell)));
+            const colDef = getColumnDefByKey(columnKey);
+            if (colDef) {
+                colDef.width = newWidth;
+                rebuildColgroup();
+            }
+        }
+
         function compareValues(aVal, bVal) {
             const aNull = aVal === null || aVal === undefined;
             const bNull = bVal === null || bVal === undefined;
@@ -1536,6 +1728,35 @@ const r=`<div class="sl-theme-{{theme}} base-container main-container">
             \`;
         }
 
+        // Helper: rebuild <colgroup> widths based on visible columns + fixed leading columns
+        function rebuildColgroup() {
+            const table = document.getElementById('data-table');
+            if (!table) return;
+            let colgroup = table.querySelector('colgroup');
+            if (!colgroup) {
+                colgroup = document.createElement('colgroup');
+                table.insertBefore(colgroup, table.firstChild);
+            }
+            colgroup.innerHTML = '';
+            // Fixed columns: checkbox + menu
+            const colCheckbox = document.createElement('col');
+            colCheckbox.setAttribute('data-fixed', 'checkbox');
+            colCheckbox.style.width = '44px';
+            colgroup.appendChild(colCheckbox);
+            const colMenu = document.createElement('col');
+            colMenu.setAttribute('data-fixed', 'menu');
+            colMenu.style.width = '44px';
+            colgroup.appendChild(colMenu);
+
+            const visibleColumns = getVisibleColumns();
+            visibleColumns.forEach(col => {
+                const c = document.createElement('col');
+                c.setAttribute('data-column-key', col.key);
+                if (col.width) c.style.width = typeof col.width === 'number' ? \`\${col.width}px\` : String(col.width);
+                colgroup.appendChild(c);
+            });
+        }
+
         // Function to create table headers dynamically
         function createTableHeaders() {
             const table = document.getElementById('data-table');
@@ -1547,6 +1768,9 @@ const r=`<div class="sl-theme-{{theme}} base-container main-container">
             // Clear existing headers
             thead.innerHTML = '';
 
+            // Ensure colgroup reflects current visible columns
+            rebuildColgroup();
+
             // Create main header row
             const headerRow = document.createElement('tr');
 
@@ -1555,7 +1779,7 @@ const r=`<div class="sl-theme-{{theme}} base-container main-container">
             checkboxHeader.className = 'checkbox-column';
             checkboxHeader.innerHTML = \`
                 <div id="selection-view-toggle" class="selection-view-toggle invisible">
-                    <sl-tooltip content="">
+                    <sl-tooltip hoist content="">
                         <div class="selection-view-toggle-btn-wrapper">
                             <sl-icon-button id="selection-view-toggle-btn" name="funnel" size="small" title=""></sl-icon-button>
                             <sl-icon id="selection-view-badge" class="selection-view-badge selection-view-badge-hidden" name="" ></sl-icon>
@@ -1596,34 +1820,34 @@ const r=`<div class="sl-theme-{{theme}} base-container main-container">
                         \${col.title}
                         \${createSortIndicator(col.sortable, col.sortDirection)}
                     </span>
-                    <span class="column-ordering-controls column-ordering-controls-hidden">
+                    <span class="column-ordering-controls">
                         \${index > 0 ? \`<sl-icon-button name="arrow-left" size="small" class="move-column-left" data-column-key="\${col.key}" title="Move left"></sl-icon-button>\` : ''}
                         \${index < visibleColumns.length - 1 ? \`<sl-icon-button name="arrow-right" size="small" class="move-column-right" data-column-key="\${col.key}" title="Move right"></sl-icon-button>\` : ''}
                     </span>
                 \`;
 
-                th.innerHTML = headerContent;
+                th.innerHTML = headerContent + '<span class="col-resizer" data-column-key="' + col.key + '"></span>';
 
-                // Add mouse events for showing/hiding ordering controls
-                th.addEventListener('mouseenter', () => {
-                    const controls = th.querySelector('.column-ordering-controls');
-                    if (controls) {
-                        controls.style.display = 'inline-block';
-                    }
-                });
+                // ordering controls now always visible via CSS
 
-                th.addEventListener('mouseleave', () => {
-                    const controls = th.querySelector('.column-ordering-controls');
-                    if (controls) {
-                        controls.style.display = 'none';
-                    }
-                });
+                // per-column hover handled via delegated thead mousemove/mouseleave
 
                 headerRow.appendChild(th);
             });
 
             // Add event listeners for column ordering buttons and sorting on header click
             headerRow.addEventListener('click', (event) => {
+                // Ignore clicks during/after resizing
+                if (isResizing) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return;
+                }
+                if (lastResizeEnd && performance.now() - lastResizeEnd < 300) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return;
+                }
                 // Handle move column buttons first (clicks might land on nested elements)
                 const moveLeftBtn = event.target.closest('.move-column-left');
                 const moveRightBtn = event.target.closest('.move-column-right');
@@ -1677,6 +1901,7 @@ const r=`<div class="sl-theme-{{theme}} base-container main-container">
             // Add filter inputs for each visible column
             visibleColumns.forEach((col, index) => {
                 const th = document.createElement('th');
+                th.style.padding = '0 8px';
 
                 // Apply text alignment to filter row
                 if (col.align) {
@@ -1688,31 +1913,47 @@ const r=`<div class="sl-theme-{{theme}} base-container main-container">
                     th.style.minWidth = '140px';
                 }
 
+                // add column key for resizer targeting and add resizer handle
+                th.setAttribute('data-column-key', col.key);
                 if (col.filterable) {
                     const inputId = \`filter-\${col.key}\`;
                     if (col.type === 'boolean') {
                         // Use dropdown for boolean columns
                         th.innerHTML = \`
-                            <sl-dropdown style="width: 100%;">
-                                <sl-button slot="trigger" size="small" variant="default" id="\${inputId}" data-column-key="\${col.key}" style="width: 100%; justify-content: space-between;">
-                                    Všechny<sl-icon name="chevron-down" slot="suffix"></sl-icon>
-                                </sl-button>
-                                <sl-menu>
-                                    <sl-menu-item data-value="">Všechny</sl-menu-item>
-                                    <sl-menu-item data-value="true">Ano</sl-menu-item>
-                                    <sl-menu-item data-value="false">Ne</sl-menu-item>
-                                </sl-menu>
-                            </sl-dropdown>
+                            <div class="filter-cell-inner">
+                                <sl-dropdown style="width: 100%;">
+                                    <sl-button slot="trigger" size="small" variant="default" id="\${inputId}" data-column-key="\${col.key}" style="width: 100%; justify-content: space-between;">
+                                        Všechny<sl-icon name="chevron-down" slot="suffix"></sl-icon>
+                                    </sl-button>
+                                    <sl-menu>
+                                        <sl-menu-item data-value="">Všechny</sl-menu-item>
+                                        <sl-menu-item data-value="true">Ano</sl-menu-item>
+                                        <sl-menu-item data-value="false">Ne</sl-menu-item>
+                                    </sl-menu>
+                                </sl-dropdown>
+                            </div>
                         \`;
                     } else {
                         // Use text input for other column types
-                        th.innerHTML = \`<sl-input id="\${inputId}" size="small" placeholder="\${col.filterPlaceholder}" autocomplete="off" data-column-key="\${col.key}" style="width: 100%;"></sl-input>\`;
+                        th.innerHTML = \`
+                            <div class="filter-cell-inner">
+                                <sl-input id="\${inputId}" size="small" placeholder="\${col.filterPlaceholder}" autocomplete="off" data-column-key="\${col.key}" style="width: 100%;"></sl-input>
+                            </div>
+                        \`;
                     }
                 }
+                // add resizer to filter row, same as header
+                th.innerHTML += '<span class="col-resizer" data-column-key="' + col.key + '"></span>';
                 filterRow.appendChild(th);
             });
 
             thead.appendChild(filterRow);
+
+            // Wire resizer handles (both header and filter row)
+            wireResizers(thead);
+
+            // Delegated hover handling across entire thead (both header rows)
+            setupTheadHover(thead);
 
             // Add event handlers for filter inputs and dropdowns
             const filterInputs = filterRow.querySelectorAll('sl-input[data-column-key]');
