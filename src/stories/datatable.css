@@ -208,9 +208,9 @@ tbody tr {
 
 /* Table header styles */
 .menu-column {
-    width: 40px;
-    min-width: 40px;
-    max-width: 40px;
+    width: 44px;
+    min-width: 44px;
+    max-width: 44px;
     text-align: center;
     padding: 0.5em 0.25em;
 }
@@ -231,9 +231,9 @@ tbody tr {
 } */
 
 .checkbox-column {
-    width: 40px;
-    min-width: 40px;
-    max-width: 40px;
+    width: 44px;
+    min-width: 44px;
+    max-width: 44px;
     text-align: center;
     padding: 0.75em 0.5em;
 }
@@ -263,6 +263,8 @@ tbody tr {
     display: inline-block;
     vertical-align: middle;
     margin-left: 0.25em;
+    position: relative;
+    top: -1px; /* nudge up to align with column ordering arrows */
 }
 
 .sort-svg {
@@ -318,22 +320,27 @@ tbody tr {
 /* Column ordering controls */
 .column-header-content {
     display: inline-block;
-    /* No padding needed since arrows are positioned absolutely */
+    /* Reserve room for ordering arrows */
+    padding-right: 36px;
 }
 
 .column-ordering-controls {
-    display: none;
     position: absolute;
-    right: 0.5em;
     top: 50%;
+    right: 20px;
     transform: translateY(-50%);
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
-    white-space: nowrap;
+    display: inline-flex;
+    gap: 4px;
+    opacity: 0; /* hidden by default */
+    pointer-events: none;
+    transition: opacity 120ms ease;
+    z-index: 3;
 }
 
-.column-ordering-controls:hover {
+#data-table thead th:hover .column-ordering-controls,
+#data-table thead th.column-hover .column-ordering-controls {
     opacity: 1;
+    pointer-events: auto;
 }
 
 .column-ordering-controls sl-icon-button {
@@ -353,9 +360,7 @@ th[data-column-key] {
     overflow: visible;
 }
 
-th[data-column-key]:hover .column-ordering-controls {
-    display: inline-block !important;
-}
+/* visibility controlled via opacity */
 
 /* Dropdown overlay for modal behavior */
 .dropdown-overlay {
@@ -514,3 +519,65 @@ th[data-column-key]:hover .column-ordering-controls {
 }
 
 /* Styles for other HTML files */
+
+/* Column resize base styles (moved from DATATABLE.html) */
+#data-table {
+    table-layout: fixed;
+    width: max-content; /* allow table to grow; container will scroll */
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.table-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+#data-table thead th, #data-table tbody td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+#data-table thead th { position: relative; }
+.filter-row th { position: relative; }
+/* Make filter inputs expand with column width */
+.filter-row sl-input { width: 100% !important; max-width: none !important; display: block; }
+.filter-row sl-input::part(base) { width: 100%; }
+.filter-row sl-dropdown { width: 100%; display: block; }
+.filter-row sl-button[slot="trigger"] { width: 100%; }
+/* Ensure right gap to resizer equals (left padding + visual comfort) */
+.filter-row .filter-cell-inner { margin-right: 14px; }
+
+/* Resizer handle */
+.col-resizer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 14px; /* wider grip */
+    height: 100%;
+    cursor: col-resize;
+    user-select: none;
+    touch-action: none;
+    z-index: 2;
+}
+.col-resizer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 6px; /* adjust center line within wider grip (overridden for last column) */
+    width: 3px;
+    background: var(--sl-color-neutral-200);
+    opacity: 0.6;
+}
+/* For the last column in header and filter row, draw the resizer line at the very edge */
+#data-table thead th:last-child .col-resizer::after { right: 0; }
+.col-resizer:hover::after,
+.col-resizer.active::after,
+.col-resizer.hover::after,
+#data-table thead th:hover .col-resizer::after {
+    background: var(--sl-color-neutral-400);
+    opacity: 1;
+}
+
+/* Keep checkbox and menu columns narrow (match JS colgroup) */
+th.checkbox-column, td.checkbox-column { width: 44px; min-width: 44px; max-width: 44px; }
+th.menu-column, td.menu-column { width: 44px; min-width: 44px; max-width: 44px; }

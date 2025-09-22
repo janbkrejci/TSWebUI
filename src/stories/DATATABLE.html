@@ -1,90 +1,4 @@
 <div class="sl-theme-{{theme}} base-container main-container">
-    <style>
-        /* Column resize base styles */
-        #data-table {
-            table-layout: fixed;
-            width: max-content; /* allow table to grow; container will scroll */
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-        .table-container {
-            overflow-x: auto;
-            overflow-y: hidden;
-        }
-        #data-table thead th, #data-table tbody td {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        #data-table thead th {
-            position: relative;
-        }
-        .filter-row th { position: relative; }
-        /* Make filter inputs expand with column width */
-        .filter-row sl-input { width: 100% !important; max-width: none !important; display: block; }
-        .filter-row sl-input::part(base) { width: 100%; }
-        .filter-row sl-dropdown { width: 100%; display: block; }
-        .filter-row sl-button[slot="trigger"] { width: 100%; }
-    /* Ensure right gap to resizer equals (left padding + visual comfort) */
-    .filter-row .filter-cell-inner { margin-right: 14px; }
-        .filter-row th { position: relative; }
-        /* Column ordering controls always visible, top-right */
-        .column-ordering-controls {
-            position: absolute;
-            top: 50%;
-            right: 20px; /* move arrows further left */
-            transform: translateY(-50%);
-            display: inline-flex;
-            gap: 4px;
-            opacity: 0; /* hidden by default */
-            pointer-events: none;
-            transition: opacity 120ms ease;
-            z-index: 3;
-        }
-        #data-table thead th:hover .column-ordering-controls,
-        #data-table thead th.column-hover .column-ordering-controls {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        /* Header content with right padding so it doesn't collide with controls */
-        .column-header-content {
-            display: inline-block;
-            padding-right: 36px; /* keep room for arrows */
-        }
-        .col-resizer {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 14px; /* wider grip */
-            height: 100%;
-            cursor: col-resize;
-            user-select: none;
-            touch-action: none;
-            z-index: 2;
-        }
-        .col-resizer::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            right: 6px; /* adjust center line within wider grip (overridden for last column) */
-            width: 3px;
-            background: var(--sl-color-neutral-200);
-            opacity: 0.6;
-        }
-        /* For the last column in header and filter row, draw the resizer line at the very edge */
-        #data-table thead th:last-child .col-resizer::after { right: 0; }
-        .col-resizer:hover::after,
-        .col-resizer.active::after,
-        .col-resizer.hover::after,
-        #data-table thead th:hover .col-resizer::after {
-            background: var(--sl-color-neutral-400);
-            opacity: 1;
-        }
-        /* Keep checkbox and menu columns narrow */
-        th.checkbox-column, td.checkbox-column { width: 44px; min-width: 44px; max-width: 44px; }
-        th.menu-column, td.menu-column { width: 44px; min-width: 44px; max-width: 44px; }
-    </style>
     <script>
         // Utility functions for page number input
         let pageNumberClick = (event) => {
@@ -1865,7 +1779,7 @@
             checkboxHeader.className = 'checkbox-column';
             checkboxHeader.innerHTML = `
                 <div id="selection-view-toggle" class="selection-view-toggle invisible">
-                    <sl-tooltip content="">
+                    <sl-tooltip hoist content="">
                         <div class="selection-view-toggle-btn-wrapper">
                             <sl-icon-button id="selection-view-toggle-btn" name="funnel" size="small" title=""></sl-icon-button>
                             <sl-icon id="selection-view-badge" class="selection-view-badge selection-view-badge-hidden" name="" ></sl-icon>
