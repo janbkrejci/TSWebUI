@@ -1557,52 +1557,15 @@
         }
 
         function updatePaginationUI() {
-            const totalPages = getTotalPages();
-
-            // Update page number input
-            const pageInput = document.getElementById('page-number');
-            if (pageInput) {
-                pageInput.value = currentPage;
-                pageInput.max = totalPages;
-            }
-
-            // Update page info
-            const pageInfo = document.getElementById('page-info');
-            if (pageInfo) {
-                pageInfo.querySelector('sl-input').nextSibling.textContent = ` / ${totalPages}`;
-            }
-
-            // Update item count
-            const itemCount = document.getElementById('item-count');
-            if (itemCount) {
+            const footer = document.getElementById('table-footer');
+            if (footer) {
                 const activeData = getActiveData();
-                const startItem = activeData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
-                const endItem = Math.min(currentPage * itemsPerPage, activeData.length);
-                const totalItems = activeData.length;
-                const filterText = Object.keys(columnFilters).length > 0 ? ` (filtrováno z ${tableData.length})` : '';
-                itemCount.textContent = `Zobrazeno ${startItem}-${endItem} z ${totalItems}${filterText}`;
+                footer.setAttribute('totalrecordscount', tableData.length);
+                footer.setAttribute('filteredrecordscount', activeData.length);
+                footer.setAttribute('pagesize', itemsPerPage);
+                footer.setAttribute('pagesizes', JSON.stringify(availablePageSizes));
+                footer.setAttribute('currentpage', currentPage);
             }
-
-            // Update items per page dropdown
-            const itemsPerPageButton = document.querySelector('.items-per-page sl-button');
-            if (itemsPerPageButton) {
-                itemsPerPageButton.textContent = '';
-                itemsPerPageButton.innerHTML = `${itemsPerPage}<sl-icon name="chevron-down" class="chevron-icon"></sl-icon>`;
-            }
-
-            // Update navigation buttons
-            const prevButtons = document.querySelectorAll('.pager sl-button-group:first-child sl-button');
-            const nextButtons = document.querySelectorAll('.pager sl-button-group:last-child sl-button');
-
-            // First page and previous page buttons
-            prevButtons.forEach(btn => {
-                btn.disabled = currentPage <= 1;
-            });
-
-            // Next page and last page buttons
-            nextButtons.forEach(btn => {
-                btn.disabled = currentPage >= totalPages;
-            });
         }
 
         function goToPage(page) {
@@ -2201,6 +2164,7 @@
 
         // Full table population function - creates headers and rows
         function populateTable() {
+            console.log('populateTable called');
             // Find table using specific ID
             const table = document.getElementById('data-table');
             if (!table) {
@@ -2352,6 +2316,7 @@
 
         // Initialize table with retry logic
         function initializeTable() {
+            console.log('initializeTable called');
             // set preselected columns visibility in columns definitions
             columnDefinitions.forEach(col => {
                 if (unshowableColumns.includes(col.key)) {
@@ -2473,8 +2438,16 @@
                 });
             }
 
-            // Add pagination event listeners
-            setupPaginationListeners();
+            // Add pagination event listeners on footer component
+            const footer = document.getElementById('table-footer');
+            if (footer) {
+                footer.addEventListener('page-size-changed', (event) => {
+                    changeItemsPerPage(event.detail.pageSize);
+                });
+                footer.addEventListener('page-changed', (event) => {
+                    goToPage(event.detail.page);
+                });
+            }
 
             // Initialize dropdown overlay
             initializeDropdownOverlay();
@@ -2875,52 +2848,7 @@
             }
         }
 
-        // Function to setup pagination event listeners
-        function setupPaginationListeners() {
-            // Items per page dropdown
-            const itemsPerPageMenu = document.querySelector('.items-per-page sl-menu');
-            if (itemsPerPageMenu) {
-                itemsPerPageMenu.addEventListener('sl-select', (event) => {
-                    const selectedValue = parseInt(event.detail.item.textContent);
-                    if (availablePageSizes.includes(selectedValue)) {
-                        changeItemsPerPage(selectedValue);
-                    }
-                });
-            }
-
-            // Page navigation buttons
-            const pagerButtons = document.querySelectorAll('.pager sl-button');
-            if (pagerButtons.length >= 4) {
-                // First page button (index 0)
-                pagerButtons[0].addEventListener('click', () => goToPage(1));
-
-                // Previous page button (index 1)
-                pagerButtons[1].addEventListener('click', () => goToPage(currentPage - 1));
-
-                // Next page button (index 2)
-                pagerButtons[2].addEventListener('click', () => goToPage(currentPage + 1));
-
-                // Last page button (index 3)
-                pagerButtons[3].addEventListener('click', () => goToPage(getTotalPages()));
-            }
-
-            // Page number input blur event (already has onblur in HTML, but let's enhance it)
-            const pageInput = document.getElementById('page-number');
-            if (pageInput) {
-                pageInput.addEventListener('blur', (event) => {
-                    const newPage = parseInt(event.target.value);
-                    const totalPages = getTotalPages();
-                    if (!isNaN(newPage) && newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
-                        goToPage(newPage);
-                    } else {
-                        // Reset to current page if invalid or unchanged
-                        event.target.value = currentPage;
-                    }
-                });
-            }
-        }
-
-        initializeTable();
+        setTimeout(() => initializeTable(), 100);
     </script>
     <div id="container">
         <!-- DATATABLE -->
@@ -3024,53 +2952,7 @@
             <input type="file" id="import-file-input" accept=".xlsx" class="import-file-input-hidden" />
         </div>
         <!-- FOOTER -->
-        <div class="footer">
-            <div id="item-count">Zobrazeno 1-5 z 25</div>
-            <div class="items-per-page">
-                Zobrazit
-                <sl-dropdown>
-                    <sl-button slot="trigger">
-                        5
-                        <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>
-                    </sl-button>
-
-                    <sl-menu>
-                        <sl-menu-item>5</sl-menu-item>
-                        <sl-menu-item>10</sl-menu-item>
-                        <sl-menu-item>20</sl-menu-item>
-                        <sl-menu-item>50</sl-menu-item>
-                        <sl-menu-item>100</sl-menu-item>
-                    </sl-menu>
-                </sl-dropdown>
-                na stránku
-            </div>
-            <!-- PAGER -->
-            <div class="pager">
-                <sl-button-group>
-                    <sl-button disabled>
-                        <sl-icon name="chevron-bar-left"></sl-icon>
-                    </sl-button>
-                    <sl-button disabled>
-                        <sl-icon name="chevron-left"></sl-icon>
-                    </sl-button>
-                </sl-button-group>
-                <div id="page-info" variant="none">
-                    Stránka
-                    <sl-input id="page-number" size="small" value="1" onclick="pageNumberClick(event)"
-                        onkeydown="pageNumberKeyDown(event)" onblur="pageNumberBlur(event)"></sl-input>
-                    / 5
-                </div>
-
-                <sl-button-group>
-                    <sl-button>
-                        <sl-icon name="chevron-right"></sl-icon>
-                    </sl-button>
-                    <sl-button>
-                        <sl-icon name="chevron-bar-right"></sl-icon>
-                    </sl-button>
-                </sl-button-group>
-            </div>
-        </div>
+        <ts-table-footer id="table-footer"></ts-table-footer>
         <!-- Dropdown overlay for modal behavior -->
         <div id="dropdown-overlay" class="dropdown-overlay hidden"></div>
     </div>
