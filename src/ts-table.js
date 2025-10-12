@@ -571,8 +571,12 @@ class TSExportButton extends HTMLElement {
                 container.appendChild(checkbox);
                 rowsGroup.appendChild(container);
             };
-            addCheckbox('filtered', 'Pouze filtrované řádky', !anyFilter, false);
-            addCheckbox('selected', 'Pouze vybrané řádky', !anySelected, false);
+            if (anyFilter) {
+                addCheckbox('filtered', 'Pouze filtrované řádky', false, false);
+            }
+            if (anySelected) {
+                addCheckbox('selected', 'Pouze vybrané řádky', false, false);
+            }
             rowsSection.style.display = '';
         } else {
             rowsSection.style.display = 'none';
