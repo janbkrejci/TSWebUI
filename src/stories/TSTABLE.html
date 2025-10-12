@@ -2464,7 +2464,15 @@
             // Wire Export to Excel button
             const exportBtn = document.getElementById('export-excel-btn');
             if (exportBtn) {
-                exportBtn.addEventListener('click', onExportClick);
+                exportBtn.setExportData(() => ({
+                    tableData,
+                    columnDefinitions,
+                    selectedRowIds,
+                    columnFilters,
+                    getVisibleColumns: getVisibleColumns,
+                    filteredData,
+                    getSortedActiveData: () => getSortedData(getActiveData())
+                }));
             }
 
             // Wire Import from Excel button
@@ -2882,11 +2890,7 @@
                         <sl-icon name="upload"></sl-icon>
                     </sl-button>
                 </sl-tooltip>
-                <sl-tooltip content="Exportovat do Excelu">
-                    <sl-button id="export-excel-btn">
-                        <sl-icon name="download"></sl-icon>
-                    </sl-button>
-                </sl-tooltip>
+                <ts-export-button id="export-excel-btn"></ts-export-button>
             </div>
             <div>
                 <sl-tooltip content="Výběr sloupců">
@@ -2901,21 +2905,6 @@
                 </sl-tooltip>
             </div>
         </div>
-        <!-- Export dialog -->
-        <sl-dialog id="export-dialog" label="Export to Excel">
-            <div class="export-options">
-                <div id="export-rows-section" class="export-section export-rows-section">
-                    <div class="export-section-title">Řádky</div>
-                    <sl-radio-group id="export-rows-group"></sl-radio-group>
-                </div>
-                <div id="export-columns-section" class="export-section">
-                    <div class="export-section-title">Sloupce</div>
-                    <sl-radio-group id="export-columns-group"></sl-radio-group>
-                </div>
-            </div>
-            <sl-button slot="footer" variant="default" id="export-cancel-btn">Zrušit</sl-button>
-            <sl-button slot="footer" variant="primary" id="export-confirm-btn">Exportovat</sl-button>
-        </sl-dialog>
         <!-- Import error dialog -->
         <sl-dialog id="import-error-dialog" label="Import z Excelu">
             <sl-alert open variant="danger">

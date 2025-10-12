@@ -387,26 +387,6 @@ th[data-column-key] {
     display: none;
 }
 
-.export-rows-section {
-    margin-bottom: 12px;
-}
-
-.export-section-title {
-    font-weight: 600;
-    margin-bottom: 6px;
-}
-
-/* Add spacing between radio buttons in export dialog */
-#export-rows-group sl-radio,
-#export-columns-group sl-radio {
-    margin-bottom: 8px;
-}
-
-#export-rows-group sl-radio:last-child,
-#export-columns-group sl-radio:last-child {
-    margin-bottom: 0;
-}
-
 .large-icon {
     font-size: 32px;
 }
