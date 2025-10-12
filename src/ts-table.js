@@ -730,6 +730,7 @@ class TSImportButton extends HTMLElement {
                         </div>
                     </div>
                 </div>
+                <div id="import-footer-placeholder" slot="footer" style="display: none;"></div>
                 <sl-button slot="footer" variant="default" id="import-rejected-save-btn">Exportovat zamítnuté řádky</sl-button>
                 <sl-button slot="footer" variant="primary" id="import-summary-close-btn">OK</sl-button>
             </sl-dialog>
@@ -901,6 +902,7 @@ class TSImportButton extends HTMLElement {
             const rejectedCount = this.querySelector('#import-rejected-count');
             const skippedCount = this.querySelector('#import-skipped-count');
             const saveBtn = this.querySelector('#import-rejected-save-btn');
+            const placeholder = this.querySelector('#import-footer-placeholder');
 
             // Update individual counters
             if (addedCount) addedCount.textContent = added;
@@ -908,13 +910,13 @@ class TSImportButton extends HTMLElement {
             if (rejectedCount) rejectedCount.textContent = rejected;
             if (skippedCount) skippedCount.textContent = skipped;
 
-            // Show/hide export button based on rejected rows
-            if (saveBtn) {
-                if (rejectedRows.length > 0) {
-                    saveBtn.style.display = '';
-                } else {
-                    saveBtn.style.display = 'none';
-                }
+            // Show/hide export button and placeholder based on rejected rows
+            if (rejectedRows.length > 0) {
+                if (saveBtn) saveBtn.style.display = '';
+                if (placeholder) placeholder.style.display = 'none';
+            } else {
+                if (saveBtn) saveBtn.style.display = 'none';
+                if (placeholder) placeholder.style.display = '';
             }
 
             if (sumDlg) sumDlg.show();
