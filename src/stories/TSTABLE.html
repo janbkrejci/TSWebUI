@@ -578,7 +578,6 @@
 
                 // Refresh table and menu
                 populateTable();
-                createColumnsMenu();
             }
         }
 
@@ -600,7 +599,6 @@
 
                 // Refresh table and menu
                 populateTable();
-                createColumnsMenu();
             }
         }
 
@@ -1345,8 +1343,11 @@
             populateTableRows();
             updatePaginationUI();
 
-            // Update column menu to refresh filter icons
-            createColumnsMenu();
+            // Update column selector to refresh filter icons
+            const columnSelector = document.getElementById('column-selector');
+            if (columnSelector) {
+                columnSelector.setColumnFilters(columnFilters);
+            }
 
             // Hide loading overlay (focus is preserved since headers are not regenerated)
             hideLoadingOverlay();
@@ -1403,7 +1404,7 @@
             updatePaginationUI();
 
             // Update column menu to refresh filter icons
-            createColumnsMenu();
+            // createColumnsMenu(); // Removed - now handled by TSColumnSelector component
         }
 
         // ---- Row selection helpers ----
@@ -1573,8 +1574,11 @@
                 }
             });
 
-            // Recreate menu to reflect changes
-            createColumnsMenu();
+            // Update column selector component
+            const columnSelector = document.getElementById('column-selector');
+            if (columnSelector) {
+                columnSelector.setColumnDefinitions(columnDefinitions);
+            }
             populateTable();
         }
 
@@ -1590,8 +1594,11 @@
                 }
             });
 
-            // Recreate menu to reflect changes
-            createColumnsMenu();
+            // Update column selector component
+            const columnSelector = document.getElementById('column-selector');
+            if (columnSelector) {
+                columnSelector.setColumnDefinitions(columnDefinitions);
+            }
             populateTable();
         }
 
@@ -2162,133 +2169,6 @@
             return true;
         }
 
-        // Function to clear the column search filter
-        function clearColumnFilter() {
-            const searchInput = document.querySelector('.columns-menu #column-search');
-            if (searchInput) {
-                searchInput.value = '';
-                filterColumnMenu('');
-            }
-        }
-
-        // Function to filter column menu items by hiding/showing
-        function filterColumnMenu(searchTerm) {
-            const columnsMenu = document.querySelector('.columns-menu');
-            if (!columnsMenu) {
-                return;
-            }
-
-            const menuItems = columnsMenu.querySelectorAll('sl-menu-item[role="menuitemcheckbox"]');
-            const lowerSearchTerm = searchTerm.toLowerCase();
-            menuItems.forEach(item => {
-                const columnTitle = item.textContent.toLowerCase();
-                if (columnTitle.includes(lowerSearchTerm)) {
-                    item.classList.remove('column-filter-hidden');
-                } else {
-                    item.classList.add('column-filter-hidden');
-                }
-            });
-        }
-
-        // Function to create columns menu dynamically
-        function createColumnsMenu() {
-            const columnsMenu = document.querySelector('.columns-menu');
-            if (!columnsMenu) return false;
-
-            // Clear existing menu items
-            columnsMenu.innerHTML = '';
-
-            // Add filter management section only if filters are active
-            const hasActiveFilters = Object.keys(columnFilters).length > 0;
-            if (hasActiveFilters) {
-                const clearFilters = document.createElement('sl-menu-item');
-                clearFilters.textContent = 'Vymazat všechny filtry';
-                clearFilters.setAttribute('data-action', 'clear-filters');
-                columnsMenu.appendChild(clearFilters);
-
-                const filterDivider = document.createElement('sl-divider');
-                columnsMenu.appendChild(filterDivider);
-            }
-
-            // Add standard column menu items
-            const selectAll = document.createElement('sl-menu-item');
-            selectAll.textContent = 'Vybrat vše';
-            selectAll.setAttribute('data-action', 'select-all');
-            columnsMenu.appendChild(selectAll);
-
-            const clearAll = document.createElement('sl-menu-item');
-            clearAll.textContent = 'Zrušit výběr';
-            clearAll.setAttribute('data-action', 'clear-all');
-            columnsMenu.appendChild(clearAll);
-
-            const divider = document.createElement('sl-divider');
-            columnsMenu.appendChild(divider);
-
-            const searchInput = document.createElement('sl-input');
-            searchInput.autofocus = true;
-            searchInput.placeholder = 'Hledat sloupce...';
-            searchInput.className = 'search-input';
-            searchInput.setAttribute('id', 'column-search');
-            searchInput.setAttribute('autocomplete', 'off');
-            columnsMenu.appendChild(searchInput);
-
-            // Add column items from definitions (excluding unshowable columns), sorted by order
-            const sortedColumns = columnDefinitions
-                .filter(col => !unshowableColumns.includes(col.key))
-                .sort((a, b) => a.order - b.order);
-
-            sortedColumns.forEach(col => {
-                const menuItem = document.createElement('sl-menu-item');
-                menuItem.type = 'checkbox';
-
-                // Create column text with filter icon if filtered
-                const hasFilter = columnFilters[col.key] && columnFilters[col.key].trim() !== '';
-                const filterIcon = hasFilter ? `
-                    <svg width="12" height="12" viewBox="0 0 16 16" class="filter-icon">
-                        <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z"/>
-                    </svg>
-                ` : '';
-                menuItem.innerHTML = `${col.title}${filterIcon}`;
-
-                menuItem.setAttribute('data-column-key', col.key);
-                // Set checkbox state based on column visibility
-                menuItem.checked = col.visible;
-                // Mark unhideable columns as disabled
-                if (unhideableColumns.includes(col.key)) {
-                    menuItem.setAttribute('data-unhideable', 'true');
-                    menuItem.disabled = true;
-                }
-                columnsMenu.appendChild(menuItem);
-            });
-
-            // Add search functionality
-            const searchElement = columnsMenu.querySelector('#column-search');
-            if (searchElement) {
-                ['input', 'sl-input', 'keyup', 'change'].forEach(eventType => {
-                    searchElement.addEventListener(eventType, (event) => {
-                        const value = event.target.value || '';
-                        // Small delay to ensure DOM is ready
-                        setTimeout(() => filterColumnMenu(value), 10);
-                    });
-                });
-
-                // Add escape key handler for column search
-                searchElement.addEventListener('keydown', (event) => {
-                    if (event.key === 'Escape') {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        event.stopImmediatePropagation();
-                        event.target.value = '';
-                        filterColumnMenu('');
-                    }
-                });
-            } else {
-                console.error('Search element not found!');
-            }
-
-            return true;
-        }
-
         // Initialize table with retry logic
         function initializeTable() {
             console.log('initializeTable called');
@@ -2318,98 +2198,34 @@
             // Initialize filtered data
             filteredData = tableData.slice(); // Start with all data
 
-            // Create columns menu
-            createColumnsMenu();
+            // Configure column selector component
+            const columnSelector = document.getElementById('column-selector');
+            if (columnSelector) {
+                columnSelector.setColumnDefinitions(columnDefinitions);
+                columnSelector.setColumnFilters(columnFilters);
+                columnSelector.setUnshowableColumns(unshowableColumns);
+                columnSelector.setUnhideableColumns(unhideableColumns);
 
-            // Populate table
-            populateTable();
-
-            // Initialize selection menu listeners
-            const selectionMenu = document.querySelector('.selection-menu');
-            if (selectionMenu) {
-                selectionMenu.addEventListener('sl-select', (event) => {
-                    const action = event.detail.item?.getAttribute('data-action');
-                    if (action === 'unselect-all') {
-                        clearAllSelectedRecords();
-                        updateSelectionMenuUI();
-                        return;
-                    }
-                    const name = event.detail.item?.getAttribute('data-name');
-                    if (name) {
-                        const item = selectionMenuItems.find(it => it.name === name);
-                        if (item) {
-                            selectionMenuItemSelected(item, getSelectedRows());
-                        }
-                    }
-                });
-            }
-
-            // Add focus behavior when dropdown opens
-            const columnsMenuForFocus = document.querySelector('.columns-menu');
-            const columnsDropdown = columnsMenuForFocus ? columnsMenuForFocus.closest('sl-dropdown') : null;
-            if (columnsDropdown) {
-                columnsDropdown.addEventListener('sl-show', () => {
-                    // Small delay to ensure the dropdown content is rendered
-                    setTimeout(() => {
-                        const searchInput = document.querySelector('.columns-menu #column-search');
-                        if (searchInput) {
-                            searchInput.focus();
-                        }
-                    }, 50);
-                });
-            }
-
-            // Add listener to column menu sl-select event
-            const columnsMenu = document.querySelector('.columns-menu');
-            if (columnsMenu) {
-                columnsMenu.addEventListener('sl-select', (event) => {
-                    const selectedItem = event.detail.item;
-                    const action = selectedItem?.getAttribute('data-action');
-                    const columnKey = selectedItem?.getAttribute('data-column-key');
-
-                    // Clear the column filter whenever any menu item is selected
-                    clearColumnFilter();
-
-                    // Handle special actions
-                    if (action === 'clear-filters') {
-                        clearAllFilters();
-                        return;
-                    } else if (action === 'select-all') {
-                        selectAllColumns();
-                        return;
-                    } else if (action === 'clear-all') {
-                        clearAllColumns();
-                        return;
-                    }
-
-                    if (columnKey) {
-                        // Find the column definition
-                        const columnDef = columnDefinitions.find(col => col.key === columnKey);
-
-                        if (columnDef) {
-                            // Skip processing if item is disabled (unhideable columns)
-                            if (selectedItem.disabled) {
-                                event.preventDefault();
-                                return;
-                            }
-
-                            // Check if an unhideable column is being unselected (backup protection)
-                            if (selectedItem.hasAttribute('data-unhideable') && unhideableColumns.includes(columnKey)) {
-                                // Prevent unselecting unhideable columns
-                                if (!selectedItem.checked) {
-                                    selectedItem.checked = true;
-                                    columnDef.visible = true;
-                                    event.preventDefault();
-                                    return;
-                                }
-                            }
-
-                            // Update the column visibility in definition
-                            columnDef.visible = selectedItem.checked;
-                        }
-                    }
-
+                // Configure column selector event listeners
+                columnSelector.addEventListener('column-visibility-changed', (event) => {
+                    const { columnKey, visible } = event.detail;
+                    console.log('Column visibility changed:', columnKey, visible);
                     populateTable();
+                });
+
+                columnSelector.addEventListener('clear-filters', () => {
+                    console.log('Clear all filters');
+                    clearAllFilters();
+                });
+
+                columnSelector.addEventListener('select-all-columns', () => {
+                    console.log('Select all columns');
+                    selectAllColumns();
+                });
+
+                columnSelector.addEventListener('clear-all-columns', () => {
+                    console.log('Clear all columns');
+                    clearAllColumns();
                 });
             }
 
@@ -2571,7 +2387,11 @@
             });
         }
 
-        setTimeout(() => initializeTable(), 100);
+        initializeTable();
+
+        // Initialize table display
+        populateTable();
+
     </script>
     <div id="container">
         <!-- DATATABLE -->
@@ -2586,16 +2406,7 @@
                 <ts-export-button id="export-excel-btn"></ts-export-button>
             </div>
             <div>
-                <sl-tooltip content="Výběr sloupců">
-                    <sl-dropdown>
-                        <sl-button slot="trigger" caret>
-                            <sl-icon name="gear"></sl-icon>
-                        </sl-button>
-                        <sl-menu class="columns-menu">
-                            <!-- Menu items will be created dynamically by createColumnsMenu() function -->
-                        </sl-menu>
-                    </sl-dropdown>
-                </sl-tooltip>
+                <ts-column-selector id="column-selector"></ts-column-selector>
             </div>
         </div>
         <!-- FOOTER -->

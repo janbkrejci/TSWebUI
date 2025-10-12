@@ -158,21 +158,6 @@ tbody tr {
 }
 
 /* Menu styles */
-.columns-menu {
-    min-width: 200px;
-}
-
-.search-input {
-    margin: 0.5em;
-    width: calc(100% - 1em);
-    max-width: 250px;
-    min-width: 150px;
-}
-
-.column-filter-hidden {
-    display: none !important;
-    visibility: hidden !important;
-}
 
 /* Table header styles */
 .menu-column {
