@@ -2848,6 +2848,14 @@
             }
         }
 
+        // Handle new-record event from the web component
+        const createRecordButton = document.querySelector('ts-create-record-button');
+        if (createRecordButton) {
+            createRecordButton.addEventListener('new-record', () => {
+                alert('New record event was fired');
+            });
+        }
+
         setTimeout(() => initializeTable(), 100);
     </script>
     <div id="container">
@@ -2855,11 +2863,7 @@
         <!-- Toolbar -->
         <div class="toolbar">
             <div>
-                <sl-tooltip content="Nový záznam">
-                    <sl-button>
-                        <sl-icon name="plus-lg"></sl-icon>
-                    </sl-button>
-                </sl-tooltip>
+                <ts-create-record-button></ts-create-record-button>
             </div>
             <div class="toolbar-center">
                 <div class="selection-menu-container selection-menu-container-hidden">
