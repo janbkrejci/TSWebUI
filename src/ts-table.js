@@ -795,6 +795,39 @@ class TSImportButton extends HTMLElement {
         this.dispatchEvent(new CustomEvent('import-row', { detail: { row: obj } }));
     }
 
+    showImportResults(results) {
+        const { added, updated, rejected, skipped, rejectedRowsData } = results;
+        
+        // Store rejected data for saving
+        this.rejectedRowsData = rejectedRowsData || [];
+
+        // Show summary dialog
+        const sumDlg = this.querySelector('#import-summary-dialog');
+        const addedCount = this.querySelector('#import-added-count');
+        const updatedCount = this.querySelector('#import-updated-count');
+        const rejectedCount = this.querySelector('#import-rejected-count');
+        const skippedCount = this.querySelector('#import-skipped-count');
+        const saveBtn = this.querySelector('#import-rejected-save-btn');
+        const placeholder = this.querySelector('#import-footer-placeholder');
+
+        // Update individual counters
+        if (addedCount) addedCount.textContent = added || 0;
+        if (updatedCount) updatedCount.textContent = updated || 0;
+        if (rejectedCount) rejectedCount.textContent = rejected || 0;
+        if (skippedCount) skippedCount.textContent = skipped || 0;
+
+        // Show/hide export button and placeholder based on rejected rows
+        if ((rejected || 0) > 0) {
+            if (saveBtn) saveBtn.style.display = '';
+            if (placeholder) placeholder.style.display = 'none';
+        } else {
+            if (saveBtn) saveBtn.style.display = 'none';
+            if (placeholder) placeholder.style.display = '';
+        }
+
+        if (sumDlg) sumDlg.show();
+    }
+
     formatRejectedFilename() {
         const d = new Date();
         const pad = n => String(n).padStart(2, '0');
@@ -878,48 +911,13 @@ class TSImportButton extends HTMLElement {
                 return { __index: idx + 2, data: obj }; // +2 for header + 1-index
             });
 
-            // Dummy categorization stats; call processImport for each
-            let added = 0, updated = 0, rejected = 0, skipped = 0;
-            const rejectedRows = [];
-            const rejectedRowsData = [];
-            mapped.forEach(({ __index, data }) => {
-                this.processImport(data);
-                // Dummy decision: alternate status for preview
-                const mod = __index % 4;
-                if (mod === 1) added++;
-                else if (mod === 2) updated++;
-                else if (mod === 3) { rejected++; rejectedRows.push(__index); rejectedRowsData.push(data); }
-                else skipped++;
-            });
-
-            // Store rejected data for saving
-            this.rejectedRowsData = rejectedRowsData;
-
-            // Show summary dialog
-            const sumDlg = this.querySelector('#import-summary-dialog');
-            const addedCount = this.querySelector('#import-added-count');
-            const updatedCount = this.querySelector('#import-updated-count');
-            const rejectedCount = this.querySelector('#import-rejected-count');
-            const skippedCount = this.querySelector('#import-skipped-count');
-            const saveBtn = this.querySelector('#import-rejected-save-btn');
-            const placeholder = this.querySelector('#import-footer-placeholder');
-
-            // Update individual counters
-            if (addedCount) addedCount.textContent = added;
-            if (updatedCount) updatedCount.textContent = updated;
-            if (rejectedCount) rejectedCount.textContent = rejected;
-            if (skippedCount) skippedCount.textContent = skipped;
-
-            // Show/hide export button and placeholder based on rejected rows
-            if (rejectedRows.length > 0) {
-                if (saveBtn) saveBtn.style.display = '';
-                if (placeholder) placeholder.style.display = 'none';
-            } else {
-                if (saveBtn) saveBtn.style.display = 'none';
-                if (placeholder) placeholder.style.display = '';
-            }
-
-            if (sumDlg) sumDlg.show();
+            // Dispatch do-import event with parsed data for parent to handle
+            this.dispatchEvent(new CustomEvent('do-import', { 
+                detail: { 
+                    importData: mapped,
+                    file: file 
+                } 
+            }));
 
         } catch (e) {
             console.error('Import failed', e);

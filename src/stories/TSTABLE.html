@@ -2548,6 +2548,45 @@
             });
         }
 
+        // Handle do-import event from the web component
+        const importButton = document.querySelector('ts-import-button');
+        if (importButton) {
+            importButton.addEventListener('do-import', (event) => {
+                const { importData, file } = event.detail;
+                console.log('Import data received:', importData);
+                
+                // Process import data (dummy logic for now)
+                let added = 0, updated = 0, rejected = 0, skipped = 0;
+                const rejectedRows = [];
+                const rejectedRowsData = [];
+                
+                importData.forEach(({ __index, data }) => {
+                    // Dummy decision: alternate status for preview
+                    const mod = __index % 4;
+                    if (mod === 1) added++;
+                    else if (mod === 2) updated++;
+                    else if (mod === 3) { 
+                        rejected++; 
+                        rejectedRows.push(__index); 
+                        rejectedRowsData.push(data); 
+                    }
+                    else skipped++;
+                });
+
+                // Store rejected data for saving
+                importButton.rejectedRowsData = rejectedRowsData;
+
+                // Show results via the web component
+                importButton.showImportResults({
+                    added,
+                    updated,
+                    rejected,
+                    skipped,
+                    rejectedRows
+                });
+            });
+        }
+
         setTimeout(() => initializeTable(), 100);
     </script>
     <div id="container">
