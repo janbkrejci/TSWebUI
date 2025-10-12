@@ -148,7 +148,7 @@ tbody tr {
 }
 
 .toolbar-center {
-    justify-self: center;
+    justify-self: start;
     display: flex;
     gap: 0.25em;
 }
@@ -389,37 +389,6 @@ th[data-column-key] {
 
 .large-icon {
     font-size: 32px;
-}
-
-.import-missing-columns {
-    margin-top: 8px;
-    font-size: var(--sl-font-size-small);
-}
-
-.rejected-title {
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-
-.rejected-list {
-    font-size: var(--sl-font-size-small);
-}
-
-.rejected-preview-title {
-    font-weight: 600;
-    margin: 8px 0 4px;
-}
-
-.rejected-preview {
-    max-height: 200px;
-    overflow: auto;
-    background: var(--sl-color-neutral-50);
-    padding: 8px;
-    border-radius: var(--sl-border-radius-medium);
-}
-
-.import-file-input-hidden {
-    display: none;
 }
 
 /* Styles for other HTML files */
