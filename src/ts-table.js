@@ -348,7 +348,7 @@ class TSExportButton extends HTMLElement {
                 </sl-button>
             </sl-tooltip>
             <!-- Export dialog -->
-            <sl-dialog id="export-dialog" label="Export do Excelu">
+            <sl-dialog id="export-dialog" label="Export do Excelu" hidden>
                 <div class="export-options">
                     <div id="export-rows-section" class="export-section export-rows-section">
                         <div class="export-section-title">Řádky</div>
