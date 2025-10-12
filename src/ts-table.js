@@ -1118,7 +1118,7 @@ class TSColumnSelector extends HTMLElement {
                 
                 .filter-icon {
                     margin-left: 0.5rem;
-                    fill: var(--sl-color-primary-600);
+                    fill: currentColor;
                 }
             </style>
             <div class="column-selector">
@@ -1360,6 +1360,12 @@ class TSColumnSelector extends HTMLElement {
                 item.classList.add('column-filter-hidden');
             }
         });
+    }
+
+    refreshMenu() {
+        if (this.columnDefinitions) {
+            this.createColumnsMenu();
+        }
     }
 
     clearColumnFilter() {
