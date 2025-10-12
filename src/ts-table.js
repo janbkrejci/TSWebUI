@@ -1,4 +1,4 @@
-class TSTableFooter extends HTMLElement {
+class TSTablePager extends HTMLElement {
     constructor() {
         super();
         this.innerHTML = `
@@ -278,4 +278,4 @@ class TSTableFooter extends HTMLElement {
     }
 }
 
-customElements.define('ts-table-footer', TSTableFooter);
+customElements.define('ts-table-pager', TSTablePager);
