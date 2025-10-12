@@ -1490,40 +1490,15 @@
         }
 
         function updateSelectionMenuUI() {
-            const container = document.querySelector('.selection-menu-container');
-            const triggerBtn = document.getElementById('selection-dropdown-trigger');
-            const menuEl = document.querySelector('.selection-menu');
-            if (!container || !triggerBtn || !menuEl) return;
+            const selectionMenu = document.getElementById('selection-menu');
+            if (!selectionMenu) return;
 
             const selectedCount = selectedRowIds.size;
             if (selectedCount > 0) {
-                container.classList.remove('selection-menu-container-hidden');
-                container.style.display = '';
-                triggerBtn.textContent = '';
-                triggerBtn.innerHTML = `<sl-icon name="rocket-takeoff"></sl-icon> (${selectedCount}) <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>`;
-
-                // Build menu
-                menuEl.innerHTML = '';
-                const unselectItem = document.createElement('sl-menu-item');
-                unselectItem.setAttribute('data-action', 'unselect-all');
-                unselectItem.textContent = 'Zrušit výběr všech řádků';
-                menuEl.appendChild(unselectItem);
-
-                const dividerTop = document.createElement('sl-divider');
-                menuEl.appendChild(dividerTop);
-
-                const exactlyOne = selectedCount === 1;
-                selectionMenuItems.forEach(item => {
-                    if (item.singleOnly && !exactlyOne) return;
-                    const mi = document.createElement('sl-menu-item');
-                    mi.setAttribute('data-name', item.name);
-                    mi.textContent = item.title;
-                    menuEl.appendChild(mi);
-                });
+                selectionMenu.show();
+                selectionMenu.setSelectionCount(selectedCount);
             } else {
-                container.classList.add('selection-menu-container-hidden');
-                container.style.display = 'none';
-                triggerBtn.innerHTML = `<sl-icon name="rocket-takeoff"></sl-icon> <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>`;
+                selectionMenu.hide();
             }
             // Keep the selection view toggle in sync
             updateSelectionViewToggleUI();
@@ -2587,6 +2562,15 @@
             });
         }
 
+        // Handle selection-action-activated event from the web component
+        const selectionMenu = document.getElementById('selection-menu');
+        if (selectionMenu) {
+            selectionMenu.addEventListener('selection-action-activated', (event) => {
+                const action = event.detail.action;
+                console.log('Selection action activated:', action);
+            });
+        }
+
         setTimeout(() => initializeTable(), 100);
     </script>
     <div id="container">
@@ -2597,17 +2581,7 @@
                 <ts-create-record-button></ts-create-record-button>
             </div>
             <div class="toolbar-center">
-                <div class="selection-menu-container selection-menu-container-hidden">
-                    <sl-dropdown hoist>
-                        <sl-button id="selection-dropdown-trigger" slot="trigger">
-                            <sl-icon name="rocket-takeoff"></sl-icon>
-                            <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>
-                        </sl-button>
-                        <sl-menu class="selection-menu">
-                            <!-- Will be populated dynamically in updateSelectionMenuUI() -->
-                        </sl-menu>
-                    </sl-dropdown>
-                </div>
+                <ts-selection-menu id="selection-menu" single-item-actions="edit/Upravit záznam,duplicate/Duplikovat záznam,delete/Smazat záznam" multiple-items-actions="delete/Smazat vybrané,export/Exportovat vybrané"></ts-selection-menu>
                 <ts-import-button id="import-excel-btn"></ts-import-button>
                 <ts-export-button id="export-excel-btn"></ts-export-button>
             </div>
