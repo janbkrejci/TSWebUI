@@ -645,14 +645,14 @@
             };
             const applyForKey = (key) => {
                 if (!key) return;
-                // mark header th (first header row) for this key
-                const headerTh = theadEl.querySelector(`tr:not(.filter-row) th[data-column-key="${key}"]`);
+                // mark header th for this key
+                const headerTh = theadEl.querySelector(`th[data-column-key="${key}"]`);
                 if (headerTh) headerTh.classList.add('column-hover');
-                // highlight both resizers (header + filter row)
+                // highlight resizer
                 theadEl.querySelectorAll(`.col-resizer[data-column-key="${key}"]`).forEach(el => el.classList.add('hover'));
             };
             theadEl.addEventListener('mousemove', (e) => {
-                // find th (either header row or filter row) with data-column-key
+                // find th with data-column-key
                 const th = e.target.closest('th[data-column-key]');
                 const withinThead = th && theadEl.contains(th);
                 if (!withinThead) { clear(); return; }
@@ -875,13 +875,13 @@
             filteredData = [];
 
             // Clear all filter inputs
-            const filterInputs = document.querySelectorAll('.filter-row sl-input');
+            const filterInputs = document.querySelectorAll('thead sl-input');
             filterInputs.forEach(input => {
                 input.value = '';
             });
 
             // Clear all filter dropdowns (boolean columns)
-            const filterDropdowns = document.querySelectorAll('.filter-row sl-dropdown sl-button[data-column-key]');
+            const filterDropdowns = document.querySelectorAll('thead sl-dropdown sl-button[data-column-key]');
             filterDropdowns.forEach(button => {
                 // Reset to default state (show "Všechny")
                 button.innerHTML = 'Všechny<sl-icon name="chevron-down" slot="suffix"></sl-icon>';
@@ -1209,20 +1209,25 @@
             // Ensure colgroup reflects current visible columns
             rebuildColgroup();
 
-            // Create main header row
+            // Create single header row with both header content and filters
             const headerRow = document.createElement('tr');
 
-            // Add checkbox column with selection view toggle in header row (tri-state checkbox lives in filter row below)
+            // Add checkbox column with selection view toggle
             const checkboxHeader = document.createElement('th');
             checkboxHeader.className = 'checkbox-column';
             checkboxHeader.innerHTML = `
-                <div id="selection-view-toggle" class="selection-view-toggle invisible">
-                    <sl-tooltip hoist content="">
-                        <div class="selection-view-toggle-btn-wrapper">
-                            <sl-icon-button id="selection-view-toggle-btn" name="funnel" size="small" title=""></sl-icon-button>
-                            <sl-icon id="selection-view-badge" class="selection-view-badge selection-view-badge-hidden" name="" ></sl-icon>
-                        </div>
-                    </sl-tooltip>
+                <div class="header-cell-content">
+                    <div id="selection-view-toggle" class="selection-view-toggle invisible">
+                        <sl-tooltip hoist content="">
+                            <div class="selection-view-toggle-btn-wrapper">
+                                <sl-icon-button id="selection-view-toggle-btn" name="funnel" size="small" title=""></sl-icon-button>
+                                <sl-icon id="selection-view-badge" class="selection-view-badge selection-view-badge-hidden" name="" ></sl-icon>
+                            </div>
+                        </sl-tooltip>
+                    </div>
+                </div>
+                <div class="filter-cell-content">
+                    <sl-checkbox id="header-select-all"></sl-checkbox>
                 </div>
             `;
             headerRow.appendChild(checkboxHeader);
@@ -1243,32 +1248,57 @@
                 }
 
                 th.style.textAlign = 'left';
-                
+
                 // Set minimum width for boolean columns to accommodate ordering controls
                 if (col.type === 'boolean') {
                     th.style.minWidth = '140px';
                 }
-                
+
                 // Add data attribute for column identification
                 th.setAttribute('data-column-key', col.key);
 
-                // Create header content with title and sort indicator
-                const headerContent = `
-                    <span class="column-header-content">
-                        ${col.title}
-                        ${createSortIndicator(col.sortable, col.sortDirection)}
-                    </span>
-                    <span class="column-ordering-controls">
-                        ${index > 0 ? `<sl-icon-button name="arrow-left" size="small" class="move-column-left" data-column-key="${col.key}" title="Move left"></sl-icon-button>` : ''}
-                        ${index < visibleColumns.length - 1 ? `<sl-icon-button name="arrow-right" size="small" class="move-column-right" data-column-key="${col.key}" title="Move right"></sl-icon-button>` : ''}
-                    </span>
+                // Create header content (title, sort indicator, ordering controls)
+                let headerContent = `
+                    <div class="header-cell-content">
+                        <div class="column-header-content">
+                            ${col.title}
+                            ${createSortIndicator(col.sortable, col.sortDirection)}
+                        </div>
+                        <div class="column-ordering-controls">
+                            ${index > 0 ? `<sl-icon-button name="arrow-left" size="small" class="move-column-left" data-column-key="${col.key}" title="Move left"></sl-icon-button>` : ''}
+                            ${index < visibleColumns.length - 1 ? `<sl-icon-button name="arrow-right" size="small" class="move-column-right" data-column-key="${col.key}" title="Move right"></sl-icon-button>` : ''}
+                        </div>
+                    </div>
                 `;
 
-                th.innerHTML = headerContent + '<span class="col-resizer" data-column-key="' + col.key + '"></span>';
+                // Create filter content
+                let filterContent = '<div class="filter-cell-content">';
+                if (col.filterable) {
+                    const inputId = `filter-${col.key}`;
+                    if (col.type === 'boolean') {
+                        // Use dropdown for boolean columns
+                        filterContent += `
+                            <sl-dropdown hoist placement="bottom" style="width: 100%;">
+                                <sl-button slot="trigger" size="small" variant="default" id="${inputId}" data-column-key="${col.key}" style="width: 100%; justify-content: space-between;">
+                                    Všechny<sl-icon name="chevron-down" slot="suffix"></sl-icon>
+                                </sl-button>
+                                <sl-menu>
+                                    <sl-menu-item data-value="">Všechny</sl-menu-item>
+                                    <sl-menu-item data-value="true">Ano</sl-menu-item>
+                                    <sl-menu-item data-value="false">Ne</sl-menu-item>
+                                </sl-menu>
+                            </sl-dropdown>
+                        `;
+                    } else {
+                        // Use text input for other column types
+                        filterContent += `
+                            <sl-input id="${inputId}" size="small" placeholder="${col.filterPlaceholder}" autocomplete="off" data-column-key="${col.key}" style="width: 100%;"></sl-input>
+                        `;
+                    }
+                }
+                filterContent += '</div>';
 
-                // ordering controls now always visible via CSS
-
-                // per-column hover handled via delegated thead mousemove/mouseleave
+                th.innerHTML = headerContent + filterContent + '<span class="col-resizer" data-column-key="' + col.key + '"></span>';
 
                 headerRow.appendChild(th);
             });
@@ -1305,8 +1335,12 @@
                 }
 
                 // Otherwise, toggle sort if clicking on a sortable header cell
-                const th = event.target.closest('th');
+                const headerCellContent = event.target.closest('.header-cell-content');
+                if (!headerCellContent) return;
+
+                const th = headerCellContent.closest('th');
                 if (!th) return;
+
                 const columnKey = th.getAttribute('data-column-key');
                 if (!columnKey) return;
 
@@ -1318,84 +1352,15 @@
 
             thead.appendChild(headerRow);
 
-            // Create filter row
-            const filterRow = document.createElement('tr');
-            filterRow.className = 'filter-row';
-
-            // Add checkbox column for filter row
-            const checkboxFilter = document.createElement('th');
-            checkboxFilter.className = 'checkbox-column';
-            // Tri-state select-all checkbox belongs to the filter row
-            checkboxFilter.innerHTML = '<sl-checkbox id="header-select-all"></sl-checkbox>';
-            filterRow.appendChild(checkboxFilter);
-
-            // Add empty menu column for filter row
-            const menuFilter = document.createElement('th');
-            menuFilter.className = 'menu-column';
-            filterRow.appendChild(menuFilter);
-
-
-
-            // Add filter inputs for each visible column
-            visibleColumns.forEach((col, index) => {
-                const th = document.createElement('th');
-                th.style.padding = '0 8px';
-
-                // Apply text alignment to filter row
-                if (col.align) {
-                    th.style.textAlign = col.align;
-                }
-
-                // Set minimum width for boolean columns to accommodate ordering controls
-                if (col.type === 'boolean') {
-                    th.style.minWidth = '140px';
-                }
-
-                // add column key for resizer targeting and add resizer handle
-                th.setAttribute('data-column-key', col.key);
-                if (col.filterable) {
-                    const inputId = `filter-${col.key}`;
-                    if (col.type === 'boolean') {
-                        // Use dropdown for boolean columns
-                        th.innerHTML = `
-                            <div class="filter-cell-inner">
-                                <sl-dropdown hoist placement="bottom" style="width: 100%;">
-                                    <sl-button slot="trigger" size="small" variant="default" id="${inputId}" data-column-key="${col.key}" style="width: 100%; justify-content: space-between;">
-                                        Všechny<sl-icon name="chevron-down" slot="suffix"></sl-icon>
-                                    </sl-button>
-                                    <sl-menu>
-                                        <sl-menu-item data-value="">Všechny</sl-menu-item>
-                                        <sl-menu-item data-value="true">Ano</sl-menu-item>
-                                        <sl-menu-item data-value="false">Ne</sl-menu-item>
-                                    </sl-menu>
-                                </sl-dropdown>
-                            </div>
-                        `;
-                    } else {
-                        // Use text input for other column types
-                        th.innerHTML = `
-                            <div class="filter-cell-inner">
-                                <sl-input id="${inputId}" size="small" placeholder="${col.filterPlaceholder}" autocomplete="off" data-column-key="${col.key}" style="width: 100%;"></sl-input>
-                            </div>
-                        `;
-                    }
-                }
-                // add resizer to filter row, same as header
-                th.innerHTML += '<span class="col-resizer" data-column-key="' + col.key + '"></span>';
-                filterRow.appendChild(th);
-            });
-
-            thead.appendChild(filterRow);
-
-            // Wire resizer handles (both header and filter row)
+            // Wire resizer handles
             wireResizers(thead);
 
-            // Delegated hover handling across entire thead (both header rows)
+            // Delegated hover handling across entire thead
             setupTheadHover(thead);
 
             // Add event handlers for filter inputs and dropdowns
-            const filterInputs = filterRow.querySelectorAll('sl-input[data-column-key]');
-            const filterDropdowns = filterRow.querySelectorAll('sl-dropdown sl-button[data-column-key]');
+            const filterInputs = headerRow.querySelectorAll('sl-input[data-column-key]');
+            const filterDropdowns = headerRow.querySelectorAll('sl-dropdown sl-button[data-column-key]');
 
             // Handle text inputs
             filterInputs.forEach(input => {

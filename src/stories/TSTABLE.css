@@ -87,7 +87,7 @@ th {
     padding: 0.5em 0.5em;
 }
 
-.filter-row sl-input {
+.filter-row sl_input {
     width: 100%;
     max-width: 200px;
     min-width: 0;
@@ -191,7 +191,18 @@ tbody tr {
     padding: 0.75em 0.5em;
 }
 
+.checkbox-column .header-cell-content {
+    justify-content: center;
+    padding: 0.25em 0;
+}
+
+.checkbox-column .filter-cell-content {
+    text-align: center;
+    padding: 0.25em 0;
+}
+
 .checkbox-column sl-checkbox {
+    margin: 0;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -199,10 +210,17 @@ tbody tr {
     min-width: 24px;
 }
 
-/* Specific styling for header select-all checkbox to match funnel icon size */
+/* Specific styling for header select-all checkbox to match row checkboxes */
+.checkbox-column .filter-cell-content sl-checkbox {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Override any specific header-select-all styles that might misalign it */
 #header-select-all {
-    min-height: 24px !important;
-    min-width: 24px !important;
+    margin: 0 !important;
 }
 
 .id-column {
@@ -226,41 +244,7 @@ tbody tr {
 
 
 
-/* Column ordering controls */
-.column-header-content {
-    display: inline-block;
-    /* Reserve room for ordering arrows */
-    padding-right: 36px;
-}
-
-.column-ordering-controls {
-    position: absolute;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
-    display: inline-flex;
-    gap: 4px;
-    opacity: 0; /* hidden by default */
-    pointer-events: none;
-    transition: opacity 120ms ease;
-    z-index: 3;
-}
-
-#data-table thead th:hover .column-ordering-controls,
-#data-table thead th.column-hover .column-ordering-controls {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.column-ordering-controls sl-icon-button {
-    --sl-spacing-x-small: 0.25rem;
-    margin: 0 1px;
-}
-
-.column-ordering-controls sl-icon-button::part(base) {
-    padding: 2px;
-    font-size: 0.75rem;
-}
+/* Column ordering controls - using new flex-based approach in .header-cell-content */
 
 /* Make header cells position relative for better control positioning */
 th[data-column-key] {
@@ -325,7 +309,7 @@ th[data-column-key] {
 }
 
 /* Column filter inputs */
-.filter-row sl-input {
+.filter-row sl_input {
     width: 100%;
     min-width: 0;
 }
@@ -395,14 +379,73 @@ th[data-column-key] {
     white-space: nowrap;
 }
 #data-table thead th { position: relative; }
-.filter-row th { position: relative; }
-/* Make filter inputs expand with column width */
-.filter-row sl-input { width: 100% !important; max-width: none !important; display: block; }
-.filter-row sl-input::part(base) { width: 100%; }
-.filter-row sl-dropdown { width: 100%; display: block; }
-.filter-row sl-button[slot="trigger"] { width: 100%; }
+/* Header cell content - contains title, sort indicators, ordering controls */
+.header-cell-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5em 0;
+    min-height: 24px;
+}
+
+.column-ordering-controls {
+    display: flex !important;
+    gap: 2px !important;
+    opacity: 0 !important;
+    transition: opacity 0.2s ease !important;
+    margin-left: auto !important;
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    transform: none !important;
+    pointer-events: auto !important;
+    z-index: auto !important;
+}
+
+.header-cell-content .column-header-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    width: 100%;
+}
+
+.header-cell-content .column-ordering-controls {
+    display: flex !important;
+    gap: 2px !important;
+    opacity: 0 !important;
+    transition: opacity 0.2s ease !important;
+    margin-left: auto !important;
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    transform: none !important;
+    pointer-events: auto !important;
+    z-index: auto !important;
+}
+
+/* Filter cell content - contains filter inputs */
+.filter-cell-content {
+    padding: 0.25em 0;
+}
+
+.filter-cell-content sl_input,
+.filter_cell-content sl-dropdown {
+    width: 100%;
+    display: block;
+}
+
+.filter-cell-content sl_input::part(base),
+.filter-cell-content sl-button[slot="trigger"] {
+    width: 100%;
+}
+
+/* Show ordering controls on hover */
+#data-table thead th:hover .header-cell-content .column-ordering-controls {
+    opacity: 1 !important;
+}
+
 /* Ensure right gap to resizer equals (left padding + visual comfort) */
-.filter-row .filter-cell-inner { margin-right: 14px; }
+.filter-cell-content { margin-right: 14px; }
 
 /* Resizer handle */
 .col-resizer {
