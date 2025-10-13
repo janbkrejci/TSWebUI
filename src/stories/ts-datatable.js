@@ -740,15 +740,11 @@ class TSDataTable extends HTMLElement {
     }
     
     handleRowCheckboxChange(rowId, isChecked) {
-        console.log('handleRowCheckboxChange', rowId, isChecked, 'before:', this.selectedRowIds.size);
-        
         if (isChecked) {
             this.selectedRowIds.add(rowId);
         } else {
             this.selectedRowIds.delete(rowId);
         }
-        
-        console.log('handleRowCheckboxChange', 'after:', this.selectedRowIds.size);
         
         // Update header checkbox state (tri-state)
         this.updateHeaderCheckbox();
@@ -1047,8 +1043,6 @@ class TSDataTable extends HTMLElement {
         const activeData = this.getActiveData();
         const total = activeData.length;
         
-        console.log('updateHeaderCheckbox - total active:', total);
-        
         if (total === 0) {
             headerCheckbox.checked = false;
             headerCheckbox.indeterminate = false;
@@ -1059,8 +1053,6 @@ class TSDataTable extends HTMLElement {
         for (const row of activeData) {
             if (this.selectedRowIds.has(String(row.id))) selectedCount++;
         }
-        
-        console.log('updateHeaderCheckbox - selectedCount:', selectedCount, 'total:', total);
         
         if (selectedCount === 0) {
             headerCheckbox.checked = false;
