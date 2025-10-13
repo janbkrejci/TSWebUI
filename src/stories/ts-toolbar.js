@@ -195,6 +195,14 @@ class TSToolbar extends HTMLElement {
         }
     }
 
+    setSingleItemActions(actions) {
+        this.setAttribute('single-item-actions', actions);
+    }
+
+    setMultipleItemsActions(actions) {
+        this.setAttribute('multiple-items-actions', actions);
+    }
+
     // Import Button methods
     getImportButton() {
         return this.querySelector('#import-btn');

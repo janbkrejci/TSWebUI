@@ -9,31 +9,19 @@
         var pager = null;
 
         // Row menu actions configuration
-        const menuActions = 'edit/Edit,duplicate/Duplicate,delete/Delete,view_details/View Details,export/Export Row';
+        const singleItemActions = 'edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek';
+        const multipleItemsActions = 'delete/Smazat vybrané,export/Exportovat vybrané';
 
         // Column visibility configuration
         const preselectedColumns = ['name', 'email', 'turnover', 'contractDate', 'approved'];
         const unhideableColumns = ['name', 'email'];
         const unshowableColumns = ['id'];
 
-        // Function to handle row menu item selection
-        function rowMenuItemSelected(menuAction, rowData) {
-            console.log('Selected action:', menuAction, 'for row:', rowData);
-        }
-
         // Initialize components when DOM is ready
         function initializeComponents() {
-            console.log('Initializing components...');
-            
             datatable = document.getElementById('datatable');
             toolbar = document.getElementById('toolbar');
             pager = document.getElementById('table-footer');
-
-            if (!datatable || !toolbar || !pager) {
-                console.error('Required components not found');
-                setTimeout(initializeComponents, 100);
-                return;
-            }
 
             // Setup event listeners FIRST (before initialization)
             setupEventListeners();
@@ -41,7 +29,7 @@
             // Configure datatable
             datatable.setData(tableData);
             datatable.setColumnDefinitions(columnDefinitions);
-            datatable.setMenuActions(menuActions);
+            datatable.setMenuActions(singleItemActions);
             datatable.setPreselectedColumns(preselectedColumns);
             datatable.setUnhideableColumns(unhideableColumns);
             datatable.setUnshowableColumns(unshowableColumns);
@@ -52,6 +40,8 @@
             toolbar.setColumnFilters({});
             toolbar.setUnshowableColumns(unshowableColumns);
             toolbar.setUnhideableColumns(unhideableColumns);
+            toolbar.setSingleItemActions(singleItemActions);
+            toolbar.setMultipleItemsActions(multipleItemsActions);
 
             // Configure toolbar export data provider
             toolbar.setExportData(() => ({
@@ -68,8 +58,6 @@
             toolbar.setImportData(() => ({
                 columnDefinitions: datatable.getColumnDefinitions()
             }));
-
-            console.log('Components initialized successfully');
         }
 
         function setupEventListeners() {
@@ -98,11 +86,6 @@
             datatable.addEventListener('filters-changed', (event) => {
                 const { columnFilters, hasActiveFilters } = event.detail;
                 toolbar.setColumnFilters(columnFilters);
-            });
-
-            datatable.addEventListener('row-action', (event) => {
-                const { action, row } = event.detail;
-                rowMenuItemSelected(action, row);
             });
 
             // Toolbar events
@@ -218,32 +201,17 @@
             });
         }
 
-        // Initialize when tableData and columnDefinitions are available
-        let initAttempts = 0;
-        const maxAttempts = 50;
-        
-        function waitForData() {
-            if (typeof tableData !== 'undefined' && typeof columnDefinitions !== 'undefined') {
-                // Wait a bit more for custom elements to be defined
-                setTimeout(initializeComponents, 100);
-            } else if (initAttempts < maxAttempts) {
-                initAttempts++;
-                setTimeout(waitForData, 100);
-            } else {
-                console.error('Failed to load table data and column definitions');
-            }
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeComponents);
+        } else {
+            initializeComponents();
         }
-
-        waitForData();
     </script>
 
     <div id="container">
         <!-- Toolbar -->
-        <ts-toolbar 
-            id="toolbar" 
-            single-item-actions="edit/Upravit záznam,duplicate/Duplikovat záznam,delete/Smazat záznam" 
-            multiple-items-actions="delete/Smazat vybrané,export/Exportovat vybrané">
-        </ts-toolbar>
+        <ts-toolbar id="toolbar"></ts-toolbar>
 
         <!-- Data Table -->
         <ts-datatable id="datatable"></ts-datatable>
