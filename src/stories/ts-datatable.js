@@ -49,6 +49,10 @@ class TSDataTable extends HTMLElement {
                 #table-container {
                     position: relative;
                     width: 100%;
+                    user-select: none;
+                    -webkit-user-select: none;
+                    -moz-user-select: none;
+                    -ms-user-select: none;
                 }
                 
                 /* Table base styles */
