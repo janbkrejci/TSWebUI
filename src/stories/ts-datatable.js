@@ -764,14 +764,19 @@ class TSDataTable extends HTMLElement {
         const col = this.columnDefinitions.find(c => c.key === colKey);
         if (!col || !col.sortable) return;
         
+        console.log('toggleSort - selectedRowIds before:', this.selectedRowIds.size);
+        
         const currentDir = col.sortDirection || 'none';
         const newDir = currentDir === 'none' ? 'asc' : (currentDir === 'asc' ? 'desc' : 'none');
         
         this.clearOtherSorts(colKey);
         col.sortDirection = newDir;
         
-        this.populateTableRows();
         this.createTableHeaders();
+        this.populateTableRows();
+        this.updatePaginationUI();
+        
+        console.log('toggleSort - selectedRowIds after:', this.selectedRowIds.size);
     }
     
     moveColumn(colKey, direction) {
@@ -907,6 +912,10 @@ class TSDataTable extends HTMLElement {
                 tbody.appendChild(tr);
             });
         }
+        
+        // After rows are rendered, update header tri-state and selection UI
+        this.updateHeaderCheckbox();
+        this.updateSelectionUI();
         
         return true;
     }
@@ -1083,11 +1092,24 @@ class TSDataTable extends HTMLElement {
         const toggle = this.querySelector('#selection-view-toggle');
         if (!toggle) return;
         
-        if (this.selectedRowIds.size > 0) {
-            toggle.classList.remove('invisible');
-        } else {
+        const selectedCount = this.selectedRowIds.size;
+        
+        if (selectedCount === 0) {
+            // Reset mode to all when nothing is selected and hide control
+            if (this.selectionViewMode !== 'all') {
+                this.selectionViewMode = 'all';
+                // Rows may need to be repopulated if we were previously filtered
+                this.populateTableRows();
+                this.updatePaginationUI();
+            }
             toggle.classList.add('invisible');
+            const badge = this.querySelector('#selection-view-badge');
+            if (badge) badge.classList.add('selection-view-badge-hidden');
+            return;
         }
+        
+        // Show control
+        toggle.classList.remove('invisible');
         
         this.updateSelectionViewUI();
     }
@@ -1163,7 +1185,6 @@ class TSDataTable extends HTMLElement {
         this.currentPage = 1;
         this.populateTableRows();
         this.updatePaginationUI();
-        this.updateHeaderCheckbox();
         
         // Emit filter change event for toolbar
         this.emitFilterChange();
