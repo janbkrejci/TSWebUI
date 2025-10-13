@@ -1125,26 +1125,29 @@ class TSDataTable extends HTMLElement {
     updateSelectionViewUI() {
         const badge = this.querySelector('#selection-view-badge');
         const toggleBtn = this.querySelector('#selection-view-toggle-btn');
-        const tooltip = toggleBtn ? toggleBtn.closest('sl-tooltip') : null;
+        const container = this.querySelector('#selection-view-toggle');
+        const tooltip = container ? container.querySelector('sl-tooltip') : null;
         
         if (!badge || !toggleBtn || !tooltip) return;
         
+        let label = '';
         if (this.selectionViewMode === 'all') {
+            label = 'Režim zobrazení: všechny řádky';
             badge.classList.add('selection-view-badge-hidden');
-            badge.setAttribute('name', '');
-            toggleBtn.setAttribute('name', 'funnel');
-            tooltip.setAttribute('content', 'Zobrazit pouze vybrané záznamy');
         } else if (this.selectionViewMode === 'selected') {
+            label = 'Režim zobrazení: jen vybrané řádky';
             badge.classList.remove('selection-view-badge-hidden');
-            badge.setAttribute('name', 'check-circle-fill');
-            toggleBtn.setAttribute('name', 'funnel-fill');
-            tooltip.setAttribute('content', 'Zobrazit pouze nevybrané záznamy');
+            badge.setAttribute('name', 'check');
+            badge.style.color = 'var(--sl-color-success-600)';
         } else {
+            label = 'Režim zobrazení: jen nevybrané řádky';
             badge.classList.remove('selection-view-badge-hidden');
-            badge.setAttribute('name', 'dash-circle-fill');
-            toggleBtn.setAttribute('name', 'funnel-fill');
-            tooltip.setAttribute('content', 'Zobrazit všechny záznamy');
+            badge.setAttribute('name', 'x');
+            badge.style.color = 'var(--sl-color-danger-600)';
         }
+        
+        toggleBtn.setAttribute('title', label);
+        tooltip.setAttribute('content', label);
     }
     
     emitSelectionChange() {
