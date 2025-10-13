@@ -1796,19 +1796,14 @@
                     else skipped++;
                 });
 
-                // Store rejected data for saving via toolbar
-                const importButton = toolbar.getImportButton();
-                if (importButton) {
-                    importButton.rejectedRowsData = rejectedRowsData;
-                }
-
-                // Show results via the toolbar
+                // Show results via the toolbar (includes rejectedRowsData for saving)
                 toolbar.showImportResults({
                     added,
                     updated,
                     rejected,
                     skipped,
-                    rejectedRows
+                    rejectedRows,
+                    rejectedRowsData  // This is needed for saveRejectedRows to work
                 });
             });
 

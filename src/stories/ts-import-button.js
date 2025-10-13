@@ -236,6 +236,19 @@ class TSImportButton extends HTMLElement {
             const ws = wb.Sheets[sheetName];
             const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
 
+            // Check if file has any data rows (not just headers)
+            if (json.length === 0) {
+                // File has only headers, no data - show empty import result directly
+                this.showImportResults({
+                    added: 0,
+                    updated: 0,
+                    rejected: 0,
+                    skipped: 0,
+                    rejectedRowsData: []
+                });
+                return;
+            }
+
             // Validate columns: require all exportable columns to be present by header KEY
             const headersInFile = Object.keys(json[0] || {});
             const missing = [];
