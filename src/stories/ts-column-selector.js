@@ -118,13 +118,22 @@ class TSColumnSelector extends HTMLElement {
 
                 // Handle special actions
                 if (action === 'clear-filters') {
-                    this.dispatchEvent(new CustomEvent('clear-filters'));
+                    this.dispatchEvent(new CustomEvent('clear-filters', {
+                        bubbles: true,
+                        composed: true
+                    }));
                     return;
                 } else if (action === 'select-all') {
-                    this.dispatchEvent(new CustomEvent('select-all-columns'));
+                    this.dispatchEvent(new CustomEvent('select-all-columns', {
+                        bubbles: true,
+                        composed: true
+                    }));
                     return;
                 } else if (action === 'clear-all') {
-                    this.dispatchEvent(new CustomEvent('clear-all-columns'));
+                    this.dispatchEvent(new CustomEvent('clear-all-columns', {
+                        bubbles: true,
+                        composed: true
+                    }));
                     return;
                 }
 
@@ -154,7 +163,9 @@ class TSColumnSelector extends HTMLElement {
                         
                         // Dispatch event
                         this.dispatchEvent(new CustomEvent('column-visibility-changed', { 
-                            detail: { columnKey, visible: selectedItem.checked } 
+                            detail: { columnKey, visible: selectedItem.checked },
+                            bubbles: true,
+                            composed: true
                         }));
                     }
                 }

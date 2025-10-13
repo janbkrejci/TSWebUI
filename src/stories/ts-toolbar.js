@@ -84,52 +84,8 @@ class TSToolbar extends HTMLElement {
     }
 
     setupEventForwarding() {
-        // create-new-record and selection-action-activated already bubble naturally
-        
-        // Forward events from selection-menu
-        const selectionMenu = this.querySelector('#selection-menu');
-        if (selectionMenu) {
-            selectionMenu.addEventListener('unselect-all-rows', (event) => {
-                this.dispatchEvent(new CustomEvent('unselect-all-rows', { 
-                    detail: event.detail
-                    // Internal event, no bubbles
-                }));
-            });
-        }
-
-        // Note: do-import event from import-button bubbles naturally, no need to forward
-
-        // Forward events from column-selector (internal events)
-        const columnSelector = this.querySelector('#column-selector');
-        if (columnSelector) {
-            columnSelector.addEventListener('column-visibility-changed', (event) => {
-                this.dispatchEvent(new CustomEvent('column-visibility-changed', { 
-                    detail: event.detail
-                    // Internal event, no bubbles
-                }));
-            });
-
-            columnSelector.addEventListener('clear-filters', (event) => {
-                this.dispatchEvent(new CustomEvent('clear-filters', { 
-                    detail: event.detail
-                    // Internal event, no bubbles
-                }));
-            });
-
-            columnSelector.addEventListener('select-all-columns', (event) => {
-                this.dispatchEvent(new CustomEvent('select-all-columns', { 
-                    detail: event.detail
-                    // Internal event, no bubbles
-                }));
-            });
-
-            columnSelector.addEventListener('clear-all-columns', (event) => {
-                this.dispatchEvent(new CustomEvent('clear-all-columns', { 
-                    detail: event.detail
-                    // Internal event, no bubbles
-                }));
-            });
-        }
+        // All events now bubble naturally from child components
+        // No need to forward anything - events are caught in ts-table
     }
 
     // Proxy methods to access child components

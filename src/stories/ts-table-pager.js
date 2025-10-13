@@ -256,7 +256,11 @@ class TSTablePager extends HTMLElement {
             }
             event.target.value = correctedValue;
             if (correctedValue !== parseInt(this.getAttribute('currentpage'))) {
-                this.dispatchEvent(new CustomEvent('page-changed', { detail: { page: correctedValue } }));
+                this.dispatchEvent(new CustomEvent('page-changed', { 
+                    detail: { page: correctedValue },
+                    bubbles: true,
+                    composed: true
+                }));
             }
         };
 
@@ -265,7 +269,11 @@ class TSTablePager extends HTMLElement {
         if (itemsPerPageMenu) {
             itemsPerPageMenu.addEventListener('sl-select', (event) => {
                 const selectedValue = parseInt(event.detail.item.getAttribute('data-value'));
-                this.dispatchEvent(new CustomEvent('page-size-changed', { detail: { pageSize: selectedValue } }));
+                this.dispatchEvent(new CustomEvent('page-size-changed', { 
+                    detail: { pageSize: selectedValue },
+                    bubbles: true,
+                    composed: true
+                }));
             });
         }
 
@@ -273,20 +281,36 @@ class TSTablePager extends HTMLElement {
         const pagerButtons = this.querySelectorAll('.pager sl-button');
         if (pagerButtons.length >= 4) {
             // First page button (index 0)
-            pagerButtons[0].addEventListener('click', () => this.dispatchEvent(new CustomEvent('page-changed', { detail: { page: 1 } })));
+            pagerButtons[0].addEventListener('click', () => this.dispatchEvent(new CustomEvent('page-changed', { 
+                detail: { page: 1 },
+                bubbles: true,
+                composed: true
+            })));
 
             // Previous page button (index 1)
-            pagerButtons[1].addEventListener('click', () => this.dispatchEvent(new CustomEvent('page-changed', { detail: { page: parseInt(this.getAttribute('currentpage')) - 1 } })));
+            pagerButtons[1].addEventListener('click', () => this.dispatchEvent(new CustomEvent('page-changed', { 
+                detail: { page: parseInt(this.getAttribute('currentpage')) - 1 },
+                bubbles: true,
+                composed: true
+            })));
 
             // Next page button (index 2)
-            pagerButtons[2].addEventListener('click', () => this.dispatchEvent(new CustomEvent('page-changed', { detail: { page: parseInt(this.getAttribute('currentpage')) + 1 } })));
+            pagerButtons[2].addEventListener('click', () => this.dispatchEvent(new CustomEvent('page-changed', { 
+                detail: { page: parseInt(this.getAttribute('currentpage')) + 1 },
+                bubbles: true,
+                composed: true
+            })));
 
             // Last page button (index 3)
             pagerButtons[3].addEventListener('click', () => {
                 const filteredRecordsCount = parseInt(this.getAttribute('filteredrecordscount')) || 0;
                 const pageSize = parseInt(this.getAttribute('pagesize')) || 5;
                 const totalPages = Math.ceil(filteredRecordsCount / pageSize);
-                this.dispatchEvent(new CustomEvent('page-changed', { detail: { page: totalPages } }));
+                this.dispatchEvent(new CustomEvent('page-changed', { 
+                    detail: { page: totalPages },
+                    bubbles: true,
+                    composed: true
+                }));
             });
         }
 

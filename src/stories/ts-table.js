@@ -119,26 +119,31 @@ class TSTable extends HTMLElement {
             this.toolbar.setColumnFilters(columnFilters);
         });
         
-        // Toolbar events
-        // create-new-record, selection-action-activated, row-clicked, and do-import 
-        // already bubble naturally from child components
+        // Public events bubble naturally from child components:
+        // - create-new-record (from create-record-button)
+        // - selection-action-activated (from selection-menu and datatable)
+        // - row-clicked (from datatable)
+        // - do-import (from import-button)
         
-        this.toolbar.addEventListener('unselect-all-rows', () => {
+        // Internal events - catch and stop propagation
+        this.addEventListener('unselect-all-rows', (event) => {
+            event.stopPropagation();
             this.datatable.unselectAllRows();
         });
         
-        // Note: do-import event from toolbar bubbles naturally, no need to forward
-        
-        this.toolbar.addEventListener('column-visibility-changed', (event) => {
+        this.addEventListener('column-visibility-changed', (event) => {
+            event.stopPropagation();
             const { columnKey, visible } = event.detail;
             this.datatable.updateColumnVisibility(columnKey, visible);
         });
         
-        this.toolbar.addEventListener('clear-filters', () => {
+        this.addEventListener('clear-filters', (event) => {
+            event.stopPropagation();
             this.datatable.clearFilters();
         });
         
-        this.toolbar.addEventListener('select-all-columns', () => {
+        this.addEventListener('select-all-columns', (event) => {
+            event.stopPropagation();
             this.columnDefinitions.forEach(col => {
                 if (!this.unshowableColumns.includes(col.key)) {
                     this.datatable.updateColumnVisibility(col.key, true);
@@ -147,7 +152,8 @@ class TSTable extends HTMLElement {
             this.toolbar.refreshColumnMenu();
         });
         
-        this.toolbar.addEventListener('clear-all-columns', () => {
+        this.addEventListener('clear-all-columns', (event) => {
+            event.stopPropagation();
             this.columnDefinitions.forEach(col => {
                 if (!this.unhideableColumns.includes(col.key)) {
                     this.datatable.updateColumnVisibility(col.key, false);
@@ -157,12 +163,14 @@ class TSTable extends HTMLElement {
         });
         
         // Pager events
-        this.pager.addEventListener('page-changed', (event) => {
+        this.addEventListener('page-changed', (event) => {
+            event.stopPropagation();
             const { page } = event.detail;
             this.datatable.goToPage(page);
         });
         
-        this.pager.addEventListener('page-size-changed', (event) => {
+        this.addEventListener('page-size-changed', (event) => {
+            event.stopPropagation();
             const { pageSize } = event.detail;
             this.datatable.changePageSize(pageSize);
         });
