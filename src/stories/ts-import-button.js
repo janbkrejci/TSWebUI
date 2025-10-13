@@ -278,7 +278,9 @@ class TSImportButton extends HTMLElement {
                 detail: { 
                     importData: mapped,
                     file: file 
-                } 
+                },
+                bubbles: true,
+                composed: true
             }));
 
         } catch (e) {

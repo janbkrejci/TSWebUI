@@ -119,61 +119,7 @@ class TSTable extends HTMLElement {
             this.datatable.unselectAllRows();
         });
         
-        this.toolbar.addEventListener('do-import', (event) => {
-            const { importData, file } = event.detail;
-            
-            // Process import data
-            let added = 0, updated = 0, rejected = 0, skipped = 0;
-            const rejectedRows = [];
-            const rejectedRowsData = [];
-            const rows = [];
-            
-            importData.forEach(({ __index, data }) => {
-                // Randomly reject ~20% of rows for testing purposes
-                const shouldRejectRandomly = Math.random() < 0.2;
-                
-                if (shouldRejectRandomly) {
-                    rejected++;
-                    rejectedRows.push(__index);
-                    rejectedRowsData.push(data);
-                    return;
-                }
-                
-                // Check if row with same ID exists (for update vs add logic)
-                const existingRow = this.datatable.getAllRows().find(r => r.id === data.id);
-                
-                if (!data.id) {
-                    rejected++;
-                    rejectedRows.push(__index);
-                    rejectedRowsData.push(data);
-                } else if (existingRow) {
-                    this.datatable.updateExistingRow(data.id, data);
-                    updated++;
-                    rows.push({ ...data, __importAction: 'updated' });
-                } else {
-                    this.datatable.addImportedRow(data);
-                    added++;
-                    rows.push({ ...data, __importAction: 'added' });
-                }
-            });
-            
-            // Show results via the toolbar
-            this.toolbar.showImportResults({
-                added,
-                updated,
-                rejected,
-                skipped,
-                rejectedRows,
-                rejectedRowsData
-            });
-            
-            // Dispatch event with processed rows
-            this.dispatchEvent(new CustomEvent('do-import', {
-                detail: { rows, file },
-                bubbles: true,
-                composed: true
-            }));
-        });
+        // Note: do-import event from toolbar bubbles naturally, no need to forward
         
         this.toolbar.addEventListener('column-visibility-changed', (event) => {
             const { columnKey, visible } = event.detail;

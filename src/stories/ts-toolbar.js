@@ -111,17 +111,7 @@ class TSToolbar extends HTMLElement {
             });
         }
 
-        // Forward events from import-button
-        const importBtn = this.querySelector('#import-btn');
-        if (importBtn) {
-            importBtn.addEventListener('do-import', (event) => {
-                this.dispatchEvent(new CustomEvent('do-import', { 
-                    detail: event.detail,
-                    bubbles: true,
-                    composed: true
-                }));
-            });
-        }
+        // Note: do-import event from import-button bubbles naturally, no need to forward
 
         // Forward events from column-selector
         const columnSelector = this.querySelector('#column-selector');
