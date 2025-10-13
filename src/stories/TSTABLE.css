@@ -465,5 +465,5 @@ th[data-column-key] {
 }
 
 /* Keep checkbox and menu columns narrow (match JS colgroup) */
-th.checkbox-column, td.checkbox-column { width: 0; min-width: 44px; max-width: 44px; padding: 0 !important}
-th.menu-column, td.menu-column { width: 0; min-width: 44px; max-width: 44px; padding: 0 !important}
+th.checkbox-column, td.checkbox-column { width: 44px !important; min-width: 44px; max-width: 44px; padding: 0 !important}
+th.menu-column, td.menu-column { width: 44px !important; min-width: 44px; max-width: 44px; padding: 0 !important}
