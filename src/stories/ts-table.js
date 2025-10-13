@@ -8,7 +8,305 @@ import './ts-import-button.js';
 import './ts-selection-menu.js';
 import './ts-column-selector.js';
 
+class TSTable extends HTMLElement {
+    constructor() {
+        super();
+        
+        // Internal data
+        this.tableData = [];
+        this.columnDefinitions = [];
+        this.preselectedColumns = [];
+        this.unhideableColumns = [];
+        this.unshowableColumns = [];
+        this.singleItemActions = '';
+        this.multipleItemsActions = '';
+        
+        // Component references
+        this.datatable = null;
+        this.toolbar = null;
+        this.pager = null;
+        
+        // Create structure
+        this.innerHTML = `
+            <style>
+                :host {
+                    display: block;
+                    width: 100%;
+                }
+                
+                .ts-table-container {
+                    display: flex;
+                    flex-direction: column;
+                    width: 100%;
+                }
+            </style>
+            <div class="ts-table-container">
+                <ts-toolbar id="toolbar"></ts-toolbar>
+                <ts-datatable id="datatable"></ts-datatable>
+                <ts-table-pager id="pager"></ts-table-pager>
+            </div>
+        `;
+    }
+    
+    connectedCallback() {
+        // Get component references
+        this.datatable = this.querySelector('#datatable');
+        this.toolbar = this.querySelector('#toolbar');
+        this.pager = this.querySelector('#pager');
+        
+        // Setup event listeners
+        this.setupEventListeners();
+    }
+    
+    setupEventListeners() {
+        if (!this.datatable || !this.toolbar || !this.pager) return;
+        
+        // Datatable events
+        this.datatable.addEventListener('pagination-changed', (event) => {
+            const { totalRecordsCount, filteredRecordsCount, pageSize, currentPage, pageSizes } = event.detail;
+            this.pager.setAttribute('totalrecordscount', totalRecordsCount);
+            this.pager.setAttribute('filteredrecordscount', filteredRecordsCount);
+            this.pager.setAttribute('pagesize', pageSize);
+            this.pager.setAttribute('currentpage', currentPage);
+            this.pager.setAttribute('pagesizes', JSON.stringify(pageSizes));
+        });
+        
+        this.datatable.addEventListener('selection-changed', (event) => {
+            const { selectedRowIds, selectedCount } = event.detail;
+            this.toolbar.setSelectedRows(selectedRowIds);
+            this.toolbar.setSelectionCount(selectedCount);
+            
+            if (selectedCount > 0) {
+                this.toolbar.showSelectionMenu();
+            } else {
+                this.toolbar.hideSelectionMenu();
+            }
+        });
+        
+        this.datatable.addEventListener('filters-changed', (event) => {
+            const { columnFilters, hasActiveFilters } = event.detail;
+            this.toolbar.setColumnFilters(columnFilters);
+        });
+        
+        // Forward row-action event as selection-action-activated with rows array
+        this.datatable.addEventListener('row-action', (event) => {
+            const { action, row } = event.detail;
+            this.dispatchEvent(new CustomEvent('selection-action-activated', {
+                detail: { action, rows: [row] },
+                bubbles: true,
+                composed: true
+            }));
+        });
+        
+        // Toolbar events
+        this.toolbar.addEventListener('new-record', () => {
+            this.dispatchEvent(new CustomEvent('create-new-record', {
+                bubbles: true,
+                composed: true
+            }));
+        });
+        
+        this.toolbar.addEventListener('selection-action-activated', (event) => {
+            const { action, selectedRows } = event.detail;
+            this.dispatchEvent(new CustomEvent('selection-action-activated', {
+                detail: { action, rows: selectedRows },
+                bubbles: true,
+                composed: true
+            }));
+        });
+        
+        this.toolbar.addEventListener('unselect-all-rows', () => {
+            this.datatable.unselectAllRows();
+        });
+        
+        this.toolbar.addEventListener('do-import', (event) => {
+            const { importData, file } = event.detail;
+            
+            // Process import data
+            let added = 0, updated = 0, rejected = 0, skipped = 0;
+            const rejectedRows = [];
+            const rejectedRowsData = [];
+            const rows = [];
+            
+            importData.forEach(({ __index, data }) => {
+                // Randomly reject ~20% of rows for testing purposes
+                const shouldRejectRandomly = Math.random() < 0.2;
+                
+                if (shouldRejectRandomly) {
+                    rejected++;
+                    rejectedRows.push(__index);
+                    rejectedRowsData.push(data);
+                    return;
+                }
+                
+                // Check if row with same ID exists (for update vs add logic)
+                const existingRow = this.datatable.getAllRows().find(r => r.id === data.id);
+                
+                if (!data.id) {
+                    rejected++;
+                    rejectedRows.push(__index);
+                    rejectedRowsData.push(data);
+                } else if (existingRow) {
+                    this.datatable.updateExistingRow(data.id, data);
+                    updated++;
+                    rows.push({ ...data, __importAction: 'updated' });
+                } else {
+                    this.datatable.addImportedRow(data);
+                    added++;
+                    rows.push({ ...data, __importAction: 'added' });
+                }
+            });
+            
+            // Show results via the toolbar
+            this.toolbar.showImportResults({
+                added,
+                updated,
+                rejected,
+                skipped,
+                rejectedRows,
+                rejectedRowsData
+            });
+            
+            // Dispatch event with processed rows
+            this.dispatchEvent(new CustomEvent('do-import', {
+                detail: { rows, file },
+                bubbles: true,
+                composed: true
+            }));
+        });
+        
+        this.toolbar.addEventListener('column-visibility-changed', (event) => {
+            const { columnKey, visible } = event.detail;
+            this.datatable.updateColumnVisibility(columnKey, visible);
+        });
+        
+        this.toolbar.addEventListener('clear-filters', () => {
+            this.datatable.clearFilters();
+        });
+        
+        this.toolbar.addEventListener('select-all-columns', () => {
+            this.columnDefinitions.forEach(col => {
+                if (!this.unshowableColumns.includes(col.key)) {
+                    this.datatable.updateColumnVisibility(col.key, true);
+                }
+            });
+            this.toolbar.refreshColumnMenu();
+        });
+        
+        this.toolbar.addEventListener('clear-all-columns', () => {
+            this.columnDefinitions.forEach(col => {
+                if (!this.unhideableColumns.includes(col.key)) {
+                    this.datatable.updateColumnVisibility(col.key, false);
+                }
+            });
+            this.toolbar.refreshColumnMenu();
+        });
+        
+        // Pager events
+        this.pager.addEventListener('page-changed', (event) => {
+            const { page } = event.detail;
+            this.datatable.goToPage(page);
+        });
+        
+        this.pager.addEventListener('page-size-changed', (event) => {
+            const { pageSize } = event.detail;
+            this.datatable.changePageSize(pageSize);
+        });
+    }
+    
+    // Public API methods
+    setData(data) {
+        this.tableData = data;
+        if (this.datatable) {
+            this.datatable.setData(data);
+        }
+    }
+    
+    setColumnDefinitions(definitions) {
+        this.columnDefinitions = definitions;
+        if (this.datatable) {
+            this.datatable.setColumnDefinitions(definitions);
+        }
+        if (this.toolbar) {
+            this.toolbar.setColumnDefinitions(definitions);
+        }
+    }
+    
+    setPreselectedColumns(columns) {
+        this.preselectedColumns = columns;
+        if (this.datatable) {
+            this.datatable.setPreselectedColumns(columns);
+        }
+    }
+    
+    setUnhideableColumns(columns) {
+        this.unhideableColumns = columns;
+        if (this.datatable) {
+            this.datatable.setUnhideableColumns(columns);
+        }
+        if (this.toolbar) {
+            this.toolbar.setUnhideableColumns(columns);
+        }
+    }
+    
+    setUnshowableColumns(columns) {
+        this.unshowableColumns = columns;
+        if (this.datatable) {
+            this.datatable.setUnshowableColumns(columns);
+        }
+        if (this.toolbar) {
+            this.toolbar.setUnshowableColumns(columns);
+        }
+    }
+    
+    setSingleItemActions(actions) {
+        this.singleItemActions = actions;
+        if (this.datatable) {
+            this.datatable.setMenuActions(actions);
+        }
+        if (this.toolbar) {
+            this.toolbar.setSingleItemActions(actions);
+        }
+    }
+    
+    setMultipleItemsActions(actions) {
+        this.multipleItemsActions = actions;
+        if (this.toolbar) {
+            this.toolbar.setMultipleItemsActions(actions);
+        }
+    }
+    
+    initialize() {
+        if (!this.datatable || !this.toolbar) return;
+        
+        // Initialize datatable
+        this.datatable.initialize();
+        
+        // Configure toolbar
+        this.toolbar.setColumnFilters({});
+        
+        // Configure toolbar export data provider
+        this.toolbar.setExportData(() => ({
+            tableData: this.datatable.getAllRows(),
+            columnDefinitions: this.datatable.getColumnDefinitions(),
+            selectedRowIds: Array.from(this.datatable.selectedRowIds),
+            columnFilters: this.datatable.getColumnFilters(),
+            getVisibleColumns: () => this.datatable.getVisibleColumns(),
+            filteredData: this.datatable.getFilteredRows(),
+            getSortedActiveData: () => this.datatable.getFilteredRows()
+        }));
+        
+        // Configure toolbar import data provider
+        this.toolbar.setImportData(() => ({
+            columnDefinitions: this.datatable.getColumnDefinitions()
+        }));
+    }
+}
+
+customElements.define('ts-table', TSTable);
+
 // Export all web components for external use
+export { TSTable };
 export { TSTablePager } from './ts-table-pager.js';
 export { TSToolbar } from './ts-toolbar.js';
 export { TSDataTable } from './ts-datatable.js';

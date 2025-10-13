@@ -3,221 +3,55 @@
     <script src="/table-data.js"></script>
     <script src="/column-definitions.js"></script>
     <script>
-        // References to components
-        var datatable = null;
-        var toolbar = null;
-        var pager = null;
+        // References to component
+        var table = null;
 
-        // Row menu actions configuration
+        // Configuration
         const singleItemActions = 'edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek';
         const multipleItemsActions = 'delete/Smazat vybrané,export/Exportovat vybrané';
-
-        // Column visibility configuration
         const preselectedColumns = ['name', 'email', 'turnover', 'contractDate', 'approved'];
         const unhideableColumns = ['name', 'email'];
         const unshowableColumns = ['id'];
 
-        // Initialize components when DOM is ready
+        // Initialize component when DOM is ready
         function initializeComponents() {
-            datatable = document.getElementById('datatable');
-            toolbar = document.getElementById('toolbar');
-            pager = document.getElementById('table-footer');
+            table = document.getElementById('table');
 
-            // Setup event listeners FIRST (before initialization)
+            // Setup event listeners
             setupEventListeners();
 
-            // Configure datatable
-            datatable.setData(tableData);
-            datatable.setColumnDefinitions(columnDefinitions);
-            datatable.setMenuActions(singleItemActions);
-            datatable.setPreselectedColumns(preselectedColumns);
-            datatable.setUnhideableColumns(unhideableColumns);
-            datatable.setUnshowableColumns(unshowableColumns);
-            datatable.initialize();
-
-            // Configure toolbar
-            toolbar.setColumnDefinitions(columnDefinitions);
-            toolbar.setColumnFilters({});
-            toolbar.setUnshowableColumns(unshowableColumns);
-            toolbar.setUnhideableColumns(unhideableColumns);
-            toolbar.setSingleItemActions(singleItemActions);
-            toolbar.setMultipleItemsActions(multipleItemsActions);
-
-            // Configure toolbar export data provider
-            toolbar.setExportData(() => ({
-                tableData: datatable.getAllRows(),
-                columnDefinitions: datatable.getColumnDefinitions(),
-                selectedRowIds: Array.from(datatable.selectedRowIds),
-                columnFilters: datatable.getColumnFilters(),
-                getVisibleColumns: () => datatable.getVisibleColumns(),
-                filteredData: datatable.getFilteredRows(),
-                getSortedActiveData: () => datatable.getFilteredRows()
-            }));
-
-            // Configure toolbar import data provider
-            toolbar.setImportData(() => ({
-                columnDefinitions: datatable.getColumnDefinitions()
-            }));
+            // Configure table
+            table.setData(tableData);
+            table.setColumnDefinitions(columnDefinitions);
+            table.setPreselectedColumns(preselectedColumns);
+            table.setUnhideableColumns(unhideableColumns);
+            table.setUnshowableColumns(unshowableColumns);
+            table.setSingleItemActions(singleItemActions);
+            table.setMultipleItemsActions(multipleItemsActions);
+            table.initialize();
         }
 
         function setupEventListeners() {
-            // Datatable events
-            datatable.addEventListener('pagination-changed', (event) => {
-                const { totalRecordsCount, filteredRecordsCount, pageSize, currentPage, pageSizes } = event.detail;
-                pager.setAttribute('totalrecordscount', totalRecordsCount);
-                pager.setAttribute('filteredrecordscount', filteredRecordsCount);
-                pager.setAttribute('pagesize', pageSize);
-                pager.setAttribute('currentpage', currentPage);
-                pager.setAttribute('pagesizes', JSON.stringify(pageSizes));
-            });
-
-            datatable.addEventListener('selection-changed', (event) => {
-                const { selectedRowIds, selectedCount } = event.detail;
-                toolbar.setSelectedRows(selectedRowIds);
-                toolbar.setSelectionCount(selectedCount);
-                
-                if (selectedCount > 0) {
-                    toolbar.showSelectionMenu();
-                } else {
-                    toolbar.hideSelectionMenu();
-                }
-            });
-
-            datatable.addEventListener('filters-changed', (event) => {
-                const { columnFilters, hasActiveFilters } = event.detail;
-                toolbar.setColumnFilters(columnFilters);
-            });
-
-            // Toolbar events
-            toolbar.addEventListener('new-record', () => {
+            // Table events
+            table.addEventListener('create-new-record', () => {
                 console.log('Create new record');
-                // Implement new record dialog
             });
 
-            toolbar.addEventListener('selection-action-activated', (event) => {
-                const { action, selectedRows } = event.detail;
-                console.log('Selection action:', action, 'for', selectedRows.length, 'rows');
-                
-                if (action === 'delete') {
-                    console.log('Delete selected rows:', selectedRows);
-                    // Implement delete logic
-                } else if (action === 'export') {
-                    console.log('Export selected rows:', selectedRows);
-                    // Implement export logic
-                }
+            table.addEventListener('selection-action-activated', (event) => {
+                const { action, rows } = event.detail;
+                console.log('Action:', action, 'for', rows.length, 'row(s):', rows);
             });
 
-            toolbar.addEventListener('unselect-all-rows', () => {
-                datatable.unselectAllRows();
-            });
-
-            toolbar.addEventListener('do-import', (event) => {
-                const { importData, file } = event.detail;
-                console.log('Import data received:', importData);
-                
-                // Process import data
-                let added = 0, updated = 0, rejected = 0, skipped = 0;
-                const rejectedRows = [];
-                const rejectedRowsData = [];
-                
-                importData.forEach(({ __index, data }) => {
-                    // Randomly reject ~20% of rows for testing purposes
-                    const shouldRejectRandomly = Math.random() < 0.2;
-                    
-                    if (shouldRejectRandomly) {
-                        // Randomly reject this row for testing
-                        rejected++;
-                        rejectedRows.push(__index);
-                        rejectedRowsData.push(data);
-                        return;
-                    }
-                    
-                    // Check if row with same ID exists (for update vs add logic)
-                    const existingRow = datatable.getAllRows().find(r => r.id === data.id);
-                    
-                    if (!data.id) {
-                        // Reject rows without ID
-                        rejected++;
-                        rejectedRows.push(__index);
-                        rejectedRowsData.push(data);
-                    } else if (existingRow) {
-                        // Update existing row
-                        datatable.updateExistingRow(data.id, data);
-                        updated++;
-                    } else {
-                        // Add new row with provided ID
-                        datatable.addImportedRow(data);
-                        added++;
-                    }
-                });
-
-                // Show results via the toolbar
-                toolbar.showImportResults({
-                    added,
-                    updated,
-                    rejected,
-                    skipped,
-                    rejectedRows,
-                    rejectedRowsData
-                });
-            });
-
-            toolbar.addEventListener('column-visibility-changed', (event) => {
-                const { columnKey, visible } = event.detail;
-                datatable.updateColumnVisibility(columnKey, visible);
-            });
-
-            toolbar.addEventListener('clear-filters', () => {
-                datatable.clearFilters();
-            });
-
-            toolbar.addEventListener('select-all-columns', () => {
-                columnDefinitions.forEach(col => {
-                    if (!unshowableColumns.includes(col.key)) {
-                        datatable.updateColumnVisibility(col.key, true);
-                    }
-                });
-                toolbar.refreshColumnMenu();
-            });
-
-            toolbar.addEventListener('clear-all-columns', () => {
-                columnDefinitions.forEach(col => {
-                    if (!unhideableColumns.includes(col.key)) {
-                        datatable.updateColumnVisibility(col.key, false);
-                    }
-                });
-                toolbar.refreshColumnMenu();
-            });
-
-            // Pager events
-            pager.addEventListener('page-changed', (event) => {
-                const { page } = event.detail;
-                datatable.goToPage(page);
-            });
-
-            pager.addEventListener('page-size-changed', (event) => {
-                const { pageSize } = event.detail;
-                datatable.changePageSize(pageSize);
+            table.addEventListener('do-import', (event) => {
+                const { rows, file } = event.detail;
+                console.log('Import completed:', rows.length, 'rows from file:', file.name);
             });
         }
 
-        // Initialize when DOM is ready
-        // if (document.readyState === 'loading') {
-        //     document.addEventListener('DOMContentLoaded', initializeComponents);
-        // } else {
-        //     initializeComponents();
-        // }
         initializeComponents();
     </script>
 
     <div id="container">
-        <!-- Toolbar -->
-        <ts-toolbar id="toolbar"></ts-toolbar>
-
-        <!-- Data Table -->
-        <ts-datatable id="datatable"></ts-datatable>
-
-        <!-- Footer / Pager -->
-        <ts-table-pager id="table-footer"></ts-table-pager>
+        <ts-table id="table"></ts-table>
     </div>
 </div>
