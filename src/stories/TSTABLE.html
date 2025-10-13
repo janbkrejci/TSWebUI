@@ -1,24 +1,24 @@
 <div class="sl-theme-{{theme}} base-container main-container">
     <script>
         // Pagination state
-        let currentPage = 1;
-        let itemsPerPage = 5;
-        const availablePageSizes = [5, 10, 20, 50, 100];
+        var currentPage = 1;
+        var itemsPerPage = 5;
+        var availablePageSizes = [5, 10, 20, 50, 100];
 
         // Column filtering state
-        let columnFilters = {}; // Object to store active filters by column key
-        let filteredData = []; // Cached filtered data
-        let filterTimeout = null; // Timeout for debouncing
-        const FILTER_DEBOUNCE_DELAY = 500; // Half second debounce
+        var columnFilters = {}; // Object to store active filters by column key
+        var filteredData = []; // Cached filtered data
+        var filterTimeout = null; // Timeout for debouncing
+        var FILTER_DEBOUNCE_DELAY = 500; // Half second debounce
 
         // Row selection state
-        let selectedRowIds = new Set();
+        var selectedRowIds = new Set();
         // Selection view mode for filtering by selection
         // Possible values: 'all' | 'selected' | 'unselected'
-        let selectionViewMode = 'all';
+        var selectionViewMode = 'all';
 
         // Table data - expanded dataset for pagination testing
-        const tableData = [
+        var tableData = [
             {
                 id: 1,
                 name: "Jana Nováková",
@@ -347,7 +347,7 @@
         ];
 
         // Row menu actions configuration
-        const menuActions = [
+        var menuActions = [
             { actionName: 'edit', label: 'Edit' },
             { actionName: 'duplicate', label: 'Duplicate' },
             { actionName: 'delete', label: 'Delete' },
@@ -361,7 +361,7 @@
         }
 
         // Column definitions for dynamic table creation
-        const columnDefinitions = [
+        var columnDefinitions = [
             {
                 key: 'id',
                 title: 'ID',
@@ -508,9 +508,9 @@
         ];
 
         // Column visibility configuration
-        const preselectedColumns = ['name', 'email', 'turnover', 'contractDate', 'approved'];
-        const unhideableColumns = ['name', 'email'];
-        const unshowableColumns = ['id']; // These columns are hidden and cannot be shown in column selection menu
+        var preselectedColumns = ['name', 'email', 'turnover', 'contractDate', 'approved'];
+        var unhideableColumns = ['name', 'email'];
+        var unshowableColumns = ['id']; // These columns are hidden and cannot be shown in column selection menu
 
         // Function to get visible columns based on column definitions, sorted by order
         function getVisibleColumns() {
@@ -1019,11 +1019,11 @@
         }
 
         // ---- Column Resize Logic ----
-        let isResizing = false;
-        let resizeColKey = null;
-        let startX = 0;
-    let startWidth = 0;
-    let lastResizeEnd = 0;
+        var isResizing = false;
+        var resizeColKey = null;
+        var startX = 0;
+    var startWidth = 0;
+    var lastResizeEnd = 0;
 
         function getColumnDefByKey(key) {
             return columnDefinitions.find(c => c.key === key);
@@ -1566,7 +1566,7 @@
         }
 
         // Track open dropdown for overlay management
-        let currentOpenDropdown = null;
+        var currentOpenDropdown = null;
 
         // Initialize overlay event listener
         function initializeDropdownOverlay() {
@@ -1599,7 +1599,7 @@
         }
 
         // Handle row clicks
-        let rowClicked = (event) => {
+        var rowClicked = (event) => {
             // Don't fire row clicked if clicking on checkbox or dropdown elements
             if (event.target.closest('sl-checkbox') || event.target.tagName === 'SL-CHECKBOX' ||
                 event.target.closest('sl-dropdown') || event.target.closest('.menu-column')) {
@@ -2295,7 +2295,7 @@
         }
 
         // Handle new-record event from the web component
-        const createRecordButton = document.querySelector('ts-create-record-button');
+        var createRecordButton = document.querySelector('ts-create-record-button');
         if (createRecordButton) {
             createRecordButton.addEventListener('new-record', () => {
                 alert('New record event was fired');
@@ -2303,7 +2303,7 @@
         }
 
         // Handle do-import event from the web component
-        const importButton = document.querySelector('ts-import-button');
+        var importButton = document.querySelector('ts-import-button');
         if (importButton) {
             importButton.addEventListener('do-import', (event) => {
                 const { importData, file } = event.detail;
@@ -2342,7 +2342,7 @@
         }
 
         // Handle selection-action-activated event from the web component
-        const selectionMenu = document.getElementById('selection-menu');
+        var selectionMenu = document.getElementById('selection-menu');
         if (selectionMenu) {
             selectionMenu.addEventListener('selection-action-activated', (event) => {
                 const action = event.detail.action;
@@ -2391,4 +2391,3 @@
         <div id="dropdown-overlay" class="dropdown-overlay hidden"></div>
     </div>
 </div>
-<script type="module" src="../ts-table.js"></script>
