@@ -933,6 +933,7 @@ class TSDataTable extends HTMLElement {
         
         // Checkbox cell
         const checkboxCell = document.createElement('td');
+        checkboxCell.className = 'checkbox-column';
         checkboxCell.innerHTML = '<sl-checkbox class="row-select"></sl-checkbox>';
         const rowCheckbox = checkboxCell.querySelector('sl-checkbox');
         rowCheckbox.checked = this.selectedRowIds.has(String(row.id));
