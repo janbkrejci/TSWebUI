@@ -242,7 +242,7 @@ class TSTable extends HTMLElement {
         this.toolbar.setExportData(() => ({
             tableData: this.datatable.getAllRows(),
             columnDefinitions: this.datatable.getColumnDefinitions(),
-            selectedRowIds: Array.from(this.datatable.selectedRowIds),
+            selectedRowIds: this.datatable.selectedRowIds, // Keep as Set, don't convert to Array
             columnFilters: this.datatable.getColumnFilters(),
             getVisibleColumns: () => this.datatable.getVisibleColumns(),
             filteredData: this.datatable.getFilteredRows(),

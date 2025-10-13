@@ -72,6 +72,7 @@ class TSExportButton extends HTMLElement {
         const colsGroup = this.querySelector('#export-columns-group');
         const rowsTitle = this.querySelector('#export-rows-section .export-section-title');
         const colsTitle = this.querySelector('#export-columns-section .export-section-title');
+        const confirmBtn = this.querySelector('#export-confirm-btn');
 
         if (!rowsGroup || !colsGroup) return;
 
@@ -102,6 +103,11 @@ class TSExportButton extends HTMLElement {
         if (colsTitle) {
             colsTitle.textContent = `Sloupce (${colsCount})`;
         }
+
+        // Disable confirm button if no rows to export
+        if (confirmBtn) {
+            confirmBtn.disabled = rowsCount === 0;
+        }
     }
 
     setupEventListeners() {
@@ -131,9 +137,11 @@ class TSExportButton extends HTMLElement {
     // Export helpers
     getExportableRows(option) {
         const { tableData, selectedRowIds, getSortedActiveData } = this.dataProvider();
+        console.log('getExportableRows:', option, 'selectedRowIds:', selectedRowIds, 'size:', selectedRowIds?.size);
         // option: 'all' | 'filtered' | 'selected' | 'filtered-selected'
         if (option === 'selected') {
-            const selected = tableData.filter(r => selectedRowIds.has(r.id));
+            const selected = tableData.filter(r => selectedRowIds.has(String(r.id)));
+            console.log('selected rows:', selected.length);
             return selected;
         }
         if (option === 'filtered') {
@@ -142,7 +150,7 @@ class TSExportButton extends HTMLElement {
         if (option === 'filtered-selected') {
             // Selected rows from sorted filtered data
             const sortedFilteredData = getSortedActiveData();
-            return sortedFilteredData.filter(r => selectedRowIds.has(r.id));
+            return sortedFilteredData.filter(r => selectedRowIds.has(String(r.id)));
         }
         return tableData;
     }
