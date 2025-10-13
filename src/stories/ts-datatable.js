@@ -779,8 +779,6 @@ class TSDataTable extends HTMLElement {
         const col = this.columnDefinitions.find(c => c.key === colKey);
         if (!col || !col.sortable) return;
         
-        console.log('toggleSort - selectedRowIds before:', this.selectedRowIds.size);
-        
         const currentDir = col.sortDirection || 'none';
         const newDir = currentDir === 'none' ? 'asc' : (currentDir === 'asc' ? 'desc' : 'none');
         
@@ -790,8 +788,6 @@ class TSDataTable extends HTMLElement {
         this.createTableHeaders();
         this.populateTableRows();
         this.updatePaginationUI();
-        
-        console.log('toggleSort - selectedRowIds after:', this.selectedRowIds.size);
     }
     
     moveColumn(colKey, direction) {
