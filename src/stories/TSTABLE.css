@@ -378,13 +378,17 @@ th[data-column-key] {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-#data-table thead th { position: relative; }
+#data-table thead th { position: relative;
+    padding-left: 8px;
+    padding-right: 24px; /* space for resizer handle */
+    
+}
 /* Header cell content - contains title, sort indicators, ordering controls */
 .header-cell-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.5em 0;
+    padding: 0;
     min-height: 24px;
 }
 
@@ -405,7 +409,7 @@ th[data-column-key] {
 .header-cell-content .column-header-content {
     display: flex;
     align-items: center;
-    gap: 0.5em;
+    /* gap: 0.5em; */
     width: 100%;
 }
 
@@ -425,7 +429,8 @@ th[data-column-key] {
 
 /* Filter cell content - contains filter inputs */
 .filter-cell-content {
-    padding: 0.25em 0;
+    padding: 0;
+    padding-top: 4px;
 }
 
 .filter-cell-content sl_input,
@@ -445,14 +450,14 @@ th[data-column-key] {
 }
 
 /* Ensure right gap to resizer equals (left padding + visual comfort) */
-.filter-cell-content { margin-right: 14px; }
+/* .filter-cell-content { margin-right: 14px; } */
 
 /* Resizer handle */
 .col-resizer {
     position: absolute;
     top: 0;
-    right: 0;
-    width: 14px; /* wider grip */
+    right: 00;
+    width: 20px; /* wider grip */
     height: 100%;
     cursor: col-resize;
     user-select: none;
@@ -480,5 +485,5 @@ th[data-column-key] {
 }
 
 /* Keep checkbox and menu columns narrow (match JS colgroup) */
-th.checkbox-column, td.checkbox-column { width: 44px; min-width: 44px; max-width: 44px; }
-th.menu-column, td.menu-column { width: 44px; min-width: 44px; max-width: 44px; }
+th.checkbox-column, td.checkbox-column { width: 44px; min-width: 44px; max-width: 44px; padding: 0 !important}
+th.menu-column, td.menu-column { width: 44px; min-width: 44px; max-width: 44px; padding: 0 !important;}
