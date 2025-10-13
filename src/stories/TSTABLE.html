@@ -48,8 +48,8 @@
             });
             
             table.addEventListener('row-clicked', (event) => {
-                const { row } = event.detail;
-                console.log('Row clicked:', row);
+                const { row, columnKey } = event.detail;
+                console.log('Row clicked:', row, 'in column:', columnKey);
             });
 
             table.addEventListener('do-import', (event) => {

@@ -69,7 +69,7 @@ class TSToolbar extends HTMLElement {
 
     updateChildAttributes() {
         // Forward attributes to selection menu
-        const selectionMenu = this.querySelector('#selection-menu');
+        const selectionMenu = this.getSelectionMenu();
         if (selectionMenu) {
             const singleItemActions = this.getAttribute('single-item-actions');
             const multipleItemsActions = this.getAttribute('multiple-items-actions');

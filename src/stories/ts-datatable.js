@@ -730,13 +730,24 @@ class TSDataTable extends HTMLElement {
             }
             
             const tr = e.target.closest('tr');
-            if (tr && tr.hasAttribute('data-row-id')) {
+            const td = e.target.closest('td');
+            
+            if (tr && tr.hasAttribute('data-row-id') && td) {
                 const rowId = String(tr.getAttribute('data-row-id'));
                 const row = this.tableData.find(r => String(r.id) === rowId);
                 
                 if (row) {
+                    // Find the column key based on td index
+                    // Index 0 is checkbox, index 1 is menu, data columns start at index 2
+                    const tdIndex = Array.from(tr.children).indexOf(td);
+                    const visibleColumns = this.getVisibleColumns();
+                    const columnIndex = tdIndex - 2; // Subtract checkbox and menu columns
+                    const columnKey = columnIndex >= 0 && columnIndex < visibleColumns.length 
+                        ? visibleColumns[columnIndex].key 
+                        : null;
+                    
                     this.dispatchEvent(new CustomEvent('row-clicked', {
-                        detail: { row },
+                        detail: { row, columnKey },
                         bubbles: true,
                         composed: true
                     }));
