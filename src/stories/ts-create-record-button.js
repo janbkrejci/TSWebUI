@@ -23,7 +23,11 @@ class TSCreateRecordButton extends HTMLElement {
         const button = this.querySelector('.create-record-btn');
         if (button) {
             button.addEventListener('click', () => {
-                this.dispatchEvent(new CustomEvent('new-record', { detail: {} }));
+                this.dispatchEvent(new CustomEvent('create-new-record', { 
+                    detail: {},
+                    bubbles: true,
+                    composed: true
+                }));
             });
         }
     }

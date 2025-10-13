@@ -84,73 +84,49 @@ class TSToolbar extends HTMLElement {
     }
 
     setupEventForwarding() {
-        // Forward events from create-record-button
-        const createRecordBtn = this.querySelector('#create-record-btn');
-        if (createRecordBtn) {
-            createRecordBtn.addEventListener('new-record', (event) => {
-                this.dispatchEvent(new CustomEvent('new-record', { 
-                    detail: event.detail,
-                    bubbles: true,
-                    composed: true
-                }));
-            });
-        }
-
+        // create-new-record and selection-action-activated already bubble naturally
+        
         // Forward events from selection-menu
         const selectionMenu = this.querySelector('#selection-menu');
         if (selectionMenu) {
-            selectionMenu.addEventListener('selection-action-activated', (event) => {
-                event.stopPropagation(); // Stop original event from bubbling
-                this.dispatchEvent(new CustomEvent('selection-action-activated', { 
-                    detail: event.detail,
-                    bubbles: true,
-                    composed: true
-                }));
-            });
-
             selectionMenu.addEventListener('unselect-all-rows', (event) => {
                 this.dispatchEvent(new CustomEvent('unselect-all-rows', { 
-                    detail: event.detail,
-                    bubbles: true,
-                    composed: true
+                    detail: event.detail
+                    // Internal event, no bubbles
                 }));
             });
         }
 
         // Note: do-import event from import-button bubbles naturally, no need to forward
 
-        // Forward events from column-selector
+        // Forward events from column-selector (internal events)
         const columnSelector = this.querySelector('#column-selector');
         if (columnSelector) {
             columnSelector.addEventListener('column-visibility-changed', (event) => {
                 this.dispatchEvent(new CustomEvent('column-visibility-changed', { 
-                    detail: event.detail,
-                    bubbles: true,
-                    composed: true
+                    detail: event.detail
+                    // Internal event, no bubbles
                 }));
             });
 
             columnSelector.addEventListener('clear-filters', (event) => {
                 this.dispatchEvent(new CustomEvent('clear-filters', { 
-                    detail: event.detail,
-                    bubbles: true,
-                    composed: true
+                    detail: event.detail
+                    // Internal event, no bubbles
                 }));
             });
 
             columnSelector.addEventListener('select-all-columns', (event) => {
                 this.dispatchEvent(new CustomEvent('select-all-columns', { 
-                    detail: event.detail,
-                    bubbles: true,
-                    composed: true
+                    detail: event.detail
+                    // Internal event, no bubbles
                 }));
             });
 
             columnSelector.addEventListener('clear-all-columns', (event) => {
                 this.dispatchEvent(new CustomEvent('clear-all-columns', { 
-                    detail: event.detail,
-                    bubbles: true,
-                    composed: true
+                    detail: event.detail
+                    // Internal event, no bubbles
                 }));
             });
         }

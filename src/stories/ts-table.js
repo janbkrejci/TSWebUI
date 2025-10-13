@@ -119,33 +119,9 @@ class TSTable extends HTMLElement {
             this.toolbar.setColumnFilters(columnFilters);
         });
         
-        // Forward row-action event as selection-action-activated with rows array
-        this.datatable.addEventListener('row-action', (event) => {
-            const { action, row } = event.detail;
-            this.dispatchEvent(new CustomEvent('selection-action-activated', {
-                detail: { action, rows: [row] },
-                bubbles: true,
-                composed: true
-            }));
-        });
-        
         // Toolbar events
-        this.toolbar.addEventListener('new-record', () => {
-            this.dispatchEvent(new CustomEvent('create-new-record', {
-                bubbles: true,
-                composed: true
-            }));
-        });
-        
-        this.toolbar.addEventListener('selection-action-activated', (event) => {
-            event.stopPropagation(); // Stop forwarded event from bubbling further
-            const { action, selectedRows } = event.detail;
-            this.dispatchEvent(new CustomEvent('selection-action-activated', {
-                detail: { action, rows: selectedRows || [] },
-                bubbles: true,
-                composed: true
-            }));
-        });
+        // create-new-record, selection-action-activated, row-clicked, and do-import 
+        // already bubble naturally from child components
         
         this.toolbar.addEventListener('unselect-all-rows', () => {
             this.datatable.unselectAllRows();

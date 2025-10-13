@@ -65,7 +65,7 @@ class TSSelectionMenu extends HTMLElement {
                     } else {
                         // Regular selection action
                         this.dispatchEvent(new CustomEvent('selection-action-activated', { 
-                            detail: { action: action, selectedRows: this.selectedRows },
+                            detail: { action: action, rows: this.selectedRows },
                             bubbles: true,
                             composed: true
                         }));

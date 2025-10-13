@@ -46,6 +46,11 @@
                 const { action, rows } = event.detail;
                 console.log('Action:', action, 'for', rows.length, 'row(s):', rows);
             });
+            
+            table.addEventListener('row-clicked', (event) => {
+                const { row } = event.detail;
+                console.log('Row clicked:', row);
+            });
 
             table.addEventListener('do-import', (event) => {
                 const { importData, file } = event.detail;

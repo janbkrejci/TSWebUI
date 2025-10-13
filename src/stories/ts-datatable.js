@@ -713,8 +713,30 @@ class TSDataTable extends HTMLElement {
                     const actionName = menuItem.getAttribute('data-action');
                     const row = this.tableData.find(r => String(r.id) === rowId);
                     
-                    this.dispatchEvent(new CustomEvent('row-action', {
-                        detail: { action: actionName, row },
+                    this.dispatchEvent(new CustomEvent('selection-action-activated', {
+                        detail: { action: actionName, rows: [row] },
+                        bubbles: true,
+                        composed: true
+                    }));
+                }
+            }
+        });
+        
+        // Row click events (for entire row except checkbox and menu)
+        tbody.addEventListener('click', (e) => {
+            // Ignore clicks on checkboxes, menu dropdowns, and their children
+            if (e.target.closest('.checkbox-column') || e.target.closest('.menu-column')) {
+                return;
+            }
+            
+            const tr = e.target.closest('tr');
+            if (tr && tr.hasAttribute('data-row-id')) {
+                const rowId = String(tr.getAttribute('data-row-id'));
+                const row = this.tableData.find(r => String(r.id) === rowId);
+                
+                if (row) {
+                    this.dispatchEvent(new CustomEvent('row-clicked', {
+                        detail: { row },
                         bubbles: true,
                         composed: true
                     }));
