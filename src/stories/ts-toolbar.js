@@ -3,6 +3,11 @@ class TSToolbar extends HTMLElement {
         super();
         this.innerHTML = `
             <style>
+                :host {
+                    display: block;
+                    width: 100%;
+                }
+                
                 .toolbar {
                     display: grid;
                     grid-template-columns: 1fr auto 1fr;

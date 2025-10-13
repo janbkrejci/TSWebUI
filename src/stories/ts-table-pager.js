@@ -44,11 +44,17 @@ class TSTablePager extends HTMLElement {
                     align-items: center;
                     margin-top: 1em;
                     padding: 0.5em 0;
+                    width: 100%;
                     max-width: 100%;
                     margin-left: 0;
                     margin-right: 0;
                     min-width: 0;
                     box-sizing: border-box;
+                }
+                
+                :host {
+                    display: block;
+                    width: 100%;
                 }
 
                 .footer > :first-child {
@@ -152,21 +158,28 @@ class TSTablePager extends HTMLElement {
         const pageSizes = JSON.parse(this.getAttribute('pagesizes') || '[5,10,20,50,100]');
         const currentPage = parseInt(this.getAttribute('currentpage')) || 1;
 
-        const totalPages = Math.ceil(filteredRecordsCount / pageSize);
+        const totalPages = pageSize === -1 ? 1 : Math.ceil(filteredRecordsCount / pageSize);
 
         // Update item count
         const itemCountEl = this.querySelector('#item-count');
         if (itemCountEl) {
-            const startItem = filteredRecordsCount > 0 ? (currentPage - 1) * pageSize + 1 : 0;
-            const endItem = Math.min(currentPage * pageSize, filteredRecordsCount);
-            const filterText = filteredRecordsCount !== totalRecordsCount ? ` (filtrováno z ${totalRecordsCount})` : '';
-            itemCountEl.textContent = `Zobrazeno ${startItem}-${endItem} z ${filteredRecordsCount}${filterText}`;
+            if (pageSize === -1) {
+                // Show all items
+                const filterText = filteredRecordsCount !== totalRecordsCount ? ` (filtrováno z ${totalRecordsCount})` : '';
+                itemCountEl.textContent = `Zobrazeno ${filteredRecordsCount} z ${filteredRecordsCount}${filterText}`;
+            } else {
+                const startItem = filteredRecordsCount > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+                const endItem = Math.min(currentPage * pageSize, filteredRecordsCount);
+                const filterText = filteredRecordsCount !== totalRecordsCount ? ` (filtrováno z ${totalRecordsCount})` : '';
+                itemCountEl.textContent = `Zobrazeno ${startItem}-${endItem} z ${filteredRecordsCount}${filterText}`;
+            }
         }
 
         // Update items per page dropdown
         const itemsPerPageButton = this.querySelector('.items-per-page sl-button');
         if (itemsPerPageButton) {
-            itemsPerPageButton.innerHTML = `${pageSize}<sl-icon name="chevron-down" class="chevron-icon"></sl-icon>`;
+            const displaySize = pageSize === -1 ? 'Vše' : pageSize;
+            itemsPerPageButton.innerHTML = `${displaySize}<sl-icon name="chevron-down" class="chevron-icon"></sl-icon>`;
         }
 
         // Update page sizes menu
@@ -175,7 +188,8 @@ class TSTablePager extends HTMLElement {
             menu.innerHTML = '';
             pageSizes.forEach(size => {
                 const item = document.createElement('sl-menu-item');
-                item.textContent = size;
+                item.textContent = size === -1 ? 'Vše' : size;
+                item.setAttribute('data-value', size);
                 menu.appendChild(item);
             });
         }
@@ -195,13 +209,21 @@ class TSTablePager extends HTMLElement {
         // Update navigation buttons
         const pagerButtons = this.querySelectorAll('.pager sl-button');
         if (pagerButtons.length >= 4) {
-            // First page and previous page buttons
-            pagerButtons[0].disabled = currentPage <= 1;
-            pagerButtons[1].disabled = currentPage <= 1;
+            if (pageSize === -1) {
+                // Disable all navigation when showing all items
+                pagerButtons[0].disabled = true;
+                pagerButtons[1].disabled = true;
+                pagerButtons[2].disabled = true;
+                pagerButtons[3].disabled = true;
+            } else {
+                // First page and previous page buttons
+                pagerButtons[0].disabled = currentPage <= 1;
+                pagerButtons[1].disabled = currentPage <= 1;
 
-            // Next page and last page buttons
-            pagerButtons[2].disabled = currentPage >= totalPages;
-            pagerButtons[3].disabled = currentPage >= totalPages;
+                // Next page and last page buttons
+                pagerButtons[2].disabled = currentPage >= totalPages;
+                pagerButtons[3].disabled = currentPage >= totalPages;
+            }
         }
     }
 
@@ -242,7 +264,7 @@ class TSTablePager extends HTMLElement {
         const itemsPerPageMenu = this.querySelector('.items-per-page sl-menu');
         if (itemsPerPageMenu) {
             itemsPerPageMenu.addEventListener('sl-select', (event) => {
-                const selectedValue = parseInt(event.detail.item.textContent);
+                const selectedValue = parseInt(event.detail.item.getAttribute('data-value'));
                 this.dispatchEvent(new CustomEvent('page-size-changed', { detail: { pageSize: selectedValue } }));
             });
         }

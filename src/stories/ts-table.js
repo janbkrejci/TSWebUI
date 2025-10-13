@@ -20,6 +20,8 @@ class TSTable extends HTMLElement {
         this.unshowableColumns = [];
         this.singleItemActions = '';
         this.multipleItemsActions = '';
+        this.itemsPerPage = 5;
+        this.itemsPerPageOptions = [5, 10, 20, 50, 100];
         
         // Component references
         this.datatable = null;
@@ -38,11 +40,34 @@ class TSTable extends HTMLElement {
                     display: flex;
                     flex-direction: column;
                     width: 100%;
+                    gap: 0;
+                }
+                
+                #toolbar {
+                    width: 100%;
+                    flex-shrink: 0;
+                }
+                
+                .datatable-wrapper {
+                    width: 100%;
+                    overflow-x: auto;
+                    flex-shrink: 0;
+                }
+                
+                #datatable {
+                    min-width: 100%;
+                }
+                
+                #pager {
+                    width: 100%;
+                    flex-shrink: 0;
                 }
             </style>
             <div class="ts-table-container">
                 <ts-toolbar id="toolbar"></ts-toolbar>
-                <ts-datatable id="datatable"></ts-datatable>
+                <div class="datatable-wrapper">
+                    <ts-datatable id="datatable"></ts-datatable>
+                </div>
                 <ts-table-pager id="pager"></ts-table-pager>
             </div>
         `;
@@ -226,6 +251,20 @@ class TSTable extends HTMLElement {
         this.multipleItemsActions = actions;
         if (this.toolbar) {
             this.toolbar.setMultipleItemsActions(actions);
+        }
+    }
+    
+    setItemsPerPage(count) {
+        this.itemsPerPage = count;
+        if (this.datatable) {
+            this.datatable.itemsPerPage = count;
+        }
+    }
+    
+    setItemsPerPageOptions(options) {
+        this.itemsPerPageOptions = options;
+        if (this.datatable) {
+            this.datatable.availablePageSizes = options;
         }
     }
     

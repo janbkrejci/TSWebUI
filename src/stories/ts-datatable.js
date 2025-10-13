@@ -49,8 +49,6 @@ class TSDataTable extends HTMLElement {
                 #table-container {
                     position: relative;
                     width: 100%;
-                    overflow-x: auto;
-                    overflow-y: hidden;
                 }
                 
                 /* Table base styles */
@@ -998,6 +996,12 @@ class TSDataTable extends HTMLElement {
     getCurrentPageData() {
         const activeData = this.getActiveData();
         const sorted = this.getSortedData(activeData);
+        
+        // If itemsPerPage is -1, return all data (no pagination)
+        if (this.itemsPerPage === -1) {
+            return sorted;
+        }
+        
         const startIndex = (this.currentPage - 1) * this.itemsPerPage;
         const endIndex = startIndex + this.itemsPerPage;
         return sorted.slice(startIndex, endIndex);
@@ -1383,6 +1387,9 @@ class TSDataTable extends HTMLElement {
     
     // Public methods for external control
     goToPage(page) {
+        // If itemsPerPage is -1 (show all), no need to change pages
+        if (this.itemsPerPage === -1) return;
+        
         const totalPages = Math.ceil(this.getActiveData().length / this.itemsPerPage);
         if (page >= 1 && page <= totalPages && page !== this.currentPage) {
             this.currentPage = page;
