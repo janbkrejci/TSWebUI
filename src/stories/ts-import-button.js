@@ -143,13 +143,7 @@ class TSImportButton extends HTMLElement {
         }
     }
 
-    // Import helpers
-    processImport(obj) {
-        console.log('processImport:', obj);
-        // Dispatch custom event for parent to handle
-        this.dispatchEvent(new CustomEvent('import-row', { detail: { row: obj } }));
-    }
-
+ 
     showImportResults(results) {
         const { added, updated, rejected, skipped, rejectedRowsData } = results;
         

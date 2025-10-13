@@ -63,8 +63,8 @@
 
                 // Refresh table and menu
                 populateTable();
-                const columnSelector = document.getElementById('column-selector');
-                if (columnSelector) columnSelector.refreshMenu();
+                const toolbar = document.getElementById('toolbar');
+                if (toolbar) toolbar.refreshColumnMenu();
             }
         }
 
@@ -86,8 +86,8 @@
 
                 // Refresh table and menu
                 populateTable();
-                const columnSelector = document.getElementById('column-selector');
-                if (columnSelector) columnSelector.refreshMenu();
+                const toolbar = document.getElementById('toolbar');
+                if (toolbar) toolbar.refreshColumnMenu();
             }
         }
 
@@ -832,10 +832,10 @@
             populateTableRows();
             updatePaginationUI();
 
-            // Update column selector to refresh filter icons
-            const columnSelector = document.getElementById('column-selector');
-            if (columnSelector) {
-                columnSelector.setColumnFilters(columnFilters);
+            // Update toolbar to refresh filter icons
+            const toolbar = document.getElementById('toolbar');
+            if (toolbar) {
+                toolbar.setColumnFilters(columnFilters);
             }
 
             // Hide loading overlay (focus is preserved since headers are not regenerated)
@@ -982,17 +982,17 @@
         }
 
         function updateSelectionMenuUI() {
-            const selectionMenu = document.getElementById('selection-menu');
-            if (!selectionMenu) return;
+            const toolbar = document.getElementById('toolbar');
+            if (!toolbar) return;
 
             const selectedCount = selectedRowIds.size;
             if (selectedCount > 0) {
-                selectionMenu.show();
-                selectionMenu.setSelectionCount(selectedCount);
+                toolbar.showSelectionMenu();
+                toolbar.setSelectionCount(selectedCount);
                 const selectedRows = tableData.filter(row => selectedRowIds.has(row.id));
-                selectionMenu.setSelectedRows(selectedRows);
+                toolbar.setSelectedRows(selectedRows);
             } else {
-                selectionMenu.hide();
+                toolbar.hideSelectionMenu();
             }
             // Keep the selection view toggle in sync
             updateSelectionViewToggleUI();
@@ -1067,10 +1067,10 @@
                 }
             });
 
-            // Update column selector component
-            const columnSelector = document.getElementById('column-selector');
-            if (columnSelector) {
-                columnSelector.setColumnDefinitions(columnDefinitions);
+            // Update toolbar component
+            const toolbar = document.getElementById('toolbar');
+            if (toolbar) {
+                toolbar.setColumnDefinitions(columnDefinitions);
             }
             populateTable();
         }
@@ -1087,10 +1087,10 @@
                 }
             });
 
-            // Update column selector component
-            const columnSelector = document.getElementById('column-selector');
-            if (columnSelector) {
-                columnSelector.setColumnDefinitions(columnDefinitions);
+            // Update toolbar component
+            const toolbar = document.getElementById('toolbar');
+            if (toolbar) {
+                toolbar.setColumnDefinitions(columnDefinitions);
             }
             populateTable();
         }
@@ -1660,64 +1660,39 @@
             // Initialize filtered data
             filteredData = tableData.slice(); // Start with all data
 
-            // Configure column selector component
-            const columnSelector = document.getElementById('column-selector');
-            if (columnSelector) {
-                columnSelector.setColumnDefinitions(columnDefinitions);
-                columnSelector.setColumnFilters(columnFilters);
-                columnSelector.setUnshowableColumns(unshowableColumns);
-                columnSelector.setUnhideableColumns(unhideableColumns);
+            // Configure toolbar component
+            const toolbar = document.getElementById('toolbar');
+            if (toolbar) {
+                // Configure column selector
+                toolbar.setColumnDefinitions(columnDefinitions);
+                toolbar.setColumnFilters(columnFilters);
+                toolbar.setUnshowableColumns(unshowableColumns);
+                toolbar.setUnhideableColumns(unhideableColumns);
 
                 // Configure column selector event listeners
-                columnSelector.addEventListener('column-visibility-changed', (event) => {
+                toolbar.addEventListener('column-visibility-changed', (event) => {
                     const { columnKey, visible } = event.detail;
                     console.log('Column visibility changed:', columnKey, visible);
                     populateTable();
                 });
 
-                columnSelector.addEventListener('clear-filters', () => {
+                toolbar.addEventListener('clear-filters', () => {
                     console.log('Clear all filters');
                     clearAllFilters();
                 });
 
-                columnSelector.addEventListener('select-all-columns', () => {
+                toolbar.addEventListener('select-all-columns', () => {
                     console.log('Select all columns');
                     selectAllColumns();
                 });
 
-                columnSelector.addEventListener('clear-all-columns', () => {
+                toolbar.addEventListener('clear-all-columns', () => {
                     console.log('Clear all columns');
                     clearAllColumns();
                 });
-            }
 
-            // Add pagination event listeners on footer component
-            const footer = document.getElementById('table-footer');
-            if (footer) {
-                footer.addEventListener('page-size-changed', (event) => {
-                    changeItemsPerPage(event.detail.pageSize);
-                });
-                footer.addEventListener('page-changed', (event) => {
-                    goToPage(event.detail.page);
-                });
-            }
-
-            // Initialize dropdown overlay
-            initializeDropdownOverlay();
-
-            // Add global keyboard shortcuts
-            document.addEventListener('keydown', (event) => {
-                // Ctrl+Shift+C to clear all filters
-                if (event.ctrlKey && event.shiftKey && event.key === 'C') {
-                    event.preventDefault();
-                    clearAllFilters();
-                }
-            });
-
-            // Wire Export to Excel button
-            const exportBtn = document.getElementById('export-excel-btn');
-            if (exportBtn) {
-                exportBtn.setExportData(() => ({
+                // Wire Export to Excel button
+                toolbar.setExportData(() => ({
                     tableData,
                     columnDefinitions,
                     selectedRowIds,
@@ -1726,16 +1701,14 @@
                     filteredData,
                     getSortedActiveData: () => getSortedData(getActiveData())
                 }));
-            }
 
-            // Wire Import from Excel button
-            const importBtn = document.getElementById('import-excel-btn');
-            if (importBtn) {
-                importBtn.setImportData(() => ({
+                // Wire Import from Excel button
+                toolbar.setImportData(() => ({
                     columnDefinitions
                 }));
+                
                 // Listen for import-row events
-                importBtn.addEventListener('import-row', (event) => {
+                toolbar.addEventListener('import-row', (event) => {
                     // Handle imported row - this could update the table data
                     console.log('Imported row:', event.detail.row);
                 });
@@ -1793,18 +1766,15 @@
             }
         }
 
-        // Handle new-record event from the web component
-        var createRecordButton = document.querySelector('ts-create-record-button');
-        if (createRecordButton) {
-            createRecordButton.addEventListener('new-record', () => {
+        // Handle new-record event from the toolbar
+        var toolbar = document.getElementById('toolbar');
+        if (toolbar) {
+            toolbar.addEventListener('new-record', () => {
                 alert('New record event was fired');
             });
-        }
 
-        // Handle do-import event from the web component
-        var importButton = document.querySelector('ts-import-button');
-        if (importButton) {
-            importButton.addEventListener('do-import', (event) => {
+            // Handle do-import event from the toolbar
+            toolbar.addEventListener('do-import', (event) => {
                 const { importData, file } = event.detail;
                 console.log('Import data received:', importData);
                 
@@ -1826,11 +1796,14 @@
                     else skipped++;
                 });
 
-                // Store rejected data for saving
-                importButton.rejectedRowsData = rejectedRowsData;
+                // Store rejected data for saving via toolbar
+                const importButton = toolbar.getImportButton();
+                if (importButton) {
+                    importButton.rejectedRowsData = rejectedRowsData;
+                }
 
-                // Show results via the web component
-                importButton.showImportResults({
+                // Show results via the toolbar
+                toolbar.showImportResults({
                     added,
                     updated,
                     rejected,
@@ -1838,19 +1811,16 @@
                     rejectedRows
                 });
             });
-        }
 
-        // Handle selection-action-activated event from the web component
-        var selectionMenu = document.getElementById('selection-menu');
-        if (selectionMenu) {
-            selectionMenu.addEventListener('selection-action-activated', (event) => {
+            // Handle selection-action-activated event from the toolbar
+            toolbar.addEventListener('selection-action-activated', (event) => {
                 const action = event.detail.action;
                 const selectedRows = event.detail.selectedRows;
                 console.log('Selection action activated:', action, 'with selected rows:', selectedRows);
             });
 
-            // Handle unselect-all-rows event from the web component
-            selectionMenu.addEventListener('unselect-all-rows', (event) => {
+            // Handle unselect-all-rows event from the toolbar
+            toolbar.addEventListener('unselect-all-rows', (event) => {
                 console.log('Unselecting all rows');
                 // Clear all selected rows
                 selectedRowIds.clear();
@@ -1859,12 +1829,12 @@
                 updatePaginationUI();
                 // Update UI
                 updateSelectionMenuUI();
-                // Hide the selection menu
-                selectionMenu.hide();
                 // Remove focus from the menu to avoid aria violations
                 if (document.activeElement) {
                     document.activeElement.blur();
                 }
+                // Hide the selection menu
+                toolbar.hideSelectionMenu();
             });
         }
 
@@ -1877,19 +1847,7 @@
     <div id="container">
         <!-- DATATABLE -->
         <!-- Toolbar -->
-        <div class="toolbar">
-            <div>
-                <ts-create-record-button></ts-create-record-button>
-            </div>
-            <div class="toolbar-center">
-                <ts-selection-menu id="selection-menu" single-item-actions="edit/Upravit záznam,duplicate/Duplikovat záznam,delete/Smazat záznam" multiple-items-actions="delete/Smazat vybrané,export/Exportovat vybrané"></ts-selection-menu>
-                <ts-import-button id="import-excel-btn"></ts-import-button>
-                <ts-export-button id="export-excel-btn"></ts-export-button>
-            </div>
-            <div>
-                <ts-column-selector id="column-selector"></ts-column-selector>
-            </div>
-        </div>
+        <ts-toolbar id="toolbar" single-item-actions="edit/Upravit záznam,duplicate/Duplikovat záznam,delete/Smazat záznam" multiple-items-actions="delete/Smazat vybrané,export/Exportovat vybrané"></ts-toolbar>
         <!-- FOOTER -->
             <table id="data-table">
                 <thead>
