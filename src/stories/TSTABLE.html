@@ -1879,6 +1879,24 @@
                 const selectedRows = event.detail.selectedRows;
                 console.log('Selection action activated:', action, 'with selected rows:', selectedRows);
             });
+
+            // Handle unselect-all-rows event from the web component
+            selectionMenu.addEventListener('unselect-all-rows', (event) => {
+                console.log('Unselecting all rows');
+                // Clear all selected rows
+                selectedRowIds.clear();
+                // Update table display
+                populateTableRows();
+                updatePaginationUI();
+                // Update UI
+                updateSelectionMenuUI();
+                // Hide the selection menu
+                selectionMenu.hide();
+                // Remove focus from the menu to avoid aria violations
+                if (document.activeElement) {
+                    document.activeElement.blur();
+                }
+            });
         }
 
         initializeTable();

@@ -56,9 +56,15 @@ class TSSelectionMenu extends HTMLElement {
             menu.addEventListener('sl-select', (event) => {
                 const action = event.detail.item?.getAttribute('data-action');
                 if (action) {
-                    this.dispatchEvent(new CustomEvent('selection-action-activated', { 
-                        detail: { action: action, selectedRows: this.selectedRows } 
-                    }));
+                    if (action === 'unselect-all') {
+                        // Special event for unselecting all rows
+                        this.dispatchEvent(new CustomEvent('unselect-all-rows'));
+                    } else {
+                        // Regular selection action
+                        this.dispatchEvent(new CustomEvent('selection-action-activated', { 
+                            detail: { action: action, selectedRows: this.selectedRows } 
+                        }));
+                    }
                 }
             });
         }
