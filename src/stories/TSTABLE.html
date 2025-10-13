@@ -1190,7 +1190,11 @@
             visibleColumns.forEach(col => {
                 const c = document.createElement('col');
                 c.setAttribute('data-column-key', col.key);
-                if (col.width) c.style.width = typeof col.width === 'number' ? `${col.width}px` : String(col.width);
+                if (col.width) {
+                    c.style.width = typeof col.width === 'number' ? `${col.width}px` : String(col.width);
+                } else {
+                    c.style.width = '200px'; // Default width for columns without explicit width
+                }
                 colgroup.appendChild(c);
             });
         }

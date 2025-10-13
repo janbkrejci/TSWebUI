@@ -71,7 +71,8 @@ td {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-
+    width: auto;
+    max-width: 200px;
 }
 
 th {
@@ -391,6 +392,14 @@ th[data-column-key] {
     min-height: 24px;
 }
 
+.header-cell-content .column-header-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    flex: 1;
+    min-width: 0; /* Allow text to shrink */
+}
+
 .column-ordering-controls {
     display: flex !important;
     gap: 2px !important;
@@ -403,13 +412,6 @@ th[data-column-key] {
     transform: none !important;
     pointer-events: auto !important;
     z-index: auto !important;
-}
-
-.header-cell-content .column-header-content {
-    display: flex;
-    align-items: center;
-    /* gap: 0.5em; */
-    width: 100%;
 }
 
 .header-cell-content .column-ordering-controls {
@@ -484,5 +486,5 @@ th[data-column-key] {
 }
 
 /* Keep checkbox and menu columns narrow (match JS colgroup) */
-th.checkbox-column, td.checkbox-column { width: 44px; min-width: 44px; max-width: 44px; padding: 0 !important}
-th.menu-column, td.menu-column { width: 44px; min-width: 44px; max-width: 44px; padding: 0 !important;}
+th.checkbox-column, td.checkbox-column { width: 0; min-width: 44px; max-width: 44px; padding: 0 !important}
+th.menu-column, td.menu-column { width: 0; min-width: 44px; max-width: 44px; padding: 0 !important}
