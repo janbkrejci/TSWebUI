@@ -14,6 +14,9 @@
         const unshowableColumns = ['id'];
         const itemsPerPage = 3;
         const itemsPerPageOptions = [3, 5, 10, 20, 50, -1];
+        // Example: Only show approved records (predefined filter that can't be cleared)
+         const predefinedFilters = { approved: 'true' };
+        //const predefinedFilters = {};
 
         // Initialize component when DOM is ready
         function initializeComponents() {
@@ -29,6 +32,7 @@
             table.setMultipleItemsActions(multipleItemsActions);
             table.setItemsPerPage(itemsPerPage);
             table.setItemsPerPageOptions(itemsPerPageOptions);
+            table.setPredefinedFilters(predefinedFilters);
             
             setupEventListeners();
             

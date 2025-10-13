@@ -22,6 +22,7 @@ class TSTable extends HTMLElement {
         this.multipleItemsActions = '';
         this.itemsPerPage = 5;
         this.itemsPerPageOptions = [5, 10, 20, 50, 100];
+        this.predefinedFilters = {};
         
         // Component references
         this.datatable = null;
@@ -255,6 +256,13 @@ class TSTable extends HTMLElement {
         this.itemsPerPageOptions = options;
         if (this.datatable) {
             this.datatable.availablePageSizes = options;
+        }
+    }
+    
+    setPredefinedFilters(filters) {
+        this.predefinedFilters = filters;
+        if (this.datatable) {
+            this.datatable.setPredefinedFilters(filters);
         }
     }
     

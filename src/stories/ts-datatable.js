@@ -9,6 +9,7 @@ class TSDataTable extends HTMLElement {
         this.itemsPerPage = 5;
         this.availablePageSizes = [5, 10, 20, 50, 100];
         this.columnFilters = {};
+        this.predefinedFilters = {}; // Filters that are always applied and can't be cleared
         this.filteredData = [];
         this.filterTimeout = null;
         this.FILTER_DEBOUNCE_DELAY = 500;
@@ -399,6 +400,14 @@ class TSDataTable extends HTMLElement {
         this.unshowableColumns = columns || [];
     }
     
+    setPredefinedFilters(filters) {
+        this.predefinedFilters = filters || {};
+        // Apply filters immediately if data is loaded
+        if (this.tableData.length > 0) {
+            this.applyFilters();
+        }
+    }
+    
     initialize() {
         // Set column visibility based on preselected columns
         this.columnDefinitions.forEach(col => {
@@ -555,6 +564,9 @@ class TSDataTable extends HTMLElement {
         thead.appendChild(headerRow);
         this.setupHeaderEvents(headerRow);
         
+        // Restore filter values after recreating headers
+        this.restoreFilterValues();
+        
         return true;
     }
     
@@ -594,6 +606,30 @@ class TSDataTable extends HTMLElement {
                 <sl-input id="${inputId}" size="small" placeholder="${col.filterPlaceholder || ''}" autocomplete="off" data-column-key="${col.key}" style="width: 100%;"></sl-input>
             `;
         }
+    }
+    
+    restoreFilterValues() {
+        // Restore filter input values from columnFilters
+        Object.keys(this.columnFilters).forEach(colKey => {
+            const filterValue = this.columnFilters[colKey];
+            if (!filterValue) return;
+            
+            const col = this.columnDefinitions.find(c => c.key === colKey);
+            if (!col) return;
+            
+            if (col.type === 'boolean') {
+                const button = this.querySelector(`#filter-${colKey}`);
+                if (button) {
+                    const displayText = filterValue === 'true' ? 'Ano' : (filterValue === 'false' ? 'Ne' : 'Všechny');
+                    button.textContent = displayText;
+                }
+            } else {
+                const input = this.querySelector(`#filter-${colKey}`);
+                if (input) {
+                    input.value = filterValue;
+                }
+            }
+        });
     }
     
     setupHeaderEvents(headerRow) {
@@ -1215,8 +1251,11 @@ class TSDataTable extends HTMLElement {
     // Filtering methods
     applyFilters() {
         this.filteredData = this.tableData.filter(row => {
-            return Object.keys(this.columnFilters).every(colKey => {
-                const filterValue = this.columnFilters[colKey];
+            // Combine predefined filters and column filters
+            const allFilters = { ...this.predefinedFilters, ...this.columnFilters };
+            
+            return Object.keys(allFilters).every(colKey => {
+                const filterValue = allFilters[colKey];
                 if (!filterValue) return true;
                 
                 const col = this.columnDefinitions.find(c => c.key === colKey);
