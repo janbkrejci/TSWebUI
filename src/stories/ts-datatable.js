@@ -374,7 +374,15 @@ class TSDataTable extends HTMLElement {
     }
     
     setMenuActions(actions) {
-        this.menuActions = actions || [];
+        if (typeof actions === 'string') {
+            // Parse string format: 'action1/Label 1,action2/Label 2'
+            this.menuActions = actions.split(',').map(item => {
+                const [actionName, label] = item.split('/');
+                return { actionName: actionName.trim(), label: label.trim() };
+            });
+        } else {
+            this.menuActions = actions || [];
+        }
     }
     
     setPreselectedColumns(columns) {
