@@ -136,10 +136,12 @@ class TSExportButton extends HTMLElement {
 
     // Export helpers
     getExportableRows(option) {
-        const { tableData, selectedRowIds, getSortedActiveData } = this.dataProvider();
+        const { selectedRowIds, getSortedActiveData, getAllSortedRows } = this.dataProvider();
         // option: 'all' | 'filtered' | 'selected' | 'filtered-selected'
         if (option === 'selected') {
-            const selected = tableData.filter(r => selectedRowIds.has(String(r.id)));
+            // Get all sorted data, then filter for selected
+            const sortedData = getAllSortedRows();
+            const selected = sortedData.filter(r => selectedRowIds.has(String(r.id)));
             return selected;
         }
         if (option === 'filtered') {
@@ -150,7 +152,8 @@ class TSExportButton extends HTMLElement {
             const sortedFilteredData = getSortedActiveData();
             return sortedFilteredData.filter(r => selectedRowIds.has(String(r.id)));
         }
-        return tableData;
+        // For 'all', return all data sorted
+        return getAllSortedRows();
     }
 
     getExportableColumns(option) {

@@ -246,7 +246,8 @@ class TSTable extends HTMLElement {
             columnFilters: this.datatable.getColumnFilters(),
             getVisibleColumns: () => this.datatable.getVisibleColumns(),
             filteredData: this.datatable.getFilteredRows(),
-            getSortedActiveData: () => this.datatable.getFilteredRows()
+            getSortedActiveData: () => this.datatable.getFilteredRows(),
+            getAllSortedRows: () => this.datatable.getAllSortedRows() // All data sorted
         }));
         
         // Configure toolbar import data provider

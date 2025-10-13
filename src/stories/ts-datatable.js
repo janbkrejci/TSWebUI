@@ -1438,7 +1438,13 @@ class TSDataTable extends HTMLElement {
     }
     
     getFilteredRows() {
-        return this.getActiveData();
+        // Return filtered data sorted by current sort order
+        return this.getSortedData(this.getActiveData());
+    }
+    
+    getAllSortedRows() {
+        // Return all table data sorted by current sort order
+        return this.getSortedData(this.tableData);
     }
     
     clearAllSelectedRecords() {

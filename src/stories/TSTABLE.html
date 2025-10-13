@@ -5,7 +5,6 @@
     <script>
         // References to component
         var table = null;
-        var listenersSetup = false; // Flag to prevent duplicate listeners
 
         // Configuration
         const singleItemActions = 'edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek';
@@ -13,6 +12,8 @@
         const preselectedColumns = ['name', 'email', 'turnover', 'contractDate', 'approved'];
         const unhideableColumns = ['name', 'email'];
         const unshowableColumns = ['id'];
+        const itemsPerPage = 3;
+        const itemsPerPageOptions = [3, 5, 10, 20, 50, -1];
 
         // Initialize component when DOM is ready
         function initializeComponents() {
@@ -27,11 +28,7 @@
             table.setSingleItemActions(singleItemActions);
             table.setMultipleItemsActions(multipleItemsActions);
             
-            // Setup event listeners BEFORE initialize (only once)
-            if (!listenersSetup) {
-                setupEventListeners();
-                listenersSetup = true;
-            }
+            setupEventListeners();
             
             // Initialize table
             table.initialize();
