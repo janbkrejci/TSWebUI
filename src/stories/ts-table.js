@@ -119,6 +119,12 @@ class TSTable extends HTMLElement {
             this.toolbar.setColumnFilters(columnFilters);
         });
         
+        this.datatable.addEventListener('column-order-changed', (event) => {
+            const { columnDefinitions } = event.detail;
+            // Update column definitions in toolbar (which will refresh column selector)
+            this.toolbar.setColumnDefinitions(columnDefinitions);
+        });
+        
         // Public events bubble naturally from child components:
         // - create-new-record (from create-record-button)
         // - selection-action-activated (from selection-menu and datatable)

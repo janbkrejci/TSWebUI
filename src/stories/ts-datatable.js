@@ -839,6 +839,12 @@ class TSDataTable extends HTMLElement {
         visibleCols[currentIndex].order = targetOrder;
         visibleCols[targetIndex].order = currentOrder;
         
+        // Notify about column order change
+        this.dispatchEvent(new CustomEvent('column-order-changed', {
+            detail: { columnDefinitions: this.columnDefinitions },
+            bubbles: false // Internal event
+        }));
+        
         this.render();
     }
     
