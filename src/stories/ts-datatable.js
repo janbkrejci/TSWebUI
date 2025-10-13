@@ -37,6 +37,15 @@ class TSDataTable extends HTMLElement {
                     width: 100%;
                 }
                 
+                /* Utility classes */
+                .invisible {
+                    visibility: hidden !important;
+                }
+                
+                .hidden {
+                    display: none !important;
+                }
+                
                 #table-container {
                     position: relative;
                     width: 100%;
@@ -175,6 +184,12 @@ class TSDataTable extends HTMLElement {
                     opacity: 0 !important;
                     transition: opacity 0.2s ease !important;
                     margin-left: auto !important;
+                    position: static !important;
+                    top: auto !important;
+                    right: auto !important;
+                    transform: none !important;
+                    pointer-events: auto !important;
+                    z-index: auto !important;
                 }
                 
                 th:hover .column-ordering-controls {
@@ -310,15 +325,7 @@ class TSDataTable extends HTMLElement {
                     font-style: italic;
                     padding: 0.75em 1.25em;
                 }
-                
-                /* Utilities */
-                .hidden {
-                    display: none !important;
-                }
-                
-                .invisible {
-                    visibility: hidden !important;
-                }
+            </style>
             </style>
             <div id="table-container">
                 <table id="data-table">
