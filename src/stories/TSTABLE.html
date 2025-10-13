@@ -23,7 +23,6 @@
             table = document.getElementById('table');
 
             // Configure table
-            table.setData(tableData);
             table.setColumnDefinitions(columnDefinitions);
             table.setPreselectedColumns(preselectedColumns);
             table.setUnhideableColumns(unhideableColumns);
@@ -33,6 +32,7 @@
             table.setItemsPerPage(itemsPerPage);
             table.setItemsPerPageOptions(itemsPerPageOptions);
             table.setPredefinedFilters(predefinedFilters);
+            table.setData(tableData); // Set data after predefined filters
             
             setupEventListeners();
             

@@ -3,7 +3,8 @@ class TSDataTable extends HTMLElement {
         super();
         
         // State
-        this.tableData = [];
+        this.originalData = []; // Original unfiltered data
+        this.tableData = []; // Data after applying predefined filters
         this.columnDefinitions = [];
         this.currentPage = 1;
         this.itemsPerPage = 5;
@@ -366,8 +367,8 @@ class TSDataTable extends HTMLElement {
     
     // Public API - Configuration
     setData(tableData) {
-        this.tableData = tableData || [];
-        this.filteredData = this.tableData.slice();
+        this.originalData = tableData || [];
+        this.applyPredefinedFilters();
         this.render();
     }
     
@@ -402,10 +403,52 @@ class TSDataTable extends HTMLElement {
     
     setPredefinedFilters(filters) {
         this.predefinedFilters = filters || {};
-        // Apply filters immediately if data is loaded
-        if (this.tableData.length > 0) {
-            this.applyFilters();
+        // If data already exists, re-apply predefined filters
+        if (this.originalData.length > 0) {
+            this.applyPredefinedFilters();
+            this.render();
         }
+    }
+    
+    applyPredefinedFilters() {
+        // Apply predefined filters to originalData to create tableData
+        if (Object.keys(this.predefinedFilters).length > 0) {
+            this.tableData = this.originalData.filter(row => {
+                return Object.keys(this.predefinedFilters).every(colKey => {
+                    const filterValue = this.predefinedFilters[colKey];
+                    if (!filterValue) return true;
+                    
+                    const col = this.columnDefinitions.find(c => c.key === colKey);
+                    if (!col) return true;
+                    
+                    const cellValue = row[colKey];
+                    
+                    // Boolean column
+                    if (col.type === 'boolean') {
+                        return String(cellValue) === filterValue;
+                    }
+                    
+                    // Date column
+                    if (col.type === 'date') {
+                        return this.matchDateFilter(cellValue, filterValue);
+                    }
+                    
+                    // Number column
+                    if (col.type === 'number') {
+                        return this.matchNumberFilter(cellValue, filterValue);
+                    }
+                    
+                    // Text column
+                    return this.matchTextPattern(String(cellValue), filterValue);
+                });
+            });
+        } else {
+            // No predefined filters - use all original data
+            this.tableData = this.originalData.slice();
+        }
+        
+        // Reset filteredData to match tableData
+        this.filteredData = this.tableData.slice();
     }
     
     initialize() {
@@ -1062,7 +1105,9 @@ class TSDataTable extends HTMLElement {
     
     // Pagination helpers
     getActiveData() {
+        // Check if any column filters are active (predefined filters already applied to tableData)
         const base = Object.keys(this.columnFilters).length > 0 ? this.filteredData : this.tableData;
+        
         if (this.selectionViewMode === 'selected') {
             return base.filter(r => this.selectedRowIds.has(String(r.id)));
         }
@@ -1251,11 +1296,10 @@ class TSDataTable extends HTMLElement {
     // Filtering methods
     applyFilters() {
         this.filteredData = this.tableData.filter(row => {
-            // Combine predefined filters and column filters
-            const allFilters = { ...this.predefinedFilters, ...this.columnFilters };
-            
-            return Object.keys(allFilters).every(colKey => {
-                const filterValue = allFilters[colKey];
+            // Only use column filters (user-editable filters)
+            // Predefined filters were already applied in setData()
+            return Object.keys(this.columnFilters).every(colKey => {
+                const filterValue = this.columnFilters[colKey];
                 if (!filterValue) return true;
                 
                 const col = this.columnDefinitions.find(c => c.key === colKey);

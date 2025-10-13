@@ -269,6 +269,11 @@ class TSTable extends HTMLElement {
     initialize() {
         if (!this.datatable || !this.toolbar) return;
         
+        // Set predefined filters before initializing
+        if (Object.keys(this.predefinedFilters).length > 0) {
+            this.datatable.setPredefinedFilters(this.predefinedFilters);
+        }
+        
         // Initialize datatable
         this.datatable.initialize();
         
