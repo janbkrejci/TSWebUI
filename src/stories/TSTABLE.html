@@ -1420,11 +1420,13 @@
         function selectAllActive() {
             const activeData = getActiveData();
             activeData.forEach(row => selectedRowIds.add(row.id));
+            updateSelectionMenuUI();
         }
 
         function deselectAllActive() {
             const activeData = getActiveData();
             activeData.forEach(row => selectedRowIds.delete(row.id));
+            updateSelectionMenuUI();
         }
 
         function clearAllSelectedRecords() {
@@ -1461,6 +1463,8 @@
             if (selectedCount > 0) {
                 selectionMenu.show();
                 selectionMenu.setSelectionCount(selectedCount);
+                const selectedRows = tableData.filter(row => selectedRowIds.has(row.id));
+                selectionMenu.setSelectedRows(selectedRows);
             } else {
                 selectionMenu.hide();
             }
@@ -1547,7 +1551,7 @@
 
         // Function to clear all columns (respecting unhideable columns, unshowable columns stay hidden)
         function clearAllColumns() {
-            // Update column definitions (keep unhideable columns visible, unshowable columns stay hidden)
+            // Update column definitions (keep unshowable columns visible, unhideable columns stay hidden)
             columnDefinitions.forEach(col => {
                 if (unshowableColumns.includes(col.key)) {
                     // Keep unshowable columns hidden
@@ -2057,7 +2061,7 @@
                     menu.addEventListener('sl-select', (event) => {
                         const actionName = event.detail.item.getAttribute('data-action');
                         const action = menuActions.find(a => a.actionName === actionName);
-                        if (action) {
+                        if ( action) {
                             rowMenuItemSelected(action, row);
                         }
                     });
@@ -2346,7 +2350,8 @@
         if (selectionMenu) {
             selectionMenu.addEventListener('selection-action-activated', (event) => {
                 const action = event.detail.action;
-                console.log('Selection action activated:', action);
+                const selectedRows = event.detail.selectedRows;
+                console.log('Selection action activated:', action, 'with selected rows:', selectedRows);
             });
         }
 

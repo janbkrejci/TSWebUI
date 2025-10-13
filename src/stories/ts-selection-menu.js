@@ -39,6 +39,7 @@ class TSSelectionMenu extends HTMLElement {
 
     connectedCallback() {
         this._selectionCount = 0;
+        this.selectedRows = [];
         this.setupEventListeners();
         this.updateMenuItems(0);
     }
@@ -56,7 +57,7 @@ class TSSelectionMenu extends HTMLElement {
                 const action = event.detail.item?.getAttribute('data-action');
                 if (action) {
                     this.dispatchEvent(new CustomEvent('selection-action-activated', { 
-                        detail: { action: action } 
+                        detail: { action: action, selectedRows: this.selectedRows } 
                     }));
                 }
             });
@@ -136,6 +137,10 @@ class TSSelectionMenu extends HTMLElement {
         if (container) {
             container.classList.add('selection-menu-container-hidden');
         }
+    }
+
+    setSelectedRows(selectedRows) {
+        this.selectedRows = selectedRows || [];
     }
 
     setSelectionCount(count) {
