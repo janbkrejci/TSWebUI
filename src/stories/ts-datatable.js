@@ -703,7 +703,7 @@ class TSDataTable extends HTMLElement {
         
         // Row menu actions
         tbody.addEventListener('sl-select', (e) => {
-            const menuItem = e.target;
+            const menuItem = e.detail?.item; // Shoelace provides the selected item in detail
             if (menuItem && menuItem.tagName === 'SL-MENU-ITEM') {
                 const dropdown = menuItem.closest('sl-dropdown');
                 if (dropdown && dropdown.id.startsWith('row-menu-')) {

@@ -73,7 +73,13 @@ class TSTable extends HTMLElement {
         
         this.datatable.addEventListener('selection-changed', (event) => {
             const { selectedRowIds, selectedCount } = event.detail;
-            this.toolbar.setSelectedRows(selectedRowIds);
+            
+            // Convert IDs to row objects
+            const selectedRows = selectedRowIds
+                .map(id => this.datatable.tableData.find(r => String(r.id) === String(id)))
+                .filter(r => r !== undefined);
+            
+            this.toolbar.setSelectedRows(selectedRows);
             this.toolbar.setSelectionCount(selectedCount);
             
             if (selectedCount > 0) {
@@ -107,9 +113,10 @@ class TSTable extends HTMLElement {
         });
         
         this.toolbar.addEventListener('selection-action-activated', (event) => {
+            event.stopPropagation(); // Stop forwarded event from bubbling further
             const { action, selectedRows } = event.detail;
             this.dispatchEvent(new CustomEvent('selection-action-activated', {
-                detail: { action, rows: selectedRows },
+                detail: { action, rows: selectedRows || [] },
                 bubbles: true,
                 composed: true
             }));

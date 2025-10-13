@@ -58,11 +58,16 @@ class TSSelectionMenu extends HTMLElement {
                 if (action) {
                     if (action === 'unselect-all') {
                         // Special event for unselecting all rows
-                        this.dispatchEvent(new CustomEvent('unselect-all-rows'));
+                        this.dispatchEvent(new CustomEvent('unselect-all-rows', {
+                            bubbles: true,
+                            composed: true
+                        }));
                     } else {
                         // Regular selection action
                         this.dispatchEvent(new CustomEvent('selection-action-activated', { 
-                            detail: { action: action, selectedRows: this.selectedRows } 
+                            detail: { action: action, selectedRows: this.selectedRows },
+                            bubbles: true,
+                            composed: true
                         }));
                     }
                 }

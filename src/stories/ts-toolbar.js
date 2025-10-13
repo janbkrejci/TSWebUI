@@ -95,6 +95,7 @@ class TSToolbar extends HTMLElement {
         const selectionMenu = this.querySelector('#selection-menu');
         if (selectionMenu) {
             selectionMenu.addEventListener('selection-action-activated', (event) => {
+                event.stopPropagation(); // Stop original event from bubbling
                 this.dispatchEvent(new CustomEvent('selection-action-activated', { 
                     detail: event.detail,
                     bubbles: true,
