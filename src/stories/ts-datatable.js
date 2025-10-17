@@ -29,6 +29,7 @@ class TSDataTable extends HTMLElement {
         this.enableSelection = true;
         this.enableRowMenu = true;
         this.enableClickableRows = true;
+        this.enablePagination = true;
         
         // Initialization state
         this.initialized = false;
@@ -539,6 +540,13 @@ class TSDataTable extends HTMLElement {
         }
     }
     
+    setEnablePagination(enable) {
+        this.enablePagination = enable !== false;
+        if (this.initialized) {
+            this.render();
+        }
+    }
+    
     setPredefinedFilters(filters) {
         this.predefinedFilters = filters || {};
         // If data already exists, re-apply predefined filters
@@ -619,7 +627,6 @@ class TSDataTable extends HTMLElement {
     
     // Rendering methods
     render() {
-        console.log('render() called', new Error().stack);
         if (!this.columnDefinitions.length) {
             return;
         }
@@ -1352,8 +1359,8 @@ class TSDataTable extends HTMLElement {
         const activeData = this.getActiveData();
         const sorted = this.getSortedData(activeData);
         
-        // If itemsPerPage is -1, return all data (no pagination)
-        if (this.itemsPerPage === -1) {
+        // If pagination is disabled or itemsPerPage is -1, return all data
+        if (!this.enablePagination || this.itemsPerPage === -1) {
             return sorted;
         }
         

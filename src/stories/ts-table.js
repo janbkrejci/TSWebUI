@@ -38,6 +38,7 @@ class TSTable extends HTMLElement {
         this.enableSelection = true;
         this.enableRowMenu = true;
         this.enableClickableRows = true;
+        this.enablePagination = true;
         
         // Component references
         this.datatable = null;
@@ -359,6 +360,16 @@ class TSTable extends HTMLElement {
         this.enableClickableRows = enable !== false;
         if (this.datatable) {
             this.datatable.setEnableClickableRows(this.enableClickableRows);
+        }
+    }
+    
+    setEnablePagination(enable) {
+        this.enablePagination = enable !== false;
+        if (this.datatable) {
+            this.datatable.setEnablePagination(this.enablePagination);
+        }
+        if (this.pager) {
+            this.pager.style.display = this.enablePagination ? '' : 'none';
         }
     }
     
