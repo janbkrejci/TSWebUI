@@ -26,6 +26,9 @@ class TSTable extends HTMLElement {
         
         // UI visibility flags
         this.showColumnSelector = true;
+        this.showImportButton = true;
+        this.showExportButton = true;
+        this.showCreateButton = true;
         
         // Component references
         this.datatable = null;
@@ -276,6 +279,27 @@ class TSTable extends HTMLElement {
         }
     }
     
+    setShowImportButton(show) {
+        this.showImportButton = show !== false;
+        if (this.toolbar) {
+            this.toolbar.setShowImportButton(this.showImportButton);
+        }
+    }
+    
+    setShowExportButton(show) {
+        this.showExportButton = show !== false;
+        if (this.toolbar) {
+            this.toolbar.setShowExportButton(this.showExportButton);
+        }
+    }
+    
+    setShowCreateButton(show) {
+        this.showCreateButton = show !== false;
+        if (this.toolbar) {
+            this.toolbar.setShowCreateButton(this.showCreateButton);
+        }
+    }
+    
     showImportResults(results) {
         if (this.toolbar) {
             this.toolbar.showImportResults(results);
@@ -315,6 +339,9 @@ class TSTable extends HTMLElement {
         
         // Set toolbar visibility options
         this.toolbar.setShowColumnSelector(this.showColumnSelector);
+        this.toolbar.setShowImportButton(this.showImportButton);
+        this.toolbar.setShowExportButton(this.showExportButton);
+        this.toolbar.setShowCreateButton(this.showCreateButton);
         
         // Configure toolbar export data provider
         this.toolbar.setExportData(() => ({

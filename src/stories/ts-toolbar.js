@@ -223,6 +223,39 @@ class TSToolbar extends HTMLElement {
             if (placeholder) placeholder.classList.remove('hidden');
         }
     }
+    
+    setShowImportButton(show) {
+        const importBtn = this.querySelector('#import-btn');
+        if (importBtn) {
+            if (show) {
+                importBtn.classList.remove('hidden');
+            } else {
+                importBtn.classList.add('hidden');
+            }
+        }
+    }
+    
+    setShowExportButton(show) {
+        const exportBtn = this.querySelector('#export-btn');
+        if (exportBtn) {
+            if (show) {
+                exportBtn.classList.remove('hidden');
+            } else {
+                exportBtn.classList.add('hidden');
+            }
+        }
+    }
+    
+    setShowCreateButton(show) {
+        const createBtn = this.querySelector('#create-record-btn');
+        if (createBtn) {
+            if (show) {
+                createBtn.classList.remove('hidden');
+            } else {
+                createBtn.classList.add('hidden');
+            }
+        }
+    }
 
     // Create Record Button methods
     getCreateRecordButton() {
