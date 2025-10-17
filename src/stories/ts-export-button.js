@@ -10,21 +10,54 @@ class TSExportButton extends HTMLElement {
                     display: flex;
                     flex-direction: column;
                     gap: 1rem;
+                    font-family: var(--sl-font-sans);
                 }
                 .export-section {
                     border: 1px solid var(--sl-color-neutral-200);
                     border-radius: var(--sl-border-radius-medium);
                     padding: 1rem;
                     background: var(--sl-color-neutral-50);
+                    font-family: var(--sl-font-sans);
                 }
                 .export-section-title {
                     font-weight: var(--sl-font-weight-semibold);
                     margin-bottom: 0.5rem;
                     color: var(--sl-color-neutral-700);
+                    font-family: var(--sl-font-sans);
                 }
-                .export-section sl-radio-group,
+                .export-section sl-radio-group {
+                    margin-top: 0.5rem;
+                }
+                .export-section sl-radio-group::part(form-control) {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.625rem;
+                }
+                .export-section sl-radio {
+                    margin: 0;
+                    margin-bottom: 0.625rem;
+                }
+                .export-section sl-radio:last-child {
+                    margin-bottom: 0;
+                }
                 .export-section #export-rows-group {
-                    margin-top: 1rem;
+                    margin-top: 0.5rem;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.625rem;
+                }
+                .export-option-item {
+                    margin: 0;
+                }
+                sl-dialog::part(title) {
+                    font-family: var(--sl-font-sans);
+                }
+                sl-dialog::part(body) {
+                    font-family: var(--sl-font-sans);
+                    overflow: visible;
+                }
+                sl-dialog::part(panel) {
+                    max-height: 90vh;
                 }
                 sl-dialog::part(footer) {
                     display: flex;
@@ -246,7 +279,7 @@ class TSExportButton extends HTMLElement {
         if (needRowsChoice) {
             const addCheckbox = (value, label, disabled = false, checked = false) => {
                 const container = document.createElement('div');
-                container.style.marginBottom = '0.5rem';
+                container.className = 'export-option-item';
                 
                 const checkbox = document.createElement('sl-checkbox');
                 checkbox.setAttribute('value', value);

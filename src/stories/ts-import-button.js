@@ -12,18 +12,21 @@ class TSImportButton extends HTMLElement {
                 .import-missing-columns {
                     margin-top: 8px;
                     font-size: var(--sl-font-size-small);
+                    font-family: var(--sl-font-sans);
                 }
                 .import-file-input-hidden {
                     display: none;
                 }
                 .import-results {
                     padding: 1rem 0;
+                    font-family: var(--sl-font-sans);
                 }
                 .import-stats {
                     display: grid;
                     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
                     gap: 1rem;
                     margin-bottom: 1rem;
+                    font-family: var(--sl-font-sans);
                 }
                 .stat-item {
                     display: flex;
@@ -33,17 +36,34 @@ class TSImportButton extends HTMLElement {
                     background: var(--sl-color-neutral-50);
                     border-radius: var(--sl-border-radius-medium);
                     border: 1px solid var(--sl-color-neutral-200);
+                    font-family: var(--sl-font-sans);
                 }
                 .stat-label {
                     font-size: var(--sl-font-size-small);
                     color: var(--sl-color-neutral-600);
                     margin-bottom: 0.5rem;
                     font-weight: var(--sl-font-weight-medium);
+                    font-family: var(--sl-font-sans);
                 }
                 .stat-value {
                     font-size: var(--sl-font-size-2x-large);
                     font-weight: var(--sl-font-weight-bold);
                     color: var(--sl-color-neutral-900);
+                    font-family: var(--sl-font-sans);
+                }
+                sl-dialog::part(title) {
+                    font-family: var(--sl-font-sans);
+                }
+                sl-dialog::part(body) {
+                    font-family: var(--sl-font-sans);
+                    overflow: visible;
+                }
+                sl-dialog::part(panel) {
+                    max-height: 90vh;
+                }
+                sl-dialog::part(footer) {
+                    display: flex;
+                    justify-content: space-between;
                 }
             </style>
             <sl-tooltip content="Importovat z Excelu">

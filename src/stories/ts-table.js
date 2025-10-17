@@ -266,6 +266,29 @@ class TSTable extends HTMLElement {
         }
     }
     
+    showImportResults(results) {
+        if (this.toolbar) {
+            this.toolbar.showImportResults(results);
+        }
+    }
+    
+    // Public methods for import processing (delegate to datatable)
+    getAllRows() {
+        return this.datatable ? this.datatable.getAllRows() : [];
+    }
+    
+    updateExistingRow(id, data) {
+        if (this.datatable) {
+            this.datatable.updateExistingRow(id, data);
+        }
+    }
+    
+    addImportedRow(data) {
+        if (this.datatable) {
+            this.datatable.addImportedRow(data);
+        }
+    }
+    
     initialize() {
         if (!this.datatable || !this.toolbar) return;
         

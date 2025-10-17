@@ -1,10 +1,45 @@
-<div class="sl-theme-{{theme}} base-container main-container">
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TS-Table Test</title>
+</head>
+<body>
+    <ts-table id="table"></ts-table>
 
-    <script src="/table-data.js"></script>
-    <script src="/column-definitions.js"></script>
-    <script>
+     
+    <!-- TS-Table Bundle - load as module -->
+    <script type="module" src="./dist/ts-table-bundle.js"></script>
+    
+    <!-- Table data and initialization -->
+    <script type="module">
         // References to component
         var table = null;
+
+        // Column definitions
+        const columnDefinitions = [
+            { key: 'id', label: 'ID', type: 'number', visible: false, order: 0 },
+            { key: 'name', label: 'Jméno', type: 'text', visible: true, order: 1, sortable: true },
+            { key: 'email', label: 'Email', type: 'text', visible: true, order: 2, sortable: true },
+            { key: 'turnover', label: 'Obrat', type: 'number', visible: true, order: 3, sortable: true, align: 'right' },
+            { key: 'contractDate', label: 'Datum smlouvy', type: 'date', visible: true, order: 4, sortable: true },
+            { key: 'approved', label: 'Schváleno', type: 'boolean', visible: true, order: 5, sortable: true }
+        ];
+
+        // Table data
+        const tableData = [
+            { id: 1, name: 'Jan Novák', email: 'jan.novak@email.cz', turnover: 125000.50, contractDate: '2024-01-15', approved: true },
+            { id: 2, name: 'Marie Svobodová', email: 'marie.svobodova@email.cz', turnover: 98000.00, contractDate: '2024-02-20', approved: false },
+            { id: 3, name: 'Petr Dvořák', email: 'petr.dvorak@email.cz', turnover: 156000.75, contractDate: '2024-01-10', approved: true },
+            { id: 4, name: 'Jana Černá', email: 'jana.cerna@email.cz', turnover: 87000.25, contractDate: '2024-03-05', approved: false },
+            { id: 5, name: 'Tomáš Procházka', email: 'tomas.prochazka@email.cz', turnover: 210000.00, contractDate: '2024-01-25', approved: true },
+            { id: 6, name: 'Eva Nováková', email: 'eva.novakova@email.cz', turnover: 145000.50, contractDate: '2024-02-15', approved: false },
+            { id: 7, name: 'Martin Svoboda', email: 'martin.svoboda@email.cz', turnover: 178000.00, contractDate: '2024-03-10', approved: false },
+            { id: 8, name: 'Kateřina Dvořáková', email: 'katerina.dvorakova@email.cz', turnover: 132000.75, contractDate: '2024-01-30', approved: true },
+            { id: 9, name: 'Jiří Černý', email: 'jiri.cerny@email.cz', turnover: 95000.00, contractDate: '2024-02-25', approved: false },
+            { id: 10, name: 'Lenka Procházková', email: 'lenka.prochazkova@email.cz', turnover: 168000.50, contractDate: '2024-03-15', approved: false }
+        ];
 
         // Configuration
         const singleItemActions = 'edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek';
@@ -12,12 +47,12 @@
         const preselectedColumns = ['name', 'email', 'turnover', 'contractDate', 'approved'];
         const unhideableColumns = ['name', 'email'];
         const unshowableColumns = ['id'];
-        const itemsPerPage = 3;
-        const itemsPerPageOptions = [3, 5, 10, 20, 50, -1];
+        const itemsPerPage = 5;
+        const itemsPerPageOptions = [5, 10, 20, 50, -1];
+        
         // Example: Only show approved records (predefined filter that can't be cleared)
-        // const predefinedFilters = { approved: 'true' };
-        //  const predefinedFilters = { turnover: '..100000' };
-        const predefinedFilters = {};
+        const predefinedFilters = { approved: 'true' };
+        //const predefinedFilters = {};
 
         // Initialize component when DOM is ready
         function initializeComponents() {
@@ -96,7 +131,7 @@
                     }
                 });
                 
-                // Show results via the table
+                // Show results via the table (not table.toolbar)
                 table.showImportResults({
                     added,
                     updated,
@@ -112,8 +147,5 @@
 
         initializeComponents();
     </script>
-
-    <div id="container">
-        <ts-table id="table"></ts-table>
-    </div>
-</div>
+</body>
+</html>
