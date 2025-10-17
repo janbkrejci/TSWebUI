@@ -24,6 +24,7 @@ class TSDataTable extends HTMLElement {
         // Feature flags
         this.enableSorting = true;
         this.enableFiltering = true;
+        this.enableColumnResizing = true;
         
         // Initialization state
         this.initialized = false;
@@ -478,6 +479,13 @@ class TSDataTable extends HTMLElement {
         }
     }
     
+    setEnableColumnResizing(enable) {
+        this.enableColumnResizing = enable !== false;
+        if (this.initialized) {
+            this.render();
+        }
+    }
+    
     setPredefinedFilters(filters) {
         this.predefinedFilters = filters || {};
         // If data already exists, re-apply predefined filters
@@ -718,7 +726,7 @@ class TSDataTable extends HTMLElement {
                 ${this.enableFiltering ? `<div class="filter-cell-content">
                     ${col.filterable ? this.createFilterInput(col) : ''}
                 </div>` : ''}
-                <span class="col-resizer" data-column-key="${col.key}"></span>
+                ${this.enableColumnResizing ? `<span class="col-resizer" data-column-key="${col.key}"></span>` : ''}
             `;
             
             headerRow.appendChild(th);

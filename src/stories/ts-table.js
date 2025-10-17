@@ -306,6 +306,13 @@ class TSTable extends HTMLElement {
         }
     }
     
+    setEnableColumnResizing(enable) {
+        this.enableColumnResizing = enable !== false;
+        if (this.datatable) {
+            this.datatable.setEnableColumnResizing(this.enableColumnResizing);
+        }
+    }
+    
     setSingleItemActions(actions) {
         this.singleItemActions = actions;
         if (this.datatable) {
