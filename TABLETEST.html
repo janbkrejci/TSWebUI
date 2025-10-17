@@ -1,42 +1,500 @@
 <!DOCTYPE html>
 <html lang="cs">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TS-Table Test</title>
+
+    <!-- Shoelace CSS and Components -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css" />
+    <script type="module"
+        src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/shoelace-autoloader.js"></script>
+
     <!-- TS-Table Bundle - load as module -->
-    <script type="module" src="./dist/ts-table-bundle.js"></script>
+    <script type="module" src="dist/ts-table-bundle.js"></script>
 </head>
+
 <body>
     <ts-table id="table"></ts-table>
-    
+
     <!-- Table data and initialization -->
     <script type="module">
         // References to component
         var table = null;
 
-        // Column definitions
-        const columnDefinitions = [
-            { key: 'id', label: 'ID', type: 'number', visible: false, order: 0 },
-            { key: 'name', label: 'Jméno', type: 'text', visible: true, order: 1, sortable: true },
-            { key: 'email', label: 'Email', type: 'text', visible: true, order: 2, sortable: true },
-            { key: 'turnover', label: 'Obrat', type: 'number', visible: true, order: 3, sortable: true, align: 'right' },
-            { key: 'contractDate', label: 'Datum smlouvy', type: 'date', visible: true, order: 4, sortable: true },
-            { key: 'approved', label: 'Schváleno', type: 'boolean', visible: true, order: 5, sortable: true }
+        const tableData = [
+            {
+                id: 1,
+                name: "Jana Nováková",
+                username: "jana_n",
+                email: "jana@example.com",
+                city: "Praha",
+                phone: "555-1234",
+                website: "www.jananovakova.com",
+                company: "Novák s.r.o.",
+                turnover: 125000.50,
+                contractDate: "2022-03-15",
+                approved: true
+            },
+            {
+                id: 2,
+                name: "Petr Svoboda",
+                username: "petr_s",
+                email: "petr@example.com",
+                city: "Brno",
+                phone: "555-5678",
+                website: "www.petrsvoboda.com",
+                company: "Svoboda a.s.",
+                turnover: 89000.75,
+                contractDate: "2019-07-22",
+                approved: false
+            },
+            {
+                id: 3,
+                name: "Marie Černá",
+                username: "marie_c",
+                email: "marie@example.com",
+                city: "Ostrava",
+                phone: "555-8765",
+                website: "www.mariecerna.com",
+                company: "Černá spol. s r.o.",
+                turnover: 234000.25,
+                contractDate: "2024-01-10",
+                approved: true
+            },
+            {
+                id: 4,
+                name: "Tomáš Dvořák",
+                username: "tomas_d",
+                email: "tomas@example.com",
+                city: "Plzeň",
+                phone: "555-4321",
+                website: "www.tomasdvorak.com",
+                company: "Dvořák s.r.o.",
+                turnover: 156000.00,
+                contractDate: "2020-05-08",
+                approved: true
+            },
+            {
+                id: 5,
+                name: "Eva Procházková",
+                username: "eva_p",
+                email: "eva@example.com",
+                city: "České Budějovice",
+                phone: "555-2468",
+                website: "www.evaprocha.com",
+                company: "Procházka a syn",
+                turnover: 78000.90,
+                contractDate: "2018-09-14",
+                approved: false
+            },
+            {
+                id: 6,
+                name: "Jiří Krejčí",
+                username: "jiri_k",
+                email: "jiri@example.com",
+                city: "Hradec Králové",
+                phone: "555-1357",
+                website: "www.jirikrejci.com",
+                company: "Krejčí Group s.r.o.",
+                turnover: 312000.45,
+                contractDate: "2021-02-28",
+                approved: true
+            },
+            {
+                id: 7,
+                name: "Alena Horáková",
+                username: "alena_h",
+                email: "alena@example.com",
+                city: "Pardubice",
+                phone: "555-9753",
+                website: "www.alenahorak.com",
+                company: "Horák s.r.o.",
+                turnover: 187000.30,
+                contractDate: "2025-11-03",
+                approved: false
+            },
+            {
+                id: 8,
+                name: "Pavel Němeček",
+                username: "pavel_n",
+                email: "pavel@example.com",
+                city: "Liberec",
+                phone: "555-8642",
+                website: "www.pavelnemecek.com",
+                company: "Němeček a partneři",
+                turnover: 95000.60,
+                contractDate: "2019-06-19",
+                approved: true
+            },
+            {
+                id: 9,
+                name: "Tereza Poláková",
+                username: "tereza_p",
+                email: "tereza@example.com",
+                city: "Olomouc",
+                phone: "555-7531",
+                website: "www.terezapolak.com",
+                company: "Polák Group s.r.o.",
+                turnover: 268000.80,
+                contractDate: "2023-04-12",
+                approved: true
+            },
+            {
+                id: 10,
+                name: "Martin Veselý",
+                username: "martin_v",
+                email: "martin@example.com",
+                city: "Zlín",
+                phone: "555-1597",
+                website: "www.martinvesely.com",
+                company: "Veselý a.s.",
+                turnover: 134000.15,
+                contractDate: "2020-08-27",
+                approved: false
+            },
+            {
+                id: 11,
+                name: "Kateřina Svobodová",
+                username: "katerina_s",
+                email: "katerina@example.com",
+                city: "Jihlava",
+                phone: "555-2001",
+                website: "www.katkasvoboda.com",
+                company: "Svoboda Industries s.r.o.",
+                turnover: 445000.00,
+                contractDate: "2024-12-01",
+                approved: true
+            },
+            {
+                id: 12,
+                name: "Lukáš Machala",
+                username: "lukas_m",
+                email: "lukas@example.com",
+                city: "Frýdek-Místek",
+                phone: "555-2002",
+                website: "www.lukasmachala.com",
+                company: "Machala Corp a.s.",
+                turnover: 178000.40,
+                contractDate: "2018-10-16",
+                approved: false
+            },
+            {
+                id: 13,
+                name: "Zuzana Bartošová",
+                username: "zuzana_b",
+                email: "zuzana@example.com",
+                city: "Karviná",
+                phone: "555-2003",
+                website: "www.zuzanabartosh.com",
+                company: "Bartoš LLC s.r.o.",
+                turnover: 223000.70,
+                contractDate: "2021-07-30",
+                approved: true
+            },
+            {
+                id: 14,
+                name: "Jakub Říha",
+                username: "jakub_r",
+                email: "jakub@example.com",
+                city: "Teplice",
+                phone: "555-2004",
+                website: "www.jakubriha.com",
+                company: "Říha Group s.r.o.",
+                turnover: 112000.25,
+                contractDate: "2019-03-22",
+                approved: true
+            },
+            {
+                id: 15,
+                name: "Veronika Horáčková",
+                username: "veronika_h",
+                email: "veronika@example.com",
+                city: "Děčín",
+                phone: "555-2005",
+                website: "www.veronikahoracek.com",
+                company: "Horáček Inc s.r.o.",
+                turnover: 289000.90,
+                contractDate: "2025-11-18",
+                approved: false
+            },
+            {
+                id: 16,
+                name: "Michaela Čechová",
+                username: "michaela_c",
+                email: "michaela@example.com",
+                city: "Prostějov",
+                phone: "555-2006",
+                website: "www.michaelacech.com",
+                company: "Čech Ltd s.r.o.",
+                turnover: 167000.35,
+                contractDate: "2022-09-05",
+                approved: true
+            },
+            {
+                id: 17,
+                name: "Radek Kolář",
+                username: "radek_k",
+                email: "radek@example.com",
+                city: "Přerov",
+                phone: "555-2007",
+                website: "www.radekkolar.com",
+                company: "Kolář Enterprises s.r.o.",
+                turnover: 356000.55,
+                contractDate: "2020-05-29",
+                approved: false
+            },
+            {
+                id: 18,
+                name: "Simona Kratochvílová",
+                username: "simona_k",
+                email: "simona@example.com",
+                city: "Vsetín",
+                phone: "555-2008",
+                website: "www.simonakratochvil.com",
+                company: "Kratochvíl Co s.r.o.",
+                turnover: 89000.20,
+                contractDate: "2024-12-07",
+                approved: true
+            },
+            {
+                id: 19,
+                name: "Ondřej Pešek",
+                username: "ondrej_p",
+                email: "ondrej@example.com",
+                city: "Uherské Hradiště",
+                phone: "555-2009",
+                website: "www.ondrejpesek.com",
+                company: "Pešek Group s.r.o.",
+                turnover: 245000.85,
+                contractDate: "2018-08-11",
+                approved: false
+            },
+            {
+                id: 20,
+                name: "Barbora Konečná",
+                username: "barbora_k",
+                email: "barbora@example.com",
+                city: "Kroměříž",
+                phone: "555-2010",
+                website: "www.barborakonecna.com",
+                company: "Konečný Inc a.s.",
+                turnover: 134000.60,
+                contractDate: "2021-06-03",
+                approved: true
+            },
+            {
+                id: 21,
+                name: "Filip Štěpánek",
+                username: "filip_s",
+                email: "filip@example.com",
+                city: "Třebíč",
+                phone: "555-2011",
+                website: "www.filipstepanek.com",
+                company: "Štěpánek Corp a.s.",
+                turnover: 201000.45,
+                contractDate: "2019-10-25",
+                approved: true
+            },
+            {
+                id: 22,
+                name: "Klára Doležalová",
+                username: "klara_d",
+                email: "klara@example.com",
+                city: "Znojmo",
+                phone: "555-2012",
+                website: "www.klaradolezal.com",
+                company: "Doležal LLC s.r.o.",
+                turnover: 178000.30,
+                contractDate: "2022-04-17",
+                approved: false
+            },
+            {
+                id: 23,
+                name: "Marek Blažek",
+                username: "marek_b",
+                email: "marek@example.com",
+                city: "Blansko",
+                phone: "555-2013",
+                website: "www.marekblazek.com",
+                company: "Blažek Group s.r.o.",
+                turnover: 267000.75,
+                contractDate: "2025-11-09",
+                approved: true
+            },
+            {
+                id: 24,
+                name: "Nikola Fialová",
+                username: "nikola_f",
+                email: "nikola@example.com",
+                city: "Hodonín",
+                phone: "555-2014",
+                website: "www.nikolafiala.com",
+                company: "Fiala Industries a.s.",
+                turnover: 312000.20,
+                contractDate: "2018-07-14",
+                approved: false
+            },
+            {
+                id: 25,
+                name: "Daniel Urban",
+                username: "daniel_u",
+                email: "daniel@example.com",
+                city: "Břeclav",
+                phone: "555-2015",
+                website: "www.danielurban.com",
+                company: "Urban Inc a.s.",
+                turnover: 145000.95,
+                contractDate: "2024-12-20",
+                approved: true
+            }
         ];
 
-        // Table data
-        const tableData = [
-            { id: 1, name: 'Jan Novák', email: 'jan.novak@email.cz', turnover: 125000.50, contractDate: '2024-01-15', approved: true },
-            { id: 2, name: 'Marie Svobodová', email: 'marie.svobodova@email.cz', turnover: 98000.00, contractDate: '2024-02-20', approved: false },
-            { id: 3, name: 'Petr Dvořák', email: 'petr.dvorak@email.cz', turnover: 156000.75, contractDate: '2024-01-10', approved: true },
-            { id: 4, name: 'Jana Černá', email: 'jana.cerna@email.cz', turnover: 87000.25, contractDate: '2024-03-05', approved: false },
-            { id: 5, name: 'Tomáš Procházka', email: 'tomas.prochazka@email.cz', turnover: 210000.00, contractDate: '2024-01-25', approved: true },
-            { id: 6, name: 'Eva Nováková', email: 'eva.novakova@email.cz', turnover: 145000.50, contractDate: '2024-02-15', approved: false },
-            { id: 7, name: 'Martin Svoboda', email: 'martin.svoboda@email.cz', turnover: 178000.00, contractDate: '2024-03-10', approved: false },
-            { id: 8, name: 'Kateřina Dvořáková', email: 'katerina.dvorakova@email.cz', turnover: 132000.75, contractDate: '2024-01-30', approved: true },
-            { id: 9, name: 'Jiří Černý', email: 'jiri.cerny@email.cz', turnover: 95000.00, contractDate: '2024-02-25', approved: false },
-            { id: 10, name: 'Lenka Procházková', email: 'lenka.prochazkova@email.cz', turnover: 168000.50, contractDate: '2024-03-15', approved: false }
+        const columnDefinitions = [
+            {
+                key: 'id',
+                title: 'ID',
+                type: 'number',
+                sortable: false,
+                sortDirection: 'none',
+                className: 'id-column',
+                filterable: true,
+                filterPlaceholder: 'Filtr ID',
+                visible: false,
+                align: 'right',
+                order: 0
+            },
+            {
+                key: 'name',
+                title: 'Jméno',
+                type: 'text',
+                sortable: true,
+                sortDirection: 'asc',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr jména',
+                visible: true,
+                align: 'left',
+                order: 1
+            },
+            {
+                key: 'username',
+                title: 'Uživatelské jméno',
+                type: 'text',
+                sortable: true,
+                sortDirection: 'desc',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr uživatelského jména',
+                visible: false,
+                align: 'left',
+                order: 2
+            },
+            {
+                key: 'email',
+                title: 'E-mail',
+                type: 'text',
+                sortable: false,
+                sortDirection: 'none',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr e-mailu',
+                visible: false,
+                align: 'left',
+                order: 3
+            },
+            {
+                key: 'city',
+                title: 'Město',
+                type: 'text',
+                sortable: false,
+                sortDirection: 'none',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr města',
+                visible: false,
+                align: 'left',
+                order: 4
+            },
+            {
+                key: 'phone',
+                title: 'Telefon',
+                type: 'text',
+                sortable: false,
+                sortDirection: 'none',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr telefonu',
+                visible: false,
+                align: 'center',
+                order: 5
+            },
+            {
+                key: 'website',
+                title: 'Webové stránky',
+                type: 'text',
+                sortable: false,
+                sortDirection: 'none',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr webových stránek',
+                visible: false,
+                align: 'left',
+                order: 6
+            },
+            {
+                key: 'company',
+                title: 'Firma',
+                type: 'text',
+                sortable: false,
+                sortDirection: 'none',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr firmy',
+                visible: false,
+                align: 'left',
+                order: 7
+            },
+            {
+                key: 'turnover',
+                title: 'Obrat',
+                type: 'number',
+                sortable: true,
+                sortDirection: 'none',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr obratu',
+                visible: true,
+                align: 'right',
+                order: 8
+            },
+            {
+                key: 'contractDate',
+                title: 'Datum smlouvy',
+                type: 'date',
+                sortable: true,
+                sortDirection: 'none',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr data smlouvy',
+                visible: true,
+                align: 'right',
+                order: 9
+            },
+            {
+                key: 'approved',
+                title: 'Schváleno',
+                type: 'boolean',
+                sortable: true,
+                sortDirection: 'none',
+                className: '',
+                filterable: true,
+                filterPlaceholder: 'Filtr schválení',
+                visible: true,
+                align: 'center',
+                order: 10
+            }
         ];
 
         // Configuration
@@ -47,13 +505,16 @@
         const unshowableColumns = ['id'];
         const itemsPerPage = 5;
         const itemsPerPageOptions = [5, 10, 20, 50, -1];
-        
+
         // Example: Only show approved records (predefined filter that can't be cleared)
-        const predefinedFilters = { approved: 'true' };
-        //const predefinedFilters = {};
+        // const predefinedFilters = { approved: 'true' };
+        const predefinedFilters = {};
 
         // Initialize component when DOM is ready
-        function initializeComponents() {
+        async function initializeComponents() {
+            // Wait for custom element to be defined
+            await customElements.whenDefined('ts-table');
+
             table = document.getElementById('table');
 
             // Configure table
@@ -82,14 +543,14 @@
             // table.setEnablePagination(false); // Disable pagination for testing
 
             table.setData(tableData); // Set data after predefined filters
-            
+
             setupEventListeners();
-            
+
             // Initialize table
             table.initialize();
         }
 
-         function setupEventListeners() {
+        function setupEventListeners() {
             // Table events
             table.addEventListener('create-new-record', () => {
                 console.log('Create new record');
@@ -99,7 +560,7 @@
                 const { action, rows } = event.detail;
                 console.log('Action:', action, 'for', rows.length, 'row(s):', rows);
             });
-            
+
             table.addEventListener('row-clicked', (event) => {
                 const { row, columnKey } = event.detail;
                 console.log('Row clicked:', row, 'in column:', columnKey);
@@ -108,27 +569,27 @@
             table.addEventListener('do-import', (event) => {
                 const { importData, file } = event.detail;
                 console.log('Import received:', importData.length, 'rows from file:', file.name);
-                
+
                 // Process import data - demo logic with random rejection
                 let added = 0, updated = 0, rejected = 0, skipped = 0;
                 const rejectedRows = [];
                 const rejectedRowsData = [];
                 const processedRows = [];
-                
+
                 importData.forEach(({ __index, data }) => {
                     // Randomly reject ~20% of rows for testing purposes
                     const shouldRejectRandomly = Math.random() < 0.2;
-                    
+
                     if (shouldRejectRandomly) {
                         rejected++;
                         rejectedRows.push(__index);
                         rejectedRowsData.push(data);
                         return;
                     }
-                    
+
                     // Check if row with same ID exists (for update vs add logic)
                     const existingRow = table.getAllRows().find(r => r.id === data.id);
-                    
+
                     if (!data.id) {
                         rejected++;
                         rejectedRows.push(__index);
@@ -143,7 +604,7 @@
                         processedRows.push({ ...data, __importAction: 'added' });
                     }
                 });
-                
+
                 // Show results via the table
                 table.showImportResults({
                     added,
@@ -153,7 +614,7 @@
                     rejectedRows,
                     rejectedRowsData
                 });
-                
+
                 console.log('Import completed:', processedRows);
             });
         }
@@ -161,4 +622,5 @@
         initializeComponents();
     </script>
 </body>
+
 </html>

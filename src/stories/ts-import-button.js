@@ -56,14 +56,19 @@ class TSImportButton extends HTMLElement {
                 }
                 sl-dialog::part(body) {
                     font-family: var(--sl-font-sans);
-                    overflow: visible;
+                    overflow: auto;
+                    max-height: calc(90vh - 200px);
                 }
                 sl-dialog::part(panel) {
                     max-height: 90vh;
+                    min-height: 250px;
+                    display: flex;
+                    flex-direction: column;
                 }
                 sl-dialog::part(footer) {
                     display: flex;
                     justify-content: space-between;
+                    flex-shrink: 0;
                 }
             </style>
             <sl-tooltip content="Importovat z Excelu">

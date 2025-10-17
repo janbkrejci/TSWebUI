@@ -19,6 +19,7 @@ class TSTablePager extends HTMLElement {
                     color: var(--sl-color-neutral-700);
                     font-weight: var(--sl-font-weight-light);
                     white-space: nowrap;
+                    font-family: var(--sl-font-sans);
                 }
 
                 #items-per-page {
@@ -55,6 +56,7 @@ class TSTablePager extends HTMLElement {
                 :host {
                     display: block;
                     width: 100%;
+                    font-family: var(--sl-font-sans);
                 }
 
                 .footer > :first-child {
@@ -77,6 +79,7 @@ class TSTablePager extends HTMLElement {
                     color: var(--sl-color-neutral-700);
                     font-weight: var(--sl-font-weight-light);
                     white-space: nowrap;
+                    font-family: var(--sl-font-sans);
                 }
 
                 .pager {
