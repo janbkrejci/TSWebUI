@@ -28,6 +28,7 @@ class TSDataTable extends HTMLElement {
         this.enableColumnReordering = true;
         this.enableSelection = true;
         this.enableRowMenu = true;
+        this.enableClickableRows = true;
         
         // Initialization state
         this.initialized = false;
@@ -114,11 +115,27 @@ class TSDataTable extends HTMLElement {
                 }
                 
                 tbody tr {
+                    cursor: default;
+                }
+                
+                tbody tr.clickable {
                     cursor: pointer;
                 }
                 
-                tr:hover td {
-                    background: var(--sl-color-primary-50);
+                tbody tr:hover td {
+                    background: transparent;
+                }
+                
+                tr.clickable:hover td {
+                    background: var(--sl-color-primary-50) !important;
+                }
+                
+                tr.no-data-row {
+                    cursor: default;
+                }
+                
+                tr.no-data-row:hover td {
+                    background: transparent !important;
                 }
                 
                 /* Checkbox column */
@@ -510,6 +527,13 @@ class TSDataTable extends HTMLElement {
     
     setEnableRowMenu(enable) {
         this.enableRowMenu = enable !== false;
+        if (this.initialized) {
+            this.render();
+        }
+    }
+    
+    setEnableClickableRows(enable) {
+        this.enableClickableRows = enable !== false;
         if (this.initialized) {
             this.render();
         }
@@ -978,39 +1002,54 @@ class TSDataTable extends HTMLElement {
                 }));
             }
         });
+    }
+    
+    setupRowClickHandlers() {
+        const tbody = this.querySelector('tbody');
+        if (!tbody) return;
         
-        // Row click events (for entire row except checkbox and menu)
-        tbody.addEventListener('click', (e) => {
-            // Ignore clicks on checkboxes, menu dropdowns, and their children
-            if (e.target.closest('.checkbox-column') || e.target.closest('.menu-column')) {
-                return;
-            }
-            
-            const tr = e.target.closest('tr');
-            const td = e.target.closest('td');
-            
-            if (tr && tr.hasAttribute('data-row-id') && td) {
-                const rowId = String(tr.getAttribute('data-row-id'));
-                const row = this.tableData.find(r => String(r.id) === rowId);
-                
-                if (row) {
-                    // Find the column key based on td index
-                    // Index 0 is checkbox, index 1 is menu, data columns start at index 2
-                    const tdIndex = Array.from(tr.children).indexOf(td);
-                    const visibleColumns = this.getVisibleColumns();
-                    const columnIndex = tdIndex - 2; // Subtract checkbox and menu columns
-                    const columnKey = columnIndex >= 0 && columnIndex < visibleColumns.length 
-                        ? visibleColumns[columnIndex].key 
-                        : null;
-                    
-                    this.dispatchEvent(new CustomEvent('row-clicked', {
-                        detail: { row, columnKey },
-                        bubbles: true,
-                        composed: true
-                    }));
+        // Remove existing row click listener if any
+        if (this.rowClickHandler) {
+            tbody.removeEventListener('click', this.rowClickHandler);
+            this.rowClickHandler = null;
+        }
+        
+        // Add row click listener only if enabled
+        if (this.enableClickableRows) {
+            this.rowClickHandler = (e) => {
+                // Ignore clicks on checkboxes, menu dropdowns, and their children
+                if (e.target.closest('.checkbox-column') || e.target.closest('.menu-column')) {
+                    return;
                 }
-            }
-        });
+                
+                const tr = e.target.closest('tr');
+                const td = e.target.closest('td');
+                
+                if (tr && tr.hasAttribute('data-row-id') && td) {
+                    const rowId = String(tr.getAttribute('data-row-id'));
+                    const row = this.tableData.find(r => String(r.id) === rowId);
+                    
+                    if (row) {
+                        // Find the column key based on td index
+                        // Calculate offset based on enabled fixed columns
+                        const fixedColumnsCount = (this.enableSelection ? 1 : 0) + (this.enableRowMenu ? 1 : 0);
+                        const tdIndex = Array.from(tr.children).indexOf(td);
+                        const visibleColumns = this.getVisibleColumns();
+                        const columnIndex = tdIndex - fixedColumnsCount;
+                        const columnKey = columnIndex >= 0 && columnIndex < visibleColumns.length 
+                            ? visibleColumns[columnIndex].key 
+                            : null;
+                        
+                        this.dispatchEvent(new CustomEvent('row-clicked', {
+                            detail: { row, columnKey },
+                            bubbles: true,
+                            composed: true
+                        }));
+                    }
+                }
+            };
+            tbody.addEventListener('click', this.rowClickHandler);
+        }
     }
     
     // Event handlers
@@ -1230,12 +1269,18 @@ class TSDataTable extends HTMLElement {
         this.updateHeaderCheckbox();
         this.updateSelectionUI();
         
+        // Setup row click handlers after rows are rendered
+        this.setupRowClickHandlers();
+        
         return true;
     }
     
     createTableRow(row, visibleColumns) {
         const tr = document.createElement('tr');
         tr.setAttribute('data-row-id', row.id);
+        if (this.enableClickableRows) {
+            tr.classList.add('clickable');
+        }
         
         // Checkbox cell
         if (this.enableSelection) {

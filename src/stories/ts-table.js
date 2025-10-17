@@ -334,6 +334,13 @@ class TSTable extends HTMLElement {
         }
     }
     
+    setEnableClickableRows(enable) {
+        this.enableClickableRows = enable !== false;
+        if (this.datatable) {
+            this.datatable.setEnableClickableRows(this.enableClickableRows);
+        }
+    }
+    
     setSingleItemActions(actions) {
         this.singleItemActions = actions;
         if (this.datatable) {
