@@ -51,15 +51,18 @@ class TSExportButton extends HTMLElement {
                 }
                 sl-dialog::part(title) {
                     font-family: var(--sl-font-sans);
+                    flex-shrink: 0;
                 }
                 sl-dialog::part(body) {
                     font-family: var(--sl-font-sans);
-                    overflow: auto;
-                    max-height: calc(90vh - 200px);
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                    flex: 1 1 auto;
+                    min-height: 0;
                 }
                 sl-dialog::part(panel) {
                     max-height: 90vh;
-                    min-height: 250px;
+                    max-width: 90vw;
                     display: flex;
                     flex-direction: column;
                 }
