@@ -27,6 +27,7 @@ class TSDataTable extends HTMLElement {
         this.enableColumnResizing = true;
         this.enableColumnReordering = true;
         this.enableSelection = true;
+        this.enableRowMenu = true;
         
         // Initialization state
         this.initialized = false;
@@ -507,6 +508,13 @@ class TSDataTable extends HTMLElement {
         }
     }
     
+    setEnableRowMenu(enable) {
+        this.enableRowMenu = enable !== false;
+        if (this.initialized) {
+            this.render();
+        }
+    }
+    
     setPredefinedFilters(filters) {
         this.predefinedFilters = filters || {};
         // If data already exists, re-apply predefined filters
@@ -663,10 +671,12 @@ class TSDataTable extends HTMLElement {
             colgroup.appendChild(colCheckbox);
         }
         
-        const colMenu = document.createElement('col');
-        colMenu.setAttribute('data-fixed', 'menu');
-        colMenu.style.width = '44px';
-        colgroup.appendChild(colMenu);
+        if (this.enableRowMenu) {
+            const colMenu = document.createElement('col');
+            colMenu.setAttribute('data-fixed', 'menu');
+            colMenu.style.width = '44px';
+            colgroup.appendChild(colMenu);
+        }
         
         const visibleColumns = this.getVisibleColumns();
         visibleColumns.forEach(col => {
@@ -716,14 +726,16 @@ class TSDataTable extends HTMLElement {
         }
         
         // Menu column
-        const menuHeader = document.createElement('th');
-        menuHeader.className = this.enableFiltering ? 'menu-column' : 'menu-column no-filtering';
-        menuHeader.innerHTML = `
-            <div class="header-cell-content">
-                <ts-selection-menu id="selection-menu"></ts-selection-menu>
-            </div>
-        `;
-        headerRow.appendChild(menuHeader);
+        if (this.enableRowMenu) {
+            const menuHeader = document.createElement('th');
+            menuHeader.className = this.enableFiltering ? 'menu-column' : 'menu-column no-filtering';
+            menuHeader.innerHTML = `
+                <div class="header-cell-content">
+                    <ts-selection-menu id="selection-menu"></ts-selection-menu>
+                </div>
+            `;
+            headerRow.appendChild(menuHeader);
+        }
         
         // Data columns
         const visibleColumns = this.getVisibleColumns();
@@ -1201,7 +1213,8 @@ class TSDataTable extends HTMLElement {
             const tr = document.createElement('tr');
             tr.className = 'no-data-row';
             const td = document.createElement('td');
-            td.colSpan = visibleColumns.length + (this.enableSelection ? 2 : 1);
+            const fixedColumns = (this.enableSelection ? 1 : 0) + (this.enableRowMenu ? 1 : 0);
+            td.colSpan = visibleColumns.length + fixedColumns;
             td.textContent = 'Nenalezeny žádné záznamy';
             td.className = 'no-data-row';
             tr.appendChild(td);
@@ -1235,20 +1248,22 @@ class TSDataTable extends HTMLElement {
         }
         
         // Menu cell
-        const menuCell = document.createElement('td');
-        menuCell.className = 'menu-column';
-        const menuItems = this.menuActions.map(action =>
-            `<sl-menu-item data-action="${action.actionName}">${action.label}</sl-menu-item>`
-        ).join('');
-        menuCell.innerHTML = `
-            <sl-dropdown hoist id="row-menu-${row.id}">
-                <sl-button slot="trigger" size="small" variant="text" circle>
-                    <sl-icon name="three-dots-vertical"></sl-icon>
-                </sl-button>
-                <sl-menu>${menuItems}</sl-menu>
-            </sl-dropdown>
-        `;
-        tr.appendChild(menuCell);
+        if (this.enableRowMenu) {
+            const menuCell = document.createElement('td');
+            menuCell.className = 'menu-column';
+            const menuItems = this.menuActions.map(action =>
+                `<sl-menu-item data-action="${action.actionName}">${action.label}</sl-menu-item>`
+            ).join('');
+            menuCell.innerHTML = `
+                <sl-dropdown hoist id="row-menu-${row.id}">
+                    <sl-button slot="trigger" size="small" variant="text" circle>
+                        <sl-icon name="three-dots-vertical"></sl-icon>
+                    </sl-button>
+                    <sl-menu>${menuItems}</sl-menu>
+                </sl-dropdown>
+            `;
+            tr.appendChild(menuCell);
+        }
         
         // Data cells
         visibleColumns.forEach(col => {

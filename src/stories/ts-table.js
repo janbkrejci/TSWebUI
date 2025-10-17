@@ -327,6 +327,13 @@ class TSTable extends HTMLElement {
         }
     }
     
+    setEnableRowMenu(enable) {
+        this.enableRowMenu = enable !== false;
+        if (this.datatable) {
+            this.datatable.setEnableRowMenu(this.enableRowMenu);
+        }
+    }
+    
     setSingleItemActions(actions) {
         this.singleItemActions = actions;
         if (this.datatable) {
