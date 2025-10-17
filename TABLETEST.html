@@ -28,10 +28,17 @@
         enablefiltering="true"
         enablecolumnresizing="true"
         enablecolumnreordering="true"
-        enableselection="false"
-        enablerowmenu="false"
+        enableselection="true"
+        enablerowmenu="true"
         enableclickablerows="false"
-        enablepagination="false">
+        enablepagination="false"
+        singleitemactions="edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek"
+        multipleitemsactions="delete/Smazat vybrané,export/Exportovat vybrané"
+        preselectedcolumns="name,email,turnover,contractDate,approved"
+        unhideablecolumns="name,email"
+        unshowablecolumns="id"
+        itemsperpage="5"
+        itemsperpageoptions="5,10,20,50,-1">
     </ts-table>
 
     <!-- Table data and initialization -->
@@ -539,14 +546,15 @@
 
             // Configure table
             table.setColumnDefinitions(columnDefinitions);
-            table.setPreselectedColumns(preselectedColumns);
-            table.setUnhideableColumns(unhideableColumns);
-            table.setUnshowableColumns(unshowableColumns);
-            table.setSingleItemActions(singleItemActions);
-            table.setMultipleItemsActions(multipleItemsActions);
-            table.setItemsPerPage(itemsPerPage);
-            table.setItemsPerPageOptions(itemsPerPageOptions);
-            table.setPredefinedFilters(predefinedFilters);
+            // Note: The following are now set via HTML attributes and don't need to be set in code
+            // table.setPreselectedColumns(preselectedColumns);
+            // table.setUnhideableColumns(unhideableColumns);
+            // table.setUnshowableColumns(unshowableColumns);
+            // table.setSingleItemActions(singleItemActions);
+            // table.setMultipleItemsActions(multipleItemsActions);
+            // table.setItemsPerPage(itemsPerPage);
+            // table.setItemsPerPageOptions(itemsPerPageOptions);
+            // table.setPredefinedFilters(predefinedFilters);
 
             // UI visibility options
             // table.setShowColumnSelector(false); // Uncomment to hide column selector

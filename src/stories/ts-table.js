@@ -103,7 +103,15 @@ class TSTable extends HTMLElement {
             'enableselection',
             'enablerowmenu',
             'enableclickablerows',
-            'enablepagination'
+            'enablepagination',
+            'singleitemactions',
+            'multipleitemsactions',
+            'preselectedcolumns',
+            'unhideablecolumns',
+            'unshowablecolumns',
+            'itemsperpage',
+            'itemsperpageoptions',
+            'predefinedfilters'
         ];
     }
     
@@ -182,8 +190,83 @@ class TSTable extends HTMLElement {
                 break;
             case 'enablepagination':
                 this.enablePagination = boolValue;
+                if (this.datatable) {
+                    this.datatable.setEnablePagination(this.enablePagination);
+                }
                 if (this.pager) {
                     this.pager.style.display = this.enablePagination ? '' : 'none';
+                }
+                break;
+            case 'singleitemactions':
+                if (newValue) {
+                    this.setSingleItemActions(newValue);
+                }
+                break;
+            case 'multipleitemsactions':
+                if (newValue) {
+                    this.setMultipleItemsActions(newValue);
+                }
+                break;
+            case 'preselectedcolumns':
+                if (newValue) {
+                    // Parse comma-separated list or JSON array
+                    try {
+                        const cols = newValue.startsWith('[') ? JSON.parse(newValue) : newValue.split(',').map(s => s.trim());
+                        this.setPreselectedColumns(cols);
+                    } catch (e) {
+                        console.error('Failed to parse preselectedcolumns attribute:', e);
+                    }
+                }
+                break;
+            case 'unhideablecolumns':
+                if (newValue) {
+                    try {
+                        const cols = newValue.startsWith('[') ? JSON.parse(newValue) : newValue.split(',').map(s => s.trim());
+                        this.setUnhideableColumns(cols);
+                    } catch (e) {
+                        console.error('Failed to parse unhideablecolumns attribute:', e);
+                    }
+                }
+                break;
+            case 'unshowablecolumns':
+                if (newValue) {
+                    try {
+                        const cols = newValue.startsWith('[') ? JSON.parse(newValue) : newValue.split(',').map(s => s.trim());
+                        this.setUnshowableColumns(cols);
+                    } catch (e) {
+                        console.error('Failed to parse unshowablecolumns attribute:', e);
+                    }
+                }
+                break;
+            case 'itemsperpage':
+                if (newValue) {
+                    const num = parseInt(newValue, 10);
+                    if (!isNaN(num)) {
+                        this.setItemsPerPage(num);
+                    }
+                }
+                break;
+            case 'itemsperpageoptions':
+                if (newValue) {
+                    try {
+                        const opts = newValue.startsWith('[') ? JSON.parse(newValue) : newValue.split(',').map(s => {
+                            const n = parseInt(s.trim(), 10);
+                            return isNaN(n) ? -1 : n;
+                        });
+                        this.setItemsPerPageOptions(opts);
+                    } catch (e) {
+                        console.error('Failed to parse itemsperpageoptions attribute:', e);
+                    }
+                }
+                break;
+            case 'predefinedfilters':
+                if (newValue) {
+                    try {
+                        const filters = JSON.parse(newValue);
+                        this.setPredefinedFilters(filters);
+                    } catch (e) {
+                        console.error('Failed to parse predefinedfilters attribute:', e);
+                    }
                 }
                 break;
         }
