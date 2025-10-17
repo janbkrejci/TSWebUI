@@ -50,7 +50,8 @@ var columnDefinitions = [
         filterPlaceholder: 'Filtr e-mailu',
         visible: false,
         align: 'left',
-        order: 3
+        order: 3,
+        canBeCopied: true
     },
     {
         key: 'city',
@@ -115,7 +116,8 @@ var columnDefinitions = [
         filterPlaceholder: 'Filtr obratu',
         visible: true,
         align: 'right',
-        order: 8
+        order: 8,
+        canBeCopied: true
     },
     {
         key: 'contractDate',
@@ -128,7 +130,8 @@ var columnDefinitions = [
         filterPlaceholder: 'Filtr data smlouvy',
         visible: true,
         align: 'right',
-        order: 9
+        order: 9,
+        canBeCopied: true
     },
     {
         key: 'approved',
@@ -141,7 +144,8 @@ var columnDefinitions = [
         filterPlaceholder: 'Filtr schválení',
         visible: true,
         align: 'center',
-        order: 10
+        order: 10,
+        canBeCopied: true
     }
 ];
 

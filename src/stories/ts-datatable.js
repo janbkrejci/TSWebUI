@@ -1412,21 +1412,52 @@ class TSDataTable extends HTMLElement {
             if (col.align) td.style.textAlign = col.align;
             if (col.type === 'boolean') td.style.minWidth = '140px';
             
+            let cellContent = '';
+            let copyValue = '';
+            
             // Format cell content
             if (col.key === 'turnover') {
-                td.innerHTML = `<sl-format-number value="${row[col.key]}" type="decimal" minimum-fraction-digits="2" maximum-fraction-digits="2"></sl-format-number>`;
+                cellContent = `<sl-format-number value="${row[col.key]}" type="decimal" minimum-fraction-digits="2" maximum-fraction-digits="2"></sl-format-number>`;
+                copyValue = row[col.key]; // unformatted number for copy
             } else if (col.key === 'contractDate') {
-                td.innerHTML = `<sl-format-date date="${row[col.key]}"></sl-format-date>`;
+                cellContent = `<sl-format-date date="${row[col.key]}"></sl-format-date>`;
+                copyValue = new Date(row[col.key]).toLocaleDateString('cs-CZ'); // formatted date for copy
             } else if (col.key === 'approved') {
                 const checkedAttr = row[col.key] ? 'checked' : '';
                 // Wrap switch in a flex container for proper centering
                 if (col.align === 'center') {
-                    td.innerHTML = `<div style="display: flex; justify-content: center;"><sl-switch ${checkedAttr} disabled></sl-switch></div>`;
+                    cellContent = `<div style="display: flex; justify-content: center;"><sl-switch ${checkedAttr} disabled></sl-switch></div>`;
                 } else {
-                    td.innerHTML = `<sl-switch ${checkedAttr} disabled></sl-switch>`;
+                    cellContent = `<sl-switch ${checkedAttr} disabled></sl-switch>`;
+                }
+                copyValue = row[col.key] ? 'Ano' : 'Ne'; // Czech text for boolean
+            } else {
+                cellContent = row[col.key];
+                copyValue = row[col.key];
+            }
+            
+            // Add copy button if canBeCopied is true
+            if (col.canBeCopied && copyValue !== undefined && copyValue !== null) {
+                const copyButton = `<sl-copy-button value="${copyValue}" copy-label="Zkopírovat do schránky" success-label="Zkopírováno!" error-label="Váš prohlížeč nepodporuje tuto funkci"></sl-copy-button>`;
+                
+                // Always put copy button on the right, but adjust layout based on alignment
+                if (col.align === 'right') {
+                    // For right-aligned: content pushed right, copy button at the end
+                    td.innerHTML = `<div style="display: flex; align-items: center; justify-content: flex-end; gap: 0.5em;"><span>${cellContent}</span>${copyButton}</div>`;
+                } else if (col.align === 'center') {
+                    // For center-aligned: content centered, copy button at the end
+                    td.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; gap: 0.5em;"><span>${cellContent}</span>${copyButton}</div>`;
+                } else {
+                    // For left-aligned: content on left, copy button on right edge
+                    td.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between;"><span>${cellContent}</span>${copyButton}</div>`;
                 }
             } else {
-                td.textContent = row[col.key];
+                // No copy button - use content as is
+                if (typeof cellContent === 'string') {
+                    td.innerHTML = cellContent;
+                } else {
+                    td.textContent = cellContent;
+                }
             }
             
             tr.appendChild(td);
