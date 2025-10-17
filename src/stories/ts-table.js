@@ -268,6 +268,7 @@ class TSTable extends HTMLElement {
         this.showColumnSelector = show !== false;
         if (this.toolbar) {
             this.toolbar.setShowColumnSelector(this.showColumnSelector);
+            this.updateToolbarVisibility();
         }
     }
     
@@ -275,6 +276,7 @@ class TSTable extends HTMLElement {
         this.showImportButton = show !== false;
         if (this.toolbar) {
             this.toolbar.setShowImportButton(this.showImportButton);
+            this.updateToolbarVisibility();
         }
     }
     
@@ -282,6 +284,7 @@ class TSTable extends HTMLElement {
         this.showExportButton = show !== false;
         if (this.toolbar) {
             this.toolbar.setShowExportButton(this.showExportButton);
+            this.updateToolbarVisibility();
         }
     }
     
@@ -289,6 +292,24 @@ class TSTable extends HTMLElement {
         this.showCreateButton = show !== false;
         if (this.toolbar) {
             this.toolbar.setShowCreateButton(this.showCreateButton);
+            this.updateToolbarVisibility();
+        }
+    }
+    
+    updateToolbarVisibility() {
+        if (!this.toolbar) return;
+        
+        // Check if all toolbar items are disabled
+        const allDisabled = !this.showColumnSelector && 
+                           !this.showImportButton && 
+                           !this.showExportButton && 
+                           !this.showCreateButton;
+        
+        // Hide toolbar if all items are disabled
+        if (allDisabled) {
+            this.toolbar.style.display = 'none';
+        } else {
+            this.toolbar.style.display = '';
         }
     }
     
