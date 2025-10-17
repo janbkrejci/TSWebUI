@@ -313,6 +313,13 @@ class TSTable extends HTMLElement {
         }
     }
     
+    setEnableColumnReordering(enable) {
+        this.enableColumnReordering = enable !== false;
+        if (this.datatable) {
+            this.datatable.setEnableColumnReordering(this.enableColumnReordering);
+        }
+    }
+    
     setSingleItemActions(actions) {
         this.singleItemActions = actions;
         if (this.datatable) {

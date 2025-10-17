@@ -25,6 +25,7 @@ class TSDataTable extends HTMLElement {
         this.enableSorting = true;
         this.enableFiltering = true;
         this.enableColumnResizing = true;
+        this.enableColumnReordering = true;
         
         // Initialization state
         this.initialized = false;
@@ -486,6 +487,13 @@ class TSDataTable extends HTMLElement {
         }
     }
     
+    setEnableColumnReordering(enable) {
+        this.enableColumnReordering = enable !== false;
+        if (this.initialized) {
+            this.render();
+        }
+    }
+    
     setPredefinedFilters(filters) {
         this.predefinedFilters = filters || {};
         // If data already exists, re-apply predefined filters
@@ -718,10 +726,10 @@ class TSDataTable extends HTMLElement {
                         ${col.title}
                         ${sortIndicator}
                     </div>
-                    <div class="column-ordering-controls">
+                    ${this.enableColumnReordering ? `<div class="column-ordering-controls">
                         ${index > 0 ? `<sl-icon-button name="arrow-left" size="small" class="move-column-left" data-column-key="${col.key}" title="Move left"></sl-icon-button>` : ''}
                         ${index < visibleColumns.length - 1 ? `<sl-icon-button name="arrow-right" size="small" class="move-column-right" data-column-key="${col.key}" title="Move right"></sl-icon-button>` : ''}
-                    </div>
+                    </div>` : ''}
                 </div>
                 ${this.enableFiltering ? `<div class="filter-cell-content">
                     ${col.filterable ? this.createFilterInput(col) : ''}
