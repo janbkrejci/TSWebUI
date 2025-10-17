@@ -320,6 +320,13 @@ class TSTable extends HTMLElement {
         }
     }
     
+    setEnableSelection(enable) {
+        this.enableSelection = enable !== false;
+        if (this.datatable) {
+            this.datatable.setEnableSelection(this.enableSelection);
+        }
+    }
+    
     setSingleItemActions(actions) {
         this.singleItemActions = actions;
         if (this.datatable) {

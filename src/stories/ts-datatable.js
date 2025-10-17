@@ -26,6 +26,7 @@ class TSDataTable extends HTMLElement {
         this.enableFiltering = true;
         this.enableColumnResizing = true;
         this.enableColumnReordering = true;
+        this.enableSelection = true;
         
         // Initialization state
         this.initialized = false;
@@ -499,6 +500,13 @@ class TSDataTable extends HTMLElement {
         }
     }
     
+    setEnableSelection(enable) {
+        this.enableSelection = enable !== false;
+        if (this.initialized) {
+            this.render();
+        }
+    }
+    
     setPredefinedFilters(filters) {
         this.predefinedFilters = filters || {};
         // If data already exists, re-apply predefined filters
@@ -648,10 +656,12 @@ class TSDataTable extends HTMLElement {
         colgroup.innerHTML = '';
         
         // Fixed columns: checkbox + menu
-        const colCheckbox = document.createElement('col');
-        colCheckbox.setAttribute('data-fixed', 'checkbox');
-        colCheckbox.style.width = '44px';
-        colgroup.appendChild(colCheckbox);
+        if (this.enableSelection) {
+            const colCheckbox = document.createElement('col');
+            colCheckbox.setAttribute('data-fixed', 'checkbox');
+            colCheckbox.style.width = '44px';
+            colgroup.appendChild(colCheckbox);
+        }
         
         const colMenu = document.createElement('col');
         colMenu.setAttribute('data-fixed', 'menu');
@@ -682,26 +692,28 @@ class TSDataTable extends HTMLElement {
         const headerRow = document.createElement('tr');
         
         // Checkbox column
-        const checkboxHeader = document.createElement('th');
-        checkboxHeader.className = this.enableFiltering ? 'checkbox-column' : 'checkbox-column no-filtering';
-        checkboxHeader.innerHTML = `
-            ${this.enableFiltering ? `
-            <div class="header-cell-content">
-                <div id="selection-view-toggle" class="selection-view-toggle invisible">
-                    <sl-tooltip hoist content="">
-                        <div class="selection-view-toggle-btn-wrapper">
-                            <sl-icon-button id="selection-view-toggle-btn" name="funnel" size="small" title=""></sl-icon-button>
-                            <sl-icon id="selection-view-badge" class="selection-view-badge selection-view-badge-hidden" name=""></sl-icon>
-                        </div>
-                    </sl-tooltip>
+        if (this.enableSelection) {
+            const checkboxHeader = document.createElement('th');
+            checkboxHeader.className = this.enableFiltering ? 'checkbox-column' : 'checkbox-column no-filtering';
+            checkboxHeader.innerHTML = `
+                ${this.enableFiltering ? `
+                <div class="header-cell-content">
+                    <div id="selection-view-toggle" class="selection-view-toggle invisible">
+                        <sl-tooltip hoist content="">
+                            <div class="selection-view-toggle-btn-wrapper">
+                                <sl-icon-button id="selection-view-toggle-btn" name="funnel" size="small" title=""></sl-icon-button>
+                                <sl-icon id="selection-view-badge" class="selection-view-badge selection-view-badge-hidden" name=""></sl-icon>
+                            </div>
+                        </sl-tooltip>
+                    </div>
                 </div>
-            </div>
-            ` : ''}
-            <div>
-                <sl-checkbox id="header-select-all"></sl-checkbox>
-            </div>
-        `;
-        headerRow.appendChild(checkboxHeader);
+                ` : ''}
+                <div>
+                    <sl-checkbox id="header-select-all"></sl-checkbox>
+                </div>
+            `;
+            headerRow.appendChild(checkboxHeader);
+        }
         
         // Menu column
         const menuHeader = document.createElement('th');
@@ -1189,7 +1201,7 @@ class TSDataTable extends HTMLElement {
             const tr = document.createElement('tr');
             tr.className = 'no-data-row';
             const td = document.createElement('td');
-            td.colSpan = visibleColumns.length + 2;
+            td.colSpan = visibleColumns.length + (this.enableSelection ? 2 : 1);
             td.textContent = 'Nenalezeny žádné záznamy';
             td.className = 'no-data-row';
             tr.appendChild(td);
@@ -1213,12 +1225,14 @@ class TSDataTable extends HTMLElement {
         tr.setAttribute('data-row-id', row.id);
         
         // Checkbox cell
-        const checkboxCell = document.createElement('td');
-        checkboxCell.className = 'checkbox-column';
-        checkboxCell.innerHTML = '<sl-checkbox class="row-select"></sl-checkbox>';
-        const rowCheckbox = checkboxCell.querySelector('sl-checkbox');
-        rowCheckbox.checked = this.selectedRowIds.has(String(row.id));
-        tr.appendChild(checkboxCell);
+        if (this.enableSelection) {
+            const checkboxCell = document.createElement('td');
+            checkboxCell.className = 'checkbox-column';
+            checkboxCell.innerHTML = '<sl-checkbox class="row-select"></sl-checkbox>';
+            const rowCheckbox = checkboxCell.querySelector('sl-checkbox');
+            rowCheckbox.checked = this.selectedRowIds.has(String(row.id));
+            tr.appendChild(checkboxCell);
+        }
         
         // Menu cell
         const menuCell = document.createElement('td');
