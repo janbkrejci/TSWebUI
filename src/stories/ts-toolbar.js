@@ -32,6 +32,14 @@ class TSToolbar extends HTMLElement {
                 .toolbar-right {
                     justify-self: end;
                 }
+                
+                .toolbar-right-placeholder {
+                    justify-self: end;
+                }
+                
+                .hidden {
+                    display: none;
+                }
             </style>
             <div class="toolbar">
                 <div class="toolbar-left">
@@ -42,9 +50,10 @@ class TSToolbar extends HTMLElement {
                     <ts-import-button id="import-btn"></ts-import-button>
                     <ts-export-button id="export-btn"></ts-export-button>
                 </div>
-                <div class="toolbar-right">
+                <div class="toolbar-right" id="toolbar-right">
                     <ts-column-selector id="column-selector"></ts-column-selector>
                 </div>
+                <div class="toolbar-right-placeholder hidden" id="toolbar-right-placeholder"></div>
             </div>
         `;
     }
@@ -199,6 +208,19 @@ class TSToolbar extends HTMLElement {
         const columnSelector = this.getColumnSelector();
         if (columnSelector && typeof columnSelector.refreshMenu === 'function') {
             columnSelector.refreshMenu();
+        }
+    }
+    
+    setShowColumnSelector(show) {
+        const toolbarRight = this.querySelector('#toolbar-right');
+        const placeholder = this.querySelector('#toolbar-right-placeholder');
+        
+        if (show) {
+            if (toolbarRight) toolbarRight.classList.remove('hidden');
+            if (placeholder) placeholder.classList.add('hidden');
+        } else {
+            if (toolbarRight) toolbarRight.classList.add('hidden');
+            if (placeholder) placeholder.classList.remove('hidden');
         }
     }
 

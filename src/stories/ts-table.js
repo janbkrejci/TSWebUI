@@ -24,6 +24,9 @@ class TSTable extends HTMLElement {
         this.itemsPerPageOptions = [5, 10, 20, 50, 100];
         this.predefinedFilters = {};
         
+        // UI visibility flags
+        this.showColumnSelector = true;
+        
         // Component references
         this.datatable = null;
         this.toolbar = null;
@@ -266,6 +269,13 @@ class TSTable extends HTMLElement {
         }
     }
     
+    setShowColumnSelector(show) {
+        this.showColumnSelector = show !== false;
+        if (this.toolbar) {
+            this.toolbar.setShowColumnSelector(this.showColumnSelector);
+        }
+    }
+    
     showImportResults(results) {
         if (this.toolbar) {
             this.toolbar.showImportResults(results);
@@ -302,6 +312,9 @@ class TSTable extends HTMLElement {
         
         // Configure toolbar
         this.toolbar.setColumnFilters({});
+        
+        // Set toolbar visibility options
+        this.toolbar.setShowColumnSelector(this.showColumnSelector);
         
         // Configure toolbar export data provider
         this.toolbar.setExportData(() => ({
