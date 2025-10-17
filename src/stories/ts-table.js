@@ -30,6 +30,15 @@ class TSTable extends HTMLElement {
         this.showExportButton = true;
         this.showCreateButton = true;
         
+        // Feature flags
+        this.enableSorting = true;
+        this.enableFiltering = true;
+        this.enableColumnResizing = true;
+        this.enableColumnReordering = true;
+        this.enableSelection = true;
+        this.enableRowMenu = true;
+        this.enableClickableRows = true;
+        
         // Component references
         this.datatable = null;
         this.toolbar = null;
@@ -280,6 +289,20 @@ class TSTable extends HTMLElement {
         this.showCreateButton = show !== false;
         if (this.toolbar) {
             this.toolbar.setShowCreateButton(this.showCreateButton);
+        }
+    }
+    
+    setEnableSorting(enable) {
+        this.enableSorting = enable !== false;
+        if (this.datatable) {
+            this.datatable.setEnableSorting(this.enableSorting);
+        }
+    }
+    
+    setEnableFiltering(enable) {
+        this.enableFiltering = enable !== false;
+        if (this.datatable) {
+            this.datatable.setEnableFiltering(this.enableFiltering);
         }
     }
     

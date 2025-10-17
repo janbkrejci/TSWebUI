@@ -21,6 +21,13 @@ class TSDataTable extends HTMLElement {
         this.unhideableColumns = [];
         this.unshowableColumns = [];
         
+        // Feature flags
+        this.enableSorting = true;
+        this.enableFiltering = true;
+        
+        // Initialization state
+        this.initialized = false;
+        
         // Resize state
         this.isResizing = false;
         this.resizeColKey = null;
@@ -144,6 +151,10 @@ class TSDataTable extends HTMLElement {
                     min-width: 24px;
                 }
                 
+                th.checkbox-column.no-filtering sl-checkbox {
+                    margin: 0;
+                }
+                
                 td.checkbox-column sl-checkbox {
                     margin: -1px 0 0 0;
                     display: flex;
@@ -184,6 +195,12 @@ class TSDataTable extends HTMLElement {
                     justify-content: center;
                 }
                 
+                th.menu-column.no-filtering .header-cell-content {
+                    position: static;
+                    height: 100%;
+                    bottom: auto;
+                }
+                
                 th.menu-column ts-selection-menu {
                     display: flex;
                     align-items: center;
@@ -203,6 +220,11 @@ class TSDataTable extends HTMLElement {
                     justify-content: space-between;
                     padding: 0;
                     min-height: 24px;
+                }
+                
+                th.no-filtering .header-cell-content {
+                    height: 100%;
+                    align-items: center;
                 }
                 
                 .column-header-content {
@@ -406,12 +428,16 @@ class TSDataTable extends HTMLElement {
     setData(tableData) {
         this.originalData = tableData || [];
         this.applyPredefinedFilters();
-        this.render();
+        if (this.initialized) {
+            this.render();
+        }
     }
     
     setColumnDefinitions(columnDefinitions) {
         this.columnDefinitions = columnDefinitions || [];
-        this.render();
+        if (this.initialized) {
+            this.render();
+        }
     }
     
     setMenuActions(actions) {
@@ -436,6 +462,20 @@ class TSDataTable extends HTMLElement {
     
     setUnshowableColumns(columns) {
         this.unshowableColumns = columns || [];
+    }
+    
+    setEnableSorting(enable) {
+        this.enableSorting = enable !== false;
+        if (this.initialized) {
+            this.render();
+        }
+    }
+    
+    setEnableFiltering(enable) {
+        this.enableFiltering = enable !== false;
+        if (this.initialized) {
+            this.render();
+        }
     }
     
     setPredefinedFilters(filters) {
@@ -513,10 +553,12 @@ class TSDataTable extends HTMLElement {
         this.filteredData = this.tableData.slice();
         this.render();
         this.updateSelectionUI();
+        this.initialized = true;
     }
     
     // Rendering methods
     render() {
+        console.log('render() called', new Error().stack);
         if (!this.columnDefinitions.length) {
             return;
         }
@@ -620,8 +662,9 @@ class TSDataTable extends HTMLElement {
         
         // Checkbox column
         const checkboxHeader = document.createElement('th');
-        checkboxHeader.className = 'checkbox-column';
+        checkboxHeader.className = this.enableFiltering ? 'checkbox-column' : 'checkbox-column no-filtering';
         checkboxHeader.innerHTML = `
+            ${this.enableFiltering ? `
             <div class="header-cell-content">
                 <div id="selection-view-toggle" class="selection-view-toggle invisible">
                     <sl-tooltip hoist content="">
@@ -632,6 +675,7 @@ class TSDataTable extends HTMLElement {
                     </sl-tooltip>
                 </div>
             </div>
+            ` : ''}
             <div>
                 <sl-checkbox id="header-select-all"></sl-checkbox>
             </div>
@@ -640,7 +684,7 @@ class TSDataTable extends HTMLElement {
         
         // Menu column
         const menuHeader = document.createElement('th');
-        menuHeader.className = 'menu-column';
+        menuHeader.className = this.enableFiltering ? 'menu-column' : 'menu-column no-filtering';
         menuHeader.innerHTML = `
             <div class="header-cell-content">
                 <ts-selection-menu id="selection-menu"></ts-selection-menu>
@@ -653,12 +697,13 @@ class TSDataTable extends HTMLElement {
         visibleColumns.forEach((col, index) => {
             const th = document.createElement('th');
             if (col.className) th.className = col.className;
+            if (!this.enableFiltering) th.classList.add('no-filtering');
             th.style.textAlign = 'left';
             if (col.type === 'boolean') th.style.minWidth = '140px';
             th.setAttribute('data-column-key', col.key);
             
             // Header content
-            const sortIndicator = this.createSortIndicator(col.sortable, col.sortDirection);
+            const sortIndicator = this.enableSorting ? this.createSortIndicator(col.sortable, col.sortDirection) : '';
             th.innerHTML = `
                 <div class="header-cell-content">
                     <div class="column-header-content">
@@ -670,9 +715,9 @@ class TSDataTable extends HTMLElement {
                         ${index < visibleColumns.length - 1 ? `<sl-icon-button name="arrow-right" size="small" class="move-column-right" data-column-key="${col.key}" title="Move right"></sl-icon-button>` : ''}
                     </div>
                 </div>
-                <div class="filter-cell-content">
+                ${this.enableFiltering ? `<div class="filter-cell-content">
                     ${col.filterable ? this.createFilterInput(col) : ''}
-                </div>
+                </div>` : ''}
                 <span class="col-resizer" data-column-key="${col.key}"></span>
             `;
             
@@ -766,7 +811,8 @@ class TSDataTable extends HTMLElement {
         // Sorting - click on header
         headerRow.querySelectorAll('th[data-column-key]').forEach(th => {
             th.addEventListener('click', (e) => {
-                if (!e.target.closest('.col-resizer') && 
+                if (this.enableSorting &&
+                    !e.target.closest('.col-resizer') && 
                     !e.target.closest('.filter-cell-content') &&
                     !e.target.closest('.column-ordering-controls')) {
                     const colKey = th.getAttribute('data-column-key');
