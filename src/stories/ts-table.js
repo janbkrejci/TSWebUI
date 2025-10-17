@@ -90,14 +90,127 @@ class TSTable extends HTMLElement {
         `;
     }
     
+    static get observedAttributes() {
+        return [
+            'showcreatebutton',
+            'showimportbutton',
+            'showexportbutton',
+            'showcolumnselector',
+            'enablesorting',
+            'enablefiltering',
+            'enablecolumnresizing',
+            'enablecolumnreordering',
+            'enableselection',
+            'enablerowmenu',
+            'enableclickablerows',
+            'enablepagination'
+        ];
+    }
+    
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue === newValue) return;
+        
+        // Parse boolean attributes
+        const boolValue = newValue !== 'false' && newValue !== null;
+        
+        switch(name) {
+            case 'showcreatebutton':
+                this.showCreateButton = boolValue;
+                if (this.toolbar) {
+                    this.toolbar.setShowCreateButton(this.showCreateButton);
+                }
+                break;
+            case 'showimportbutton':
+                this.showImportButton = boolValue;
+                if (this.toolbar) {
+                    this.toolbar.setShowImportButton(this.showImportButton);
+                }
+                break;
+            case 'showexportbutton':
+                this.showExportButton = boolValue;
+                if (this.toolbar) {
+                    this.toolbar.setShowExportButton(this.showExportButton);
+                }
+                break;
+            case 'showcolumnselector':
+                this.showColumnSelector = boolValue;
+                if (this.toolbar) {
+                    this.toolbar.setShowColumnSelector(this.showColumnSelector);
+                }
+                break;
+            case 'enablesorting':
+                this.enableSorting = boolValue;
+                if (this.datatable) {
+                    this.datatable.setEnableSorting(this.enableSorting);
+                }
+                break;
+            case 'enablefiltering':
+                this.enableFiltering = boolValue;
+                if (this.datatable) {
+                    this.datatable.setEnableFiltering(this.enableFiltering);
+                }
+                break;
+            case 'enablecolumnresizing':
+                this.enableColumnResizing = boolValue;
+                if (this.datatable) {
+                    this.datatable.setEnableColumnResizing(this.enableColumnResizing);
+                }
+                break;
+            case 'enablecolumnreordering':
+                this.enableColumnReordering = boolValue;
+                if (this.datatable) {
+                    this.datatable.setEnableColumnReordering(this.enableColumnReordering);
+                }
+                break;
+            case 'enableselection':
+                this.enableSelection = boolValue;
+                if (this.datatable) {
+                    this.datatable.setEnableSelection(this.enableSelection);
+                }
+                break;
+            case 'enablerowmenu':
+                this.enableRowMenu = boolValue;
+                if (this.datatable) {
+                    this.datatable.setEnableRowMenu(this.enableRowMenu);
+                }
+                break;
+            case 'enableclickablerows':
+                this.enableClickableRows = boolValue;
+                if (this.datatable) {
+                    this.datatable.setEnableClickableRows(this.enableClickableRows);
+                }
+                break;
+            case 'enablepagination':
+                this.enablePagination = boolValue;
+                if (this.pager) {
+                    this.pager.style.display = this.enablePagination ? '' : 'none';
+                }
+                break;
+        }
+    }
+    
     connectedCallback() {
         // Get component references
         this.datatable = this.querySelector('#datatable');
         this.toolbar = this.querySelector('#toolbar');
         this.pager = this.querySelector('#pager');
         
+        // Apply initial attribute values
+        this.applyInitialAttributes();
+        
         // Setup event listeners
         this.setupEventListeners();
+    }
+    
+    applyInitialAttributes() {
+        // Apply all attributes that were set in HTML
+        const attrs = this.constructor.observedAttributes;
+        attrs.forEach(attr => {
+            if (this.hasAttribute(attr)) {
+                const value = this.getAttribute(attr);
+                this.attributeChangedCallback(attr, null, value);
+            }
+        });
     }
     
     setupEventListeners() {
