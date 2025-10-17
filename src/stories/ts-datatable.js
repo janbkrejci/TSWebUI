@@ -264,12 +264,46 @@ class TSDataTable extends HTMLElement {
                     justify-content: flex-start;
                 }
                 
+                /* Center-aligned column labels */
+                .column-header-label.center-aligned {
+                    justify-content: center;
+                }
+                
+                /* Center-aligned header with split controls */
+                .header-cell-content.center-aligned {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 0.25em;
+                }
+                
+                .column-ordering-control-left,
+                .column-ordering-control-right {
+                    display: flex;
+                    opacity: 0;
+                    transition: opacity 0.2s ease;
+                    min-width: 28px;
+                }
+                
+                th:hover .column-ordering-control-left,
+                th:hover .column-ordering-control-right {
+                    opacity: 1;
+                }
+                
                 /* Column ordering controls */
                 .column-ordering-controls {
                     display: flex;
-                    gap: 2px;
+                    gap: 0.5em;
                     opacity: 0;
                     transition: opacity 0.2s ease;
+                }
+                
+                .column-ordering-controls sl-icon-button {
+                    margin: 0;
+                }
+                
+                .column-ordering-controls sl-icon-button::part(base) {
+                    padding: 0;
                 }
                 
                 th:hover .column-ordering-controls {
@@ -313,6 +347,13 @@ class TSDataTable extends HTMLElement {
                     top: -2px;
                 }
                 
+                /* Hidden sort indicator for centering balance */
+                .sort-indicator-hidden {
+                    /* visibility: hidden; */
+                    margin-left: 0;
+                    margin-right: 0.25em;
+                }
+                
                 .sort-svg {
                     vertical-align: middle;
                 }
@@ -338,7 +379,7 @@ class TSDataTable extends HTMLElement {
                     bottom: 0;
                     right: 8px;
                     width: 2px;
-                    background: #0ea5e9;
+                    background: var(--sl-color-neutral-400);
                     opacity: 0;
                     transition: opacity 0.2s;
                     pointer-events: none;
@@ -352,7 +393,8 @@ class TSDataTable extends HTMLElement {
                     right: 0;
                 }
                 
-                .col-resizer:hover::after {
+                .col-resizer:hover::after,
+                th:hover .col-resizer::after {
                     opacity: 1;
                 }
                 
@@ -782,26 +824,62 @@ class TSDataTable extends HTMLElement {
             // Header content - simple flex structure
             const sortIndicator = this.enableSorting ? this.createSortIndicator(col.sortable, col.sortDirection) : '';
             const isRightAlign = col.align === 'right';
+            const isCenterAlign = col.align === 'center';
             
-            // Ordering controls
-            const orderingControls = this.enableColumnReordering && (index > 0 || index < visibleColumns.length - 1) ? 
-                `<div class="column-ordering-controls">
-                    ${index > 0 ? `<sl-icon-button name="arrow-left" size="small" class="move-column-left" data-column-key="${col.key}" title="Move left"></sl-icon-button>` : ''}
-                    ${index < visibleColumns.length - 1 ? `<sl-icon-button name="arrow-right" size="small" class="move-column-right" data-column-key="${col.key}" title="Move right"></sl-icon-button>` : ''}
-                </div>` : '';
+            let headerContent;
             
-            // Header label with sort indicator
-            const headerLabel = `<div class="column-header-label${isRightAlign ? ' right-aligned' : ''}">
-                ${col.title}
-                ${sortIndicator}
-            </div>`;
+            if (isCenterAlign && this.enableColumnReordering) {
+                // For center-aligned: left arrow, label in center, right arrow
+                // Always show both arrows for consistent layout (disabled when at edge)
+                const leftArrow = index > 0 ? 
+                    `<div class="column-ordering-control-left">
+                        <sl-icon-button name="arrow-left" size="small" class="move-column-left" data-column-key="${col.key}" title="Move left"></sl-icon-button>
+                    </div>` : 
+                    `<div class="column-ordering-control-left">
+                        <sl-icon-button name="arrow-left" size="small" class="move-column-left" data-column-key="${col.key}" disabled></sl-icon-button>
+                    </div>`;
+                const rightArrow = index < visibleColumns.length - 1 ? 
+                    `<div class="column-ordering-control-right">
+                        <sl-icon-button name="arrow-right" size="small" class="move-column-right" data-column-key="${col.key}" title="Move right"></sl-icon-button>
+                    </div>` : 
+                    `<div class="column-ordering-control-right">
+                        <sl-icon-button name="arrow-right" size="small" class="move-column-right" data-column-key="${col.key}" disabled></sl-icon-button>
+                    </div>`;
+                
+                // For centered columns, show sort indicator on both sides (left one hidden) for perfect centering
+                const sortIndicatorLeft = sortIndicator ? `<span class="sort-indicator sort-indicator-hidden">${sortIndicator.replace('<span class="sort-indicator">', '').replace('</span>', '')}</span>` : '';
+                
+                headerContent = `
+                    <div class="header-cell-content center-aligned">
+                        ${leftArrow}
+                        <div class="column-header-label center-aligned">
+                            ${sortIndicatorLeft}
+                            ${col.title}
+                            ${sortIndicator}
+                        </div>
+                        ${rightArrow}
+                    </div>`;
+            } else {
+                // For left/right aligned: both arrows together
+                const orderingControls = this.enableColumnReordering && (index > 0 || index < visibleColumns.length - 1) ? 
+                    `<div class="column-ordering-controls">${index > 0 ? `<sl-icon-button name="arrow-left" size="small" class="move-column-left" data-column-key="${col.key}" title="Move left"></sl-icon-button>` : ''}${index < visibleColumns.length - 1 ? `<sl-icon-button name="arrow-right" size="small" class="move-column-right" data-column-key="${col.key}" title="Move right"></sl-icon-button>` : ''}</div>` : '';
+                
+                // Header label with sort indicator
+                const headerLabel = `<div class="column-header-label${isRightAlign ? ' right-aligned' : ''}">
+                    ${col.title}
+                    ${sortIndicator}
+                </div>`;
+                
+                // For right-aligned: controls first, label last
+                // For left-aligned: label first, controls last
+                headerContent = `
+                    <div class="header-cell-content">
+                        ${isRightAlign ? orderingControls + headerLabel : headerLabel + orderingControls}
+                    </div>`;
+            }
             
-            // For right-aligned: controls first, label last
-            // For left-aligned: label first, controls last
             th.innerHTML = `
-                <div class="header-cell-content">
-                    ${isRightAlign ? orderingControls + headerLabel : headerLabel + orderingControls}
-                </div>
+                ${headerContent}
                 ${this.enableFiltering ? `<div class="filter-cell-content">
                     ${col.filterable ? this.createFilterInput(col) : ''}
                 </div>` : ''}
@@ -1341,7 +1419,12 @@ class TSDataTable extends HTMLElement {
                 td.innerHTML = `<sl-format-date date="${row[col.key]}"></sl-format-date>`;
             } else if (col.key === 'approved') {
                 const checkedAttr = row[col.key] ? 'checked' : '';
-                td.innerHTML = `<sl-switch ${checkedAttr} disabled></sl-switch>`;
+                // Wrap switch in a flex container for proper centering
+                if (col.align === 'center') {
+                    td.innerHTML = `<div style="display: flex; justify-content: center;"><sl-switch ${checkedAttr} disabled></sl-switch></div>`;
+                } else {
+                    td.innerHTML = `<sl-switch ${checkedAttr} disabled></sl-switch>`;
+                }
             } else {
                 td.textContent = row[col.key];
             }
