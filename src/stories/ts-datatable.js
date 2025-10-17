@@ -135,8 +135,17 @@ class TSDataTable extends HTMLElement {
                     min-height: 24px;
                 }
                 
-                .checkbox-column sl-checkbox {
+                th.checkbox-column sl-checkbox {
                     margin: 0 0 8px 0;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 24px;
+                    min-width: 24px;
+                }
+                
+                td.checkbox-column sl-checkbox {
+                    margin: -1px 0 0 0;
                     display: flex;
                     justify-content: center;
                     align-items: center;
@@ -161,11 +170,18 @@ class TSDataTable extends HTMLElement {
                     padding: 0 !important;
                 }
                 
+                th.menu-column {
+                    position: relative;
+                }
+                
                 th.menu-column .header-cell-content {
+                    position: absolute;
+                    bottom: 14px;
+                    left: 0;
+                    right: 0;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    padding: 0;
                 }
                 
                 th.menu-column ts-selection-menu {

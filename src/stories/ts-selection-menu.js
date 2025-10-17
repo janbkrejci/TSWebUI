@@ -23,7 +23,9 @@ class TSSelectionMenu extends HTMLElement {
             </style>
             <div class="selection-menu-container selection-menu-container-hidden">
                 <sl-dropdown hoist>
-                    <sl-icon-button slot="trigger" name="three-dots-vertical" label="Akce s výběrem"></sl-icon-button>
+                    <sl-button slot="trigger" size="small" variant="text" circle>
+                        <sl-icon name="three-dots-vertical"></sl-icon>
+                    </sl-button>
                     <sl-menu class="selection-menu">
                         <!-- Menu items will be populated based on attributes -->
                     </sl-menu>
