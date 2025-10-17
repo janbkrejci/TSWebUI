@@ -301,13 +301,14 @@ class TSDataTable extends HTMLElement {
                 .col-resizer {
                     position: absolute;
                     top: 0;
-                    right: 0;
-                    width: 20px;
+                    right: -8px;
+                    width: 16px;
                     height: 100%;
                     cursor: col-resize;
                     user-select: none;
                     touch-action: none;
-                    z-index: 2;
+                    z-index: 10;
+                    pointer-events: auto;
                 }
                 
                 .col-resizer::after {
@@ -315,19 +316,23 @@ class TSDataTable extends HTMLElement {
                     position: absolute;
                     top: 0;
                     bottom: 0;
-                    right: 6px;
-                    width: 3px;
-                    background: var(--sl-color-neutral-200);
-                    opacity: 0.6;
+                    right: 8px;
+                    width: 2px;
+                    background: #0ea5e9;
+                    opacity: 0;
+                    transition: opacity 0.2s;
+                    pointer-events: none;
+                }
+                
+                th:last-child .col-resizer {
+                    right: 0;
                 }
                 
                 th:last-child .col-resizer::after {
                     right: 0;
                 }
                 
-                .col-resizer:hover::after,
-                th:hover .col-resizer::after {
-                    background: var(--sl-color-neutral-400);
+                .col-resizer:hover::after {
                     opacity: 1;
                 }
                 
@@ -827,7 +832,10 @@ class TSDataTable extends HTMLElement {
         // Sorting - click on header
         headerRow.querySelectorAll('th[data-column-key]').forEach(th => {
             th.addEventListener('click', (e) => {
+                // Don't sort if we just finished resizing
+                const timeSinceResize = Date.now() - (this.lastResizeEnd || 0);
                 if (this.enableSorting &&
+                    timeSinceResize > 100 &&
                     !e.target.closest('.col-resizer') && 
                     !e.target.closest('.filter-cell-content') &&
                     !e.target.closest('.column-ordering-controls')) {
@@ -1099,16 +1107,19 @@ class TSDataTable extends HTMLElement {
         this.resizeColKey = e.target.getAttribute('data-column-key');
         this.startX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
         
-        const col = this.columnDefinitions.find(c => c.key === this.resizeColKey);
+        // Get actual computed width of the column from the header cell
         const table = this.querySelector('#data-table');
-        const colElement = table.querySelector(`col[data-column-key="${this.resizeColKey}"]`);
+        const headerCell = table.querySelector(`th[data-column-key="${this.resizeColKey}"]`);
         
-        if (colElement && colElement.style.width) {
-            this.startWidth = parseFloat(colElement.style.width);
-        } else if (col && col.width) {
-            this.startWidth = typeof col.width === 'number' ? col.width : parseFloat(col.width);
+        if (headerCell) {
+            this.startWidth = headerCell.getBoundingClientRect().width;
         } else {
-            this.startWidth = 200;
+            const col = this.columnDefinitions.find(c => c.key === this.resizeColKey);
+            if (col && col.width) {
+                this.startWidth = typeof col.width === 'number' ? col.width : parseFloat(col.width);
+            } else {
+                this.startWidth = 200;
+            }
         }
         
         document.body.style.cursor = 'col-resize';
