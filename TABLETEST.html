@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TS-Table Test</title>
+    <!-- TS-Table Bundle - load as module -->
+    <script type="module" src="./dist/ts-table-bundle.js"></script>
 </head>
 <body>
     <ts-table id="table"></ts-table>
-
-     
-    <!-- TS-Table Bundle - load as module -->
-    <script type="module" src="./dist/ts-table-bundle.js"></script>
     
     <!-- Table data and initialization -->
     <script type="module">
@@ -68,6 +66,21 @@
             table.setItemsPerPage(itemsPerPage);
             table.setItemsPerPageOptions(itemsPerPageOptions);
             table.setPredefinedFilters(predefinedFilters);
+
+            // UI visibility options
+            // table.setShowColumnSelector(false); // Uncomment to hide column selector
+            // table.setShowImportButton(false); // Uncomment to hide import button
+            // table.setShowExportButton(false); // Uncomment to hide export button
+            // table.setShowCreateButton(false); // Uncomment to hide create button
+            // table.setEnableSorting(false); // Disable sorting for testing
+            // table.setEnableFiltering(false); // Disable filtering for testing
+            // table.setEnableColumnResizing(false); // Disable column resizing for testing
+            // table.setEnableColumnReordering(false); // Disable column reordering for testing
+            // table.setEnableSelection(false); // Disable selection for testing
+            // table.setEnableRowMenu(false); // Disable row menu for testing
+            // table.setEnableClickableRows(false); // Disable clickable rows for testing
+            // table.setEnablePagination(false); // Disable pagination for testing
+
             table.setData(tableData); // Set data after predefined filters
             
             setupEventListeners();
@@ -76,7 +89,7 @@
             table.initialize();
         }
 
-        function setupEventListeners() {
+         function setupEventListeners() {
             // Table events
             table.addEventListener('create-new-record', () => {
                 console.log('Create new record');
@@ -131,7 +144,7 @@
                     }
                 });
                 
-                // Show results via the table (not table.toolbar)
+                // Show results via the table
                 table.showImportResults({
                     added,
                     updated,
