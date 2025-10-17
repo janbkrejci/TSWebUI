@@ -46,7 +46,6 @@ class TSToolbar extends HTMLElement {
                     <ts-create-record-button id="create-record-btn"></ts-create-record-button>
                 </div>
                 <div class="toolbar-center">
-                    <ts-selection-menu id="selection-menu"></ts-selection-menu>
                     <ts-import-button id="import-btn"></ts-import-button>
                     <ts-export-button id="export-btn"></ts-export-button>
                 </div>
@@ -58,38 +57,8 @@ class TSToolbar extends HTMLElement {
         `;
     }
 
-    static get observedAttributes() {
-        return [
-            'single-item-actions',
-            'multiple-items-actions'
-        ];
-    }
-
     connectedCallback() {
         this.setupEventForwarding();
-        this.updateChildAttributes();
-    }
-
-    attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue !== newValue) {
-            this.updateChildAttributes();
-        }
-    }
-
-    updateChildAttributes() {
-        // Forward attributes to selection menu
-        const selectionMenu = this.getSelectionMenu();
-        if (selectionMenu) {
-            const singleItemActions = this.getAttribute('single-item-actions');
-            const multipleItemsActions = this.getAttribute('multiple-items-actions');
-            
-            if (singleItemActions) {
-                selectionMenu.setAttribute('single-item-actions', singleItemActions);
-            }
-            if (multipleItemsActions) {
-                selectionMenu.setAttribute('multiple-items-actions', multipleItemsActions);
-            }
-        }
     }
 
     setupEventForwarding() {
@@ -98,47 +67,6 @@ class TSToolbar extends HTMLElement {
     }
 
     // Proxy methods to access child components
-
-    // Selection Menu methods
-    getSelectionMenu() {
-        return this.querySelector('#selection-menu');
-    }
-
-    showSelectionMenu() {
-        const selectionMenu = this.getSelectionMenu();
-        if (selectionMenu && typeof selectionMenu.show === 'function') {
-            selectionMenu.show();
-        }
-    }
-
-    hideSelectionMenu() {
-        const selectionMenu = this.getSelectionMenu();
-        if (selectionMenu && typeof selectionMenu.hide === 'function') {
-            selectionMenu.hide();
-        }
-    }
-
-    setSelectedRows(selectedRows) {
-        const selectionMenu = this.getSelectionMenu();
-        if (selectionMenu && typeof selectionMenu.setSelectedRows === 'function') {
-            selectionMenu.setSelectedRows(selectedRows);
-        }
-    }
-
-    setSelectionCount(count) {
-        const selectionMenu = this.getSelectionMenu();
-        if (selectionMenu && typeof selectionMenu.setSelectionCount === 'function') {
-            selectionMenu.setSelectionCount(count);
-        }
-    }
-
-    setSingleItemActions(actions) {
-        this.setAttribute('single-item-actions', actions);
-    }
-
-    setMultipleItemsActions(actions) {
-        this.setAttribute('multiple-items-actions', actions);
-    }
 
     // Import Button methods
     getImportButton() {

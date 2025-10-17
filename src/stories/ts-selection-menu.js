@@ -15,16 +15,15 @@ class TSSelectionMenu extends HTMLElement {
                     min-width: 200px;
                 }
                 
-                .chevron-icon {
-                    margin-left: 0.25rem;
+                .selection-count-item {
+                    font-weight: bold;
+                    pointer-events: none;
+                    opacity: 0.8;
                 }
             </style>
             <div class="selection-menu-container selection-menu-container-hidden">
                 <sl-dropdown hoist>
-                    <sl-button slot="trigger">
-                        <sl-icon name="rocket-takeoff"></sl-icon>
-                        <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>
-                    </sl-button>
+                    <sl-icon-button slot="trigger" name="three-dots-vertical" label="Akce s výběrem"></sl-icon-button>
                     <sl-menu class="selection-menu">
                         <!-- Menu items will be populated based on attributes -->
                     </sl-menu>
@@ -82,7 +81,17 @@ class TSSelectionMenu extends HTMLElement {
         // Clear existing items
         menu.innerHTML = '';
 
-        // Always add unselect-all action first
+        // Add selection count as first non-interactive item
+        const countItem = document.createElement('sl-menu-item');
+        countItem.className = 'selection-count-item';
+        countItem.textContent = `Vybráno: ${selectionCount}`;
+        menu.appendChild(countItem);
+
+        // Add divider
+        const divider1 = document.createElement('sl-divider');
+        menu.appendChild(divider1);
+
+        // Always add unselect-all action after count
         const unselectItem = document.createElement('sl-menu-item');
         unselectItem.setAttribute('data-action', 'unselect-all');
         unselectItem.textContent = 'Zrušit výběr všech řádků';
@@ -100,10 +109,10 @@ class TSSelectionMenu extends HTMLElement {
             actionsToShow = multipleActions;
         }
 
-        // Add divider if there are actions to show
+        // Add divider before actions if there are any
         if (actionsToShow.length > 0) {
-            const divider = document.createElement('sl-divider');
-            menu.appendChild(divider);
+            const divider2 = document.createElement('sl-divider');
+            menu.appendChild(divider2);
         }
 
         // Add the appropriate actions
@@ -156,13 +165,6 @@ class TSSelectionMenu extends HTMLElement {
 
     setSelectionCount(count) {
         this._selectionCount = count;
-        const button = this.querySelector('sl-button');
-        if (button && count > 0) {
-            button.innerHTML = `<sl-icon name="rocket-takeoff"></sl-icon> (${count}) <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>`;
-        } else if (button) {
-            button.innerHTML = `<sl-icon name="rocket-takeoff"></sl-icon> <sl-icon name="chevron-down" class="chevron-icon"></sl-icon>`;
-        }
-        // Update menu items based on selection count
         this.updateMenuItems(count);
     }
 }

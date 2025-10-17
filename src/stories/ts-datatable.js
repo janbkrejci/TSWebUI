@@ -161,6 +161,19 @@ class TSDataTable extends HTMLElement {
                     padding: 0 !important;
                 }
                 
+                th.menu-column .header-cell-content {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0;
+                }
+                
+                th.menu-column ts-selection-menu {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
                 /* Col elements for fixed columns */
                 col[data-fixed="checkbox"],
                 col[data-fixed="menu"] {
@@ -355,6 +368,11 @@ class TSDataTable extends HTMLElement {
                 this.stopResize({ type: 'mouseup', clientX: this.startX });
             }
         });
+        
+        // Listen for unselect-all-rows event from selection menu
+        this.addEventListener('unselect-all-rows', () => {
+            this.unselectAllRows();
+        });
     }
     
     disconnectedCallback() {
@@ -500,6 +518,39 @@ class TSDataTable extends HTMLElement {
             .sort((a, b) => a.order - b.order);
     }
     
+    // Selection Menu methods
+    getSelectionMenu() {
+        return this.querySelector('#selection-menu');
+    }
+
+    showSelectionMenu() {
+        const selectionMenu = this.getSelectionMenu();
+        if (selectionMenu && typeof selectionMenu.show === 'function') {
+            selectionMenu.show();
+        }
+    }
+
+    hideSelectionMenu() {
+        const selectionMenu = this.getSelectionMenu();
+        if (selectionMenu && typeof selectionMenu.hide === 'function') {
+            selectionMenu.hide();
+        }
+    }
+
+    setSelectedRows(rows) {
+        const selectionMenu = this.getSelectionMenu();
+        if (selectionMenu && typeof selectionMenu.setSelectedRows === 'function') {
+            selectionMenu.setSelectedRows(rows);
+        }
+    }
+
+    setSelectionCount(count) {
+        const selectionMenu = this.getSelectionMenu();
+        if (selectionMenu && typeof selectionMenu.setSelectionCount === 'function') {
+            selectionMenu.setSelectionCount(count);
+        }
+    }
+    
     clearOtherSorts(exceptKey) {
         this.columnDefinitions.forEach(c => {
             if (c.key !== exceptKey) c.sortDirection = 'none';
@@ -574,6 +625,11 @@ class TSDataTable extends HTMLElement {
         // Menu column
         const menuHeader = document.createElement('th');
         menuHeader.className = 'menu-column';
+        menuHeader.innerHTML = `
+            <div class="header-cell-content">
+                <ts-selection-menu id="selection-menu"></ts-selection-menu>
+            </div>
+        `;
         headerRow.appendChild(menuHeader);
         
         // Data columns
@@ -748,15 +804,22 @@ class TSDataTable extends HTMLElement {
             });
         });
         
-        // Boolean filters - dropdown
-        headerRow.querySelectorAll('sl-dropdown[hoist]').forEach(dropdown => {
+        // Boolean filters - dropdown (only in regular column headers, not in checkbox/menu columns)
+        headerRow.querySelectorAll('th:not(.checkbox-column):not(.menu-column) sl-dropdown[hoist]').forEach(dropdown => {
             const menu = dropdown.querySelector('sl-menu');
             if (!menu) return;
             menu.addEventListener('sl-select', (e) => {
                 const selectedItem = e.detail.item;
+                if (!selectedItem) return;
+                
                 const value = selectedItem.getAttribute('data-value');
+                if (value === null || value === undefined) return; // Not a filter item
+                
                 const button = dropdown.querySelector('sl-button');
+                if (!button) return;
+                
                 const colKey = button.getAttribute('data-column-key');
+                if (!colKey) return; // Not a column filter
                 
                 button.textContent = selectedItem.textContent;
                 
@@ -788,19 +851,21 @@ class TSDataTable extends HTMLElement {
         // Row menu actions
         tbody.addEventListener('sl-select', (e) => {
             const menuItem = e.detail?.item; // Shoelace provides the selected item in detail
-            if (menuItem && menuItem.tagName === 'SL-MENU-ITEM') {
-                const dropdown = menuItem.closest('sl-dropdown');
-                if (dropdown && dropdown.id.startsWith('row-menu-')) {
-                    const rowId = String(dropdown.id.replace('row-menu-', ''));
-                    const actionName = menuItem.getAttribute('data-action');
-                    const row = this.tableData.find(r => String(r.id) === rowId);
-                    
-                    this.dispatchEvent(new CustomEvent('selection-action-activated', {
-                        detail: { action: actionName, rows: [row] },
-                        bubbles: true,
-                        composed: true
-                    }));
-                }
+            if (!menuItem || menuItem.tagName !== 'SL-MENU-ITEM') return;
+            
+            const dropdown = menuItem.closest('sl-dropdown');
+            if (!dropdown || !dropdown.id || !dropdown.id.startsWith('row-menu-')) return;
+            
+            const rowId = String(dropdown.id.replace('row-menu-', ''));
+            const actionName = menuItem.getAttribute('data-action');
+            const row = this.tableData.find(r => String(r.id) === rowId);
+            
+            if (row && actionName) {
+                this.dispatchEvent(new CustomEvent('selection-action-activated', {
+                    detail: { action: actionName, rows: [row] },
+                    bubbles: true,
+                    composed: true
+                }));
             }
         });
         

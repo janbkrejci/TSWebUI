@@ -111,13 +111,13 @@ class TSTable extends HTMLElement {
                 .map(id => this.datatable.tableData.find(r => String(r.id) === String(id)))
                 .filter(r => r !== undefined);
             
-            this.toolbar.setSelectedRows(selectedRows);
-            this.toolbar.setSelectionCount(selectedCount);
+            this.datatable.setSelectedRows(selectedRows);
+            this.datatable.setSelectionCount(selectedCount);
             
             if (selectedCount > 0) {
-                this.toolbar.showSelectionMenu();
+                this.datatable.showSelectionMenu();
             } else {
-                this.toolbar.hideSelectionMenu();
+                this.datatable.hideSelectionMenu();
             }
         });
         
@@ -234,23 +234,6 @@ class TSTable extends HTMLElement {
         }
     }
     
-    setSingleItemActions(actions) {
-        this.singleItemActions = actions;
-        if (this.datatable) {
-            this.datatable.setMenuActions(actions);
-        }
-        if (this.toolbar) {
-            this.toolbar.setSingleItemActions(actions);
-        }
-    }
-    
-    setMultipleItemsActions(actions) {
-        this.multipleItemsActions = actions;
-        if (this.toolbar) {
-            this.toolbar.setMultipleItemsActions(actions);
-        }
-    }
-    
     setItemsPerPage(count) {
         this.itemsPerPage = count;
         if (this.datatable) {
@@ -300,6 +283,30 @@ class TSTable extends HTMLElement {
         }
     }
     
+    setSingleItemActions(actions) {
+        this.singleItemActions = actions;
+        if (this.datatable) {
+            // Set row menu actions
+            this.datatable.setMenuActions(actions);
+            
+            // Set selection menu actions
+            const selectionMenu = this.datatable.getSelectionMenu();
+            if (selectionMenu) {
+                selectionMenu.setAttribute('single-item-actions', actions);
+            }
+        }
+    }
+
+    setMultipleItemsActions(actions) {
+        this.multipleItemsActions = actions;
+        if (this.datatable) {
+            const selectionMenu = this.datatable.getSelectionMenu();
+            if (selectionMenu) {
+                selectionMenu.setAttribute('multiple-items-actions', actions);
+            }
+        }
+    }
+    
     showImportResults(results) {
         if (this.toolbar) {
             this.toolbar.showImportResults(results);
@@ -333,6 +340,14 @@ class TSTable extends HTMLElement {
         
         // Initialize datatable
         this.datatable.initialize();
+        
+        // Set selection menu actions after datatable is initialized
+        if (this.singleItemActions) {
+            this.setSingleItemActions(this.singleItemActions);
+        }
+        if (this.multipleItemsActions) {
+            this.setMultipleItemsActions(this.multipleItemsActions);
+        }
         
         // Configure toolbar
         this.toolbar.setColumnFilters({});
