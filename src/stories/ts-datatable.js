@@ -128,12 +128,15 @@ class TSDataTable extends HTMLElement {
                 }
                 
                 .checkbox-column .header-cell-content {
+                    display: flex;
+                    align-items: center;
                     justify-content: center;
-                    padding: 0.25em 0;
+                    padding: 0;
+                    min-height: 24px;
                 }
                 
                 .checkbox-column sl-checkbox {
-                    margin: 0;
+                    margin: 0 0 8px 0;
                     display: flex;
                     justify-content: center;
                     align-items: center;
