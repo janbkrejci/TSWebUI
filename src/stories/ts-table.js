@@ -92,26 +92,26 @@ class TSTable extends HTMLElement {
     
     static get observedAttributes() {
         return [
-            'showcreatebutton',
-            'showimportbutton',
-            'showexportbutton',
-            'showcolumnselector',
-            'enablesorting',
-            'enablefiltering',
-            'enablecolumnresizing',
-            'enablecolumnreordering',
-            'enableselection',
-            'enablerowmenu',
-            'enableclickablerows',
-            'enablepagination',
-            'singleitemactions',
-            'multipleitemsactions',
-            'preselectedcolumns',
-            'unhideablecolumns',
-            'unshowablecolumns',
-            'itemsperpage',
-            'itemsperpageoptions',
-            'predefinedfilters'
+            'show-create-button',
+            'show-import-button',
+            'show-export-button',
+            'show-column-selector',
+            'enable-sorting',
+            'enable-filtering',
+            'enable-column-resizing',
+            'enable-column-reordering',
+            'enable-selection',
+            'enable-row-menu',
+            'enable-clickable-rows',
+            'enable-pagination',
+            'single-item-actions',
+            'multiple-items-actions',
+            'preselected-columns',
+            'unhideable-columns',
+            'unshowable-columns',
+            'items-per-page',
+            'items-per-page-options',
+            'predefined-filters'
         ];
     }
     
@@ -122,73 +122,73 @@ class TSTable extends HTMLElement {
         const boolValue = newValue !== 'false' && newValue !== null;
         
         switch(name) {
-            case 'showcreatebutton':
+            case 'show-create-button':
                 this.showCreateButton = boolValue;
                 if (this.toolbar) {
                     this.toolbar.setShowCreateButton(this.showCreateButton);
                 }
                 break;
-            case 'showimportbutton':
+            case 'show-import-button':
                 this.showImportButton = boolValue;
                 if (this.toolbar) {
                     this.toolbar.setShowImportButton(this.showImportButton);
                 }
                 break;
-            case 'showexportbutton':
+            case 'show-export-button':
                 this.showExportButton = boolValue;
                 if (this.toolbar) {
                     this.toolbar.setShowExportButton(this.showExportButton);
                 }
                 break;
-            case 'showcolumnselector':
+            case 'show-column-selector':
                 this.showColumnSelector = boolValue;
                 if (this.toolbar) {
                     this.toolbar.setShowColumnSelector(this.showColumnSelector);
                 }
                 break;
-            case 'enablesorting':
+            case 'enable-sorting':
                 this.enableSorting = boolValue;
                 if (this.datatable) {
                     this.datatable.setEnableSorting(this.enableSorting);
                 }
                 break;
-            case 'enablefiltering':
+            case 'enable-filtering':
                 this.enableFiltering = boolValue;
                 if (this.datatable) {
                     this.datatable.setEnableFiltering(this.enableFiltering);
                 }
                 break;
-            case 'enablecolumnresizing':
+            case 'enable-column-resizing':
                 this.enableColumnResizing = boolValue;
                 if (this.datatable) {
                     this.datatable.setEnableColumnResizing(this.enableColumnResizing);
                 }
                 break;
-            case 'enablecolumnreordering':
+            case 'enable-column-reordering':
                 this.enableColumnReordering = boolValue;
                 if (this.datatable) {
                     this.datatable.setEnableColumnReordering(this.enableColumnReordering);
                 }
                 break;
-            case 'enableselection':
+            case 'enable-selection':
                 this.enableSelection = boolValue;
                 if (this.datatable) {
                     this.datatable.setEnableSelection(this.enableSelection);
                 }
                 break;
-            case 'enablerowmenu':
+            case 'enable-row-menu':
                 this.enableRowMenu = boolValue;
                 if (this.datatable) {
                     this.datatable.setEnableRowMenu(this.enableRowMenu);
                 }
                 break;
-            case 'enableclickablerows':
+            case 'enable-clickable-rows':
                 this.enableClickableRows = boolValue;
                 if (this.datatable) {
                     this.datatable.setEnableClickableRows(this.enableClickableRows);
                 }
                 break;
-            case 'enablepagination':
+            case 'enable-pagination':
                 this.enablePagination = boolValue;
                 if (this.datatable) {
                     this.datatable.setEnablePagination(this.enablePagination);
@@ -197,48 +197,48 @@ class TSTable extends HTMLElement {
                     this.pager.style.display = this.enablePagination ? '' : 'none';
                 }
                 break;
-            case 'singleitemactions':
+            case 'single-item-actions':
                 if (newValue) {
                     this.setSingleItemActions(newValue);
                 }
                 break;
-            case 'multipleitemsactions':
+            case 'multiple-items-actions':
                 if (newValue) {
                     this.setMultipleItemsActions(newValue);
                 }
                 break;
-            case 'preselectedcolumns':
+            case 'preselected-columns':
                 if (newValue) {
                     // Parse comma-separated list or JSON array
                     try {
                         const cols = newValue.startsWith('[') ? JSON.parse(newValue) : newValue.split(',').map(s => s.trim());
                         this.setPreselectedColumns(cols);
                     } catch (e) {
-                        console.error('Failed to parse preselectedcolumns attribute:', e);
+                        console.error('Failed to parse preselected-columns attribute:', e);
                     }
                 }
                 break;
-            case 'unhideablecolumns':
+            case 'unhideable-columns':
                 if (newValue) {
                     try {
                         const cols = newValue.startsWith('[') ? JSON.parse(newValue) : newValue.split(',').map(s => s.trim());
                         this.setUnhideableColumns(cols);
                     } catch (e) {
-                        console.error('Failed to parse unhideablecolumns attribute:', e);
+                        console.error('Failed to parse unhideable-columns attribute:', e);
                     }
                 }
                 break;
-            case 'unshowablecolumns':
+            case 'unshowable-columns':
                 if (newValue) {
                     try {
                         const cols = newValue.startsWith('[') ? JSON.parse(newValue) : newValue.split(',').map(s => s.trim());
                         this.setUnshowableColumns(cols);
                     } catch (e) {
-                        console.error('Failed to parse unshowablecolumns attribute:', e);
+                        console.error('Failed to parse unshowable-columns attribute:', e);
                     }
                 }
                 break;
-            case 'itemsperpage':
+            case 'items-per-page':
                 if (newValue) {
                     const num = parseInt(newValue, 10);
                     if (!isNaN(num)) {
@@ -246,7 +246,7 @@ class TSTable extends HTMLElement {
                     }
                 }
                 break;
-            case 'itemsperpageoptions':
+            case 'items-per-page-options':
                 if (newValue) {
                     try {
                         const opts = newValue.startsWith('[') ? JSON.parse(newValue) : newValue.split(',').map(s => {
@@ -255,17 +255,17 @@ class TSTable extends HTMLElement {
                         });
                         this.setItemsPerPageOptions(opts);
                     } catch (e) {
-                        console.error('Failed to parse itemsperpageoptions attribute:', e);
+                        console.error('Failed to parse items-per-page-options attribute:', e);
                     }
                 }
                 break;
-            case 'predefinedfilters':
+            case 'predefined-filters':
                 if (newValue) {
                     try {
                         const filters = JSON.parse(newValue);
                         this.setPredefinedFilters(filters);
                     } catch (e) {
-                        console.error('Failed to parse predefinedfilters attribute:', e);
+                        console.error('Failed to parse predefined-filters attribute:', e);
                     }
                 }
                 break;

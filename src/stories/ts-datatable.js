@@ -1113,8 +1113,10 @@ class TSDataTable extends HTMLElement {
         // Add row click listener only if enabled
         if (this.enableClickableRows) {
             this.rowClickHandler = (e) => {
-                // Ignore clicks on checkboxes, menu dropdowns, and their children
-                if (e.target.closest('.checkbox-column') || e.target.closest('.menu-column')) {
+                // Ignore clicks on checkboxes, menu dropdowns, copy buttons, and their children
+                if (e.target.closest('.checkbox-column') || 
+                    e.target.closest('.menu-column') || 
+                    e.target.closest('sl-copy-button')) {
                     return;
                 }
                 

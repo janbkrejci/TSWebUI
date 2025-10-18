@@ -20,25 +20,25 @@
     <!-- TS-Table component with all configurable attributes -->
     <ts-table 
         id="table"
-        showcreatebutton="false"
-        showimportbutton="false"
-        showexportbutton="false"
-        showcolumnselector="false"
-        enablesorting="true"
-        enablefiltering="true"
-        enablecolumnresizing="true"
-        enablecolumnreordering="true"
-        enableselection="true"
-        enablerowmenu="true"
-        enableclickablerows="false"
-        enablepagination="false"
-        singleitemactions="edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek"
-        multipleitemsactions="delete/Smazat vybrané,export/Exportovat vybrané"
-        preselectedcolumns="name,email,turnover,contractDate,approved"
-        unhideablecolumns="name,email"
-        unshowablecolumns="id"
-        itemsperpage="5"
-        itemsperpageoptions="5,10,20,50,-1">
+        show-create-button="false"
+        show-import-button="false"
+        show-export-button="false"
+        show-column-selector="true"
+        enable-sorting="true"
+        enable-filtering="true"
+        enable-column-resizing="true"
+        enable-column-reordering="true"
+        enable-selection="true"
+        enable-row-menu="true"
+        enable-clickable-rows="true"
+        enable-pagination="false"
+        single-item-actions="edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek"
+        multiple-items-actions="delete/Smazat vybrané,export/Exportovat vybrané"
+        preselected-columns="name,email,turnover,contractDate,approved"
+        unhideable-columns="name,email"
+        unshowable-columns="id"
+        items-per-page="5"
+        items-per-page-options="5,10,20,50,-1">
     </ts-table>
 
     <!-- Table data and initialization -->
@@ -546,6 +546,7 @@
 
             // Configure table
             table.setColumnDefinitions(columnDefinitions);
+
             // Note: The following are now set via HTML attributes and don't need to be set in code
             // table.setPreselectedColumns(preselectedColumns);
             // table.setUnhideableColumns(unhideableColumns);
