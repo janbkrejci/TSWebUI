@@ -114,6 +114,16 @@ class TSDataTable extends HTMLElement {
                     overflow: visible;
                     padding-left: 8px;
                     padding-right: 24px;
+                    cursor: default;
+                }
+                
+                /* Sortable columns get pointer cursor */
+                th[data-sortable="true"] {
+                    cursor: pointer;
+                }
+                
+                th[data-sortable="true"]:hover .column-header-label {
+                    color: var(--sl-color-primary-600);
                 }
                 
                 tbody tr {
@@ -844,6 +854,11 @@ class TSDataTable extends HTMLElement {
             if (col.align) th.style.textAlign = col.align;
             if (col.type === 'boolean') th.style.minWidth = '140px';
             th.setAttribute('data-column-key', col.key);
+            
+            // Set sortable attribute for cursor styling
+            if (this.enableSorting && col.sortable) {
+                th.setAttribute('data-sortable', 'true');
+            }
             
             // Header content - simple flex structure
             const sortIndicator = this.enableSorting ? this.createSortIndicator(col.sortable, col.sortDirection) : '';
