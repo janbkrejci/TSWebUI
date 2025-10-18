@@ -103,6 +103,7 @@ class TSTable extends HTMLElement {
             'enable-selection',
             'enable-row-menu',
             'enable-clickable-rows',
+            'enable-clickable-columns',
             'enable-pagination',
             'single-item-actions',
             'multiple-items-actions',
@@ -186,6 +187,12 @@ class TSTable extends HTMLElement {
                 this.enableClickableRows = boolValue;
                 if (this.datatable) {
                     this.datatable.setEnableClickableRows(this.enableClickableRows);
+                }
+                break;
+            case 'enable-clickable-columns':
+                this.enableClickableColumns = boolValue;
+                if (this.datatable) {
+                    this.datatable.setEnableClickableColumns(this.enableClickableColumns);
                 }
                 break;
             case 'enable-pagination':
@@ -556,6 +563,13 @@ class TSTable extends HTMLElement {
         this.enableClickableRows = enable !== false;
         if (this.datatable) {
             this.datatable.setEnableClickableRows(this.enableClickableRows);
+        }
+    }
+    
+    setEnableClickableColumns(enable) {
+        this.enableClickableColumns = enable !== false;
+        if (this.datatable) {
+            this.datatable.setEnableClickableColumns(this.enableClickableColumns);
         }
     }
     

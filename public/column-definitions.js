@@ -24,7 +24,8 @@ var columnDefinitions = [
         filterPlaceholder: 'Filtr jména',
         visible: true,
         align: 'left',
-        order: 1
+        order: 1,
+        isClickable: true
     },
     {
         key: 'username',
@@ -51,7 +52,8 @@ var columnDefinitions = [
         visible: false,
         align: 'left',
         order: 3,
-        canBeCopied: true
+        canBeCopied: true,
+        isClickable: true
     },
     {
         key: 'city',
@@ -103,7 +105,8 @@ var columnDefinitions = [
         filterPlaceholder: 'Filtr firmy',
         visible: false,
         align: 'left',
-        order: 7
+        order: 7,
+        isClickable: true
     },
     {
         key: 'turnover',

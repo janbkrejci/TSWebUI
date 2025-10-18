@@ -29,6 +29,7 @@ class TSDataTable extends HTMLElement {
         this.enableSelection = true;
         this.enableRowMenu = true;
         this.enableClickableRows = true;
+        this.enableClickableColumns = false;
         this.enablePagination = true;
         
         // Initialization state
@@ -129,6 +130,22 @@ class TSDataTable extends HTMLElement {
                 
                 tr.clickable:hover td {
                     background: var(--sl-color-primary-50) !important;
+                }
+                
+                /* Clickable column cells */
+                td.clickable-column {
+                    cursor: pointer;
+                }
+                
+                td.clickable-column:hover .clickable-cell-content {
+                    color: var(--sl-color-primary-600);
+                    text-decoration: underline;
+                }
+                
+                /* Don't highlight when hovering over copy button */
+                td.clickable-column:has(sl-copy-button:hover) .clickable-cell-content {
+                    color: inherit;
+                    text-decoration: none;
                 }
                 
                 tr.no-data-row {
@@ -577,6 +594,13 @@ class TSDataTable extends HTMLElement {
     
     setEnableClickableRows(enable) {
         this.enableClickableRows = enable !== false;
+        if (this.initialized) {
+            this.render();
+        }
+    }
+    
+    setEnableClickableColumns(enable) {
+        this.enableClickableColumns = enable !== false;
         if (this.initialized) {
             this.render();
         }
@@ -1110,8 +1134,8 @@ class TSDataTable extends HTMLElement {
             this.rowClickHandler = null;
         }
         
-        // Add row click listener only if enabled
-        if (this.enableClickableRows) {
+        // Add row click listener if either clickable rows or clickable columns are enabled
+        if (this.enableClickableRows || this.enableClickableColumns) {
             this.rowClickHandler = (e) => {
                 // Ignore clicks on checkboxes, menu dropdowns, copy buttons, and their children
                 if (e.target.closest('.checkbox-column') || 
@@ -1128,15 +1152,29 @@ class TSDataTable extends HTMLElement {
                     const row = this.tableData.find(r => String(r.id) === rowId);
                     
                     if (row) {
-                        // Find the column key based on td index
-                        // Calculate offset based on enabled fixed columns
-                        const fixedColumnsCount = (this.enableSelection ? 1 : 0) + (this.enableRowMenu ? 1 : 0);
-                        const tdIndex = Array.from(tr.children).indexOf(td);
-                        const visibleColumns = this.getVisibleColumns();
-                        const columnIndex = tdIndex - fixedColumnsCount;
-                        const columnKey = columnIndex >= 0 && columnIndex < visibleColumns.length 
-                            ? visibleColumns[columnIndex].key 
-                            : null;
+                        // Determine column key
+                        let columnKey = null;
+                        
+                        if (this.enableClickableColumns) {
+                            // If clickable columns is enabled, check if the clicked td is a clickable column
+                            if (td.classList.contains('clickable-column')) {
+                                columnKey = td.getAttribute('data-column-key');
+                            } else if (!this.enableClickableRows) {
+                                // If only clickable columns is enabled and this isn't a clickable column, don't fire event
+                                return;
+                            }
+                        }
+                        
+                        // If clickable columns is disabled, include column key for backwards compatibility
+                        if (!this.enableClickableColumns) {
+                            const fixedColumnsCount = (this.enableSelection ? 1 : 0) + (this.enableRowMenu ? 1 : 0);
+                            const tdIndex = Array.from(tr.children).indexOf(td);
+                            const visibleColumns = this.getVisibleColumns();
+                            const columnIndex = tdIndex - fixedColumnsCount;
+                            columnKey = columnIndex >= 0 && columnIndex < visibleColumns.length 
+                                ? visibleColumns[columnIndex].key 
+                                : null;
+                        }
                         
                         this.dispatchEvent(new CustomEvent('row-clicked', {
                             detail: { row, columnKey },
@@ -1414,6 +1452,12 @@ class TSDataTable extends HTMLElement {
             if (col.align) td.style.textAlign = col.align;
             if (col.type === 'boolean') td.style.minWidth = '140px';
             
+            // Add clickable-column class if column is clickable and feature is enabled
+            if (this.enableClickableColumns && col.isClickable) {
+                td.classList.add('clickable-column');
+                td.setAttribute('data-column-key', col.key);
+            }
+            
             let cellContent = '';
             let copyValue = '';
             
@@ -1436,6 +1480,11 @@ class TSDataTable extends HTMLElement {
             } else {
                 cellContent = row[col.key];
                 copyValue = row[col.key];
+            }
+            
+            // Wrap content in clickable-cell-content span if column is clickable
+            if (this.enableClickableColumns && col.isClickable && typeof cellContent === 'string') {
+                cellContent = `<span class="clickable-cell-content">${cellContent}</span>`;
             }
             
             // Add copy button if canBeCopied is true

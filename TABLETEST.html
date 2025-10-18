@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TS-Table Test</title>
+    <style>
+        :not(:defined) {
+            visibility: hidden;
+        }
+    </style>
 
     <!-- Shoelace CSS and Components -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css" />
@@ -31,6 +36,7 @@
         enable-selection="true"
         enable-row-menu="true"
         enable-clickable-rows="true"
+        enable-clickable-columns="true"
         enable-pagination="false"
         single-item-actions="edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek"
         multiple-items-actions="delete/Smazat vybrané,export/Exportovat vybrané"
@@ -399,7 +405,8 @@
                 filterPlaceholder: 'Filtr jména',
                 visible: true,
                 align: 'left',
-                order: 1
+                order: 1,
+                isClickable: true
             },
             {
                 key: 'username',
@@ -426,7 +433,8 @@
                 visible: false,
                 align: 'left',
                 order: 3,
-                canBeCopied: true
+                canBeCopied: true,
+                isClickable: true
             },
             {
                 key: 'city',
@@ -478,7 +486,8 @@
                 filterPlaceholder: 'Filtr firmy',
                 visible: false,
                 align: 'left',
-                order: 7
+                order: 7,
+                isClickable: true
             },
             {
                 key: 'turnover',
