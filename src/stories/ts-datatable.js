@@ -1583,7 +1583,7 @@ class TSDataTable extends HTMLElement {
                 copyValue = row[col.key]; // unformatted number for copy
             } else if (col.key === 'contractDate') {
                 cellContent = `<sl-format-date date="${row[col.key]}"></sl-format-date>`;
-                copyValue = new Date(row[col.key]).toLocaleDateString('cs-CZ'); // formatted date for copy
+                copyValue = new Date(row[col.key]).toLocaleDateString('cs-CZ').replace(/\s/g, ''); // formatted date without spaces
             } else if (col.key === 'approved') {
                 const checkedAttr = row[col.key] ? 'checked' : '';
                 // Wrap switch in a flex container for proper centering
