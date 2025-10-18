@@ -99,6 +99,16 @@ class TSDataTable extends HTMLElement {
                     max-width: 200px;
                 }
                 
+                /* Text content inside cells should also be truncated */
+                td span,
+                td .clickable-cell-content {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    display: inline-block;
+                    max-width: 100%;
+                }
+                
                 /* Ensure all cells have border */
                 th, td {
                     border-bottom: 1px solid var(--sl-color-neutral-200);
