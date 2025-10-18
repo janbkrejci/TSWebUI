@@ -6,10 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TS-Table Test</title>
     <style>
-        :not(:defined) {
-            visibility: hidden;
+        body {
+            opacity: 0;
+        }
+
+        body.ready {
+            opacity: 1;
+            transition: 0.25s opacity;
         }
     </style>
+
 
     <!-- Shoelace CSS and Components -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css" />
@@ -23,28 +29,14 @@
 
 <body>
     <!-- TS-Table component with all configurable attributes -->
-    <ts-table 
-        id="table"
-        show-create-button="false"
-        show-import-button="false"
-        show-export-button="false"
-        show-column-selector="true"
-        enable-sorting="true"
-        enable-filtering="true"
-        enable-column-resizing="true"
-        enable-column-reordering="true"
-        enable-selection="true"
-        enable-row-menu="true"
-        enable-clickable-rows="true"
-        enable-clickable-columns="true"
-        enable-pagination="false"
+    <ts-table id="table" show-create-button="false" show-import-button="false" show-export-button="false"
+        show-column-selector="true" enable-sorting="true" enable-filtering="true" enable-column-resizing="true"
+        enable-column-reordering="true" enable-selection="true" enable-row-menu="true" enable-clickable-rows="true"
+        enable-clickable-columns="true" enable-pagination="false"
         single-item-actions="edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek"
         multiple-items-actions="delete/Smazat vybrané,export/Exportovat vybrané"
-        preselected-columns="name,email,turnover,contractDate,approved"
-        unhideable-columns="name,email"
-        unshowable-columns="id"
-        items-per-page="5"
-        items-per-page-options="5,10,20,50,-1">
+        preselected-columns="name,email,turnover,contractDate,approved" unhideable-columns="name,email"
+        unshowable-columns="id" items-per-page="5" items-per-page-options="5,10,20,50,-1">
     </ts-table>
 
     <!-- Table data and initialization -->
@@ -659,6 +651,19 @@
 
         initializeComponents();
     </script>
+
+    <script type="module">
+        (async () => {
+            await Promise.allSettled([
+                customElements.whenDefined('sl-menu-item'),
+            ]);
+
+            // Button, card, and rating are registered now! Add
+            // the `ready` class so the UI fades in.
+            document.body.classList.add('ready');
+        })();
+    </script>
 </body>
 
 </html>
+```
