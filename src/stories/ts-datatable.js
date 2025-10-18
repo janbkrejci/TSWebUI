@@ -1052,6 +1052,7 @@ class TSDataTable extends HTMLElement {
         headerRow.querySelectorAll('.col-resizer').forEach(resizer => {
             resizer.addEventListener('mousedown', (e) => this.startResize(e));
             resizer.addEventListener('touchstart', (e) => this.startResize(e), { passive: false });
+            resizer.addEventListener('dblclick', (e) => this.autoSizeColumn(e));
         });
         
         // Filters - debounced input
@@ -1396,6 +1397,95 @@ class TSDataTable extends HTMLElement {
         
         this.isResizing = false;
         this.lastResizeEnd = Date.now();
+    }
+    
+    autoSizeColumn(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const columnKey = e.target.getAttribute('data-column-key');
+        if (!columnKey) return;
+        
+        // Create a temporary element to measure text width (more accurate than Canvas)
+        const tempSpan = document.createElement('span');
+        tempSpan.style.visibility = 'hidden';
+        tempSpan.style.position = 'absolute';
+        tempSpan.style.whiteSpace = 'nowrap';
+        tempSpan.style.left = '-9999px';
+        
+        // Get the header cell to match font
+        const table = this.querySelector('#data-table');
+        const headerCell = table.querySelector(`th[data-column-key="${columnKey}"]`);
+        if (!headerCell) return;
+        
+        // Get a sample body cell for font styling
+        const tbody = table.querySelector('tbody');
+        const sampleCell = tbody ? tbody.querySelector(`td:not(.checkbox-column):not(.menu-column)`) : null;
+        if (sampleCell) {
+            const bodyCellStyle = window.getComputedStyle(sampleCell);
+            tempSpan.style.font = bodyCellStyle.font;
+            tempSpan.style.fontSize = bodyCellStyle.fontSize;
+            tempSpan.style.fontFamily = bodyCellStyle.fontFamily;
+            tempSpan.style.fontWeight = bodyCellStyle.fontWeight;
+        }
+        
+        document.body.appendChild(tempSpan);
+        
+        // Measure header text
+        tempSpan.textContent = headerCell.textContent.trim();
+        let maxWidth = tempSpan.offsetWidth;
+        
+        // Measure all cell values in this column
+        const col = this.columnDefinitions.find(c => c.key === columnKey);
+        if (col) {
+            
+            this.tableData.forEach(row => {
+                let cellText = '';
+                const value = row[columnKey];
+                
+                // Format value based on column type
+                if (col.type === 'number' && value !== null && value !== undefined) {
+                    cellText = value.toLocaleString('cs-CZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                } else if (col.type === 'date' && value) {
+                    cellText = new Date(value).toLocaleDateString('cs-CZ');
+                } else if (col.type === 'boolean') {
+                    cellText = ''; // Switch doesn't need text measurement
+                } else {
+                    cellText = String(value || '');
+                }
+                
+                if (cellText) {
+                    tempSpan.textContent = cellText;
+                    const textWidth = tempSpan.offsetWidth;
+                    maxWidth = Math.max(maxWidth, textWidth);
+                }
+            });
+        }
+        
+        // Clean up temporary element
+        document.body.removeChild(tempSpan);
+        
+        // Add padding for cell padding (1.25em left + 1.25em right = 2.5em ~ 40px at 16px font)
+        let padding = 40; // Base padding for text + cell padding
+        if (col && col.canBeCopied) {
+            // Copy button is ~24-32px wide + gap 0.5em (~8px) = ~35-40px total
+            padding += 40; // Extra space for copy button (reduced from 50px)
+        }
+        
+        const newWidth = Math.max(80, Math.ceil(maxWidth + padding));
+        
+        console.log(`Auto-sizing column ${columnKey}: maxWidth=${maxWidth.toFixed(2)}px, padding=${padding}px, newWidth=${newWidth}px, canBeCopied=${col?.canBeCopied || false}`);
+        
+        // Update column width
+        if (col) {
+            col.width = newWidth;
+        }
+        
+        // Apply the width
+        const colElement = table.querySelector(`col[data-column-key="${columnKey}"]`);
+        if (colElement) {
+            colElement.style.width = `${newWidth}px`;
+        }
     }
     
     populateTableRows() {
