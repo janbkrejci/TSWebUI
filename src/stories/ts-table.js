@@ -63,6 +63,7 @@ class TSTable extends HTMLElement {
                 #toolbar {
                     width: 100%;
                     flex-shrink: 0;
+                    margin-bottom: 1rem;
                 }
                 
                 .datatable-wrapper {

@@ -43,7 +43,7 @@ class TSTablePager extends HTMLElement {
                     display: grid;
                     grid-template-columns: 1fr auto 1fr;
                     align-items: center;
-                    margin-top: 1em;
+                    margin-top: 1rem;
                     padding: 0.5em 0;
                     width: 100%;
                     max-width: 100%;
