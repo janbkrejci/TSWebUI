@@ -631,6 +631,9 @@ class TSTable extends HTMLElement {
     setMultipleItemsActions(actions) {
         this.multipleItemsActions = actions;
         if (this.datatable) {
+            // Store in datatable for restoration after header recreation
+            this.datatable.setMultipleItemsActions(actions);
+            
             const selectionMenu = this.datatable.getSelectionMenu();
             if (selectionMenu) {
                 selectionMenu.setAttribute('multiple-items-actions', actions);

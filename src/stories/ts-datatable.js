@@ -17,6 +17,8 @@ class TSDataTable extends HTMLElement {
         this.selectedRowIds = new Set();
         this.selectionViewMode = 'all';
         this.menuActions = [];
+        this.singleItemActions = ''; // Store as string for selection menu
+        this.multipleItemsActions = ''; // Store as string for selection menu
         this.preselectedColumns = [];
         this.unhideableColumns = [];
         this.unshowableColumns = [];
@@ -548,6 +550,8 @@ class TSDataTable extends HTMLElement {
     
     setMenuActions(actions) {
         if (typeof actions === 'string') {
+            // Store the string for later restoration
+            this.singleItemActions = actions;
             // Parse string format: 'action1/Label 1,action2/Label 2'
             this.menuActions = actions.split(',').map(item => {
                 const [actionName, label] = item.split('/');
@@ -556,6 +560,11 @@ class TSDataTable extends HTMLElement {
         } else {
             this.menuActions = actions || [];
         }
+    }
+    
+    setMultipleItemsActions(actions) {
+        // Store the string for later restoration
+        this.multipleItemsActions = actions;
     }
     
     setPreselectedColumns(columns) {
@@ -944,6 +953,9 @@ class TSDataTable extends HTMLElement {
         // Restore filter values after recreating headers
         this.restoreFilterValues();
         
+        // Restore selection menu configuration after recreating headers
+        this.restoreSelectionMenuConfig();
+        
         return true;
     }
     
@@ -1005,6 +1017,45 @@ class TSDataTable extends HTMLElement {
                 if (input) {
                     input.value = filterValue;
                 }
+            }
+        });
+    }
+    
+    restoreSelectionMenuConfig() {
+        // Restore selection menu actions after recreating headers
+        // Selection menu is always present when row menu is enabled
+        if (!this.enableRowMenu) return;
+        
+        const selectionMenu = this.querySelector('#selection-menu');
+        if (!selectionMenu) {
+            console.warn('Selection menu not found after header recreation');
+            return;
+        }
+        
+        // Wait for the custom element to be defined and ready
+        customElements.whenDefined('ts-selection-menu').then(() => {
+            // Restore single item actions
+            if (this.singleItemActions) {
+                selectionMenu.setAttribute('single-item-actions', this.singleItemActions);
+            }
+            
+            // Restore multiple items actions
+            if (this.multipleItemsActions) {
+                selectionMenu.setAttribute('multiple-items-actions', this.multipleItemsActions);
+            }
+            
+            // Restore visibility and selection state
+            if (this.selectedRowIds.size > 0) {
+                // Convert IDs to row objects
+                const selectedRows = Array.from(this.selectedRowIds)
+                    .map(id => this.tableData.find(r => String(r.id) === String(id)))
+                    .filter(r => r !== undefined);
+                
+                selectionMenu.setSelectedRows(selectedRows);
+                selectionMenu.setSelectionCount(this.selectedRowIds.size);
+                selectionMenu.show();
+            } else {
+                selectionMenu.hide();
             }
         });
     }
