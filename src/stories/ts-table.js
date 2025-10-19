@@ -67,7 +67,6 @@ class TSTable extends HTMLElement {
                     position: sticky;
                     top: 0;
                     z-index: 10;
-                    background: white;
                     grid-row: 1;
                 }
                 
@@ -85,7 +84,6 @@ class TSTable extends HTMLElement {
                 #pager {
                     width: 100%;
                     z-index: 10;
-                    background: white;
                     grid-row: 3;
                 }
             </style>

@@ -1130,7 +1130,7 @@ class TSDataTable extends HTMLElement {
             // Handle focus to select all text
             input.addEventListener('focus', (event) => {
                 setTimeout(() => {
-                    event.target.select();
+                    input.select();
                 }, 0);
             });
         });
