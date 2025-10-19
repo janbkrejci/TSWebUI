@@ -51,25 +51,31 @@ class TSTable extends HTMLElement {
                 :host {
                     display: block;
                     width: 100%;
+                    height: 100vh;
                 }
                 
                 .ts-table-container {
-                    display: flex;
-                    flex-direction: column;
+                    display: grid;
+                    grid-template-rows: auto 1fr auto;
                     width: 100%;
-                    gap: 0;
+                    height: 100%;
+                    gap: 0.5em;
                 }
                 
                 #toolbar {
                     width: 100%;
-                    flex-shrink: 0;
-                    margin-bottom: 1rem;
+                    position: sticky;
+                    top: 0;
+                    z-index: 10;
+                    background: white;
+                    grid-row: 1;
                 }
                 
                 .datatable-wrapper {
                     width: 100%;
-                    overflow-x: auto;
-                    flex-shrink: 0;
+                    overflow: auto;
+                    grid-row: 2;
+                    min-height: 0;
                 }
                 
                 #datatable {
@@ -78,7 +84,9 @@ class TSTable extends HTMLElement {
                 
                 #pager {
                     width: 100%;
-                    flex-shrink: 0;
+                    z-index: 10;
+                    background: white;
+                    grid-row: 3;
                 }
             </style>
             <div class="ts-table-container">

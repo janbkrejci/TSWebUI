@@ -12,7 +12,7 @@ class TSToolbar extends HTMLElement {
                     display: grid;
                     grid-template-columns: 1fr auto 1fr;
                     align-items: center;
-                    padding: 0.5rem 0;
+                    padding: 0;
                     gap: 0.5rem;
                     width: 100%;
                     box-sizing: border-box;

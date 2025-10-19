@@ -86,6 +86,15 @@ class TSDataTable extends HTMLElement {
                 
                 thead {
                     background: var(--sl-color-neutral-100);
+                    position: sticky;
+                    top: 0;
+                    z-index: 6;
+                }
+
+                thead tr {
+                    position: sticky;
+                    top: 0;
+                    z-index: 6;
                 }
                 
                 th:not(.checkbox-column):not(.menu-column), 
@@ -119,7 +128,9 @@ class TSDataTable extends HTMLElement {
                     color: var(--sl-color-neutral-900);
                     background: var(--sl-color-neutral-100);
                     text-align: left;
-                    position: relative;
+                    position: sticky;
+                    top: 0;
+                    z-index: 7;
                     user-select: none;
                     overflow: visible;
                     padding-left: 8px;
