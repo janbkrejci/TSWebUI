@@ -93,6 +93,8 @@ class TSTable extends HTMLElement {
     
     static get observedAttributes() {
         return [
+            'table-data',
+            'column-definitions',
             'show-create-button',
             'show-import-button',
             'show-export-button',
@@ -124,6 +126,26 @@ class TSTable extends HTMLElement {
         const boolValue = newValue !== 'false' && newValue !== null;
         
         switch(name) {
+            case 'table-data':
+                if (newValue) {
+                    try {
+                        const data = JSON.parse(newValue);
+                        this.setData(data);
+                    } catch (e) {
+                        console.error('Failed to parse table-data attribute:', e);
+                    }
+                }
+                break;
+            case 'column-definitions':
+                if (newValue) {
+                    try {
+                        const columns = JSON.parse(newValue);
+                        this.setColumnDefinitions(columns);
+                    } catch (e) {
+                        console.error('Failed to parse column-definitions attribute:', e);
+                    }
+                }
+                break;
             case 'show-create-button':
                 this.showCreateButton = boolValue;
                 if (this.toolbar) {
@@ -631,7 +653,7 @@ class TSTable extends HTMLElement {
         }
     }
     
-    initialize() {
+    run() {
         if (!this.datatable || !this.toolbar) return;
         
         // Set predefined filters before initializing
