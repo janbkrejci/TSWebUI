@@ -72,26 +72,11 @@ class TSExportButton extends HTMLElement {
                     flex-shrink: 0;
                 }
             </style>
-            <sl-tooltip content="Exportovat do Excelu">
+            <sl-tooltip hoist content="Exportovat do Excelu">
                 <sl-button class="export-btn">
                     <sl-icon name="download"></sl-icon>
                 </sl-button>
             </sl-tooltip>
-            <!-- Export dialog -->
-            <sl-dialog id="export-dialog" label="Export do Excelu" hidden>
-                <div class="export-options">
-                    <div id="export-rows-section" class="export-section export-rows-section">
-                        <div class="export-section-title">Řádky</div>
-                        <div id="export-rows-group"></div>
-                    </div>
-                    <div id="export-columns-section" class="export-section">
-                        <div class="export-section-title">Sloupce</div>
-                        <sl-radio-group id="export-columns-group"></sl-radio-group>
-                    </div>
-                </div>
-                <sl-button slot="footer" variant="default" id="export-cancel-btn">Zrušit</sl-button>
-                <sl-button slot="footer" variant="primary" id="export-confirm-btn">Exportovat</sl-button>
-            </sl-dialog>
         `;
     }
 
@@ -104,16 +89,28 @@ class TSExportButton extends HTMLElement {
         this.setupEventListeners();
     }
 
+    getDialog(dialogId) {
+        // Dialogy jsou nyní v ts-table, musíme je najít v rodičovském stromu
+        let parent = this.parentElement;
+        while (parent) {
+            const dialog = parent.querySelector(`#${dialogId}`);
+            if (dialog) return dialog;
+            parent = parent.parentElement;
+        }
+        return null;
+    }
+
     setExportData(dataProvider) {
         this.dataProvider = dataProvider;
     }
 
     updateRowCounts() {
-        const rowsGroup = this.querySelector('#export-rows-group');
-        const colsGroup = this.querySelector('#export-columns-group');
-        const rowsTitle = this.querySelector('#export-rows-section .export-section-title');
-        const colsTitle = this.querySelector('#export-columns-section .export-section-title');
-        const confirmBtn = this.querySelector('#export-confirm-btn');
+        const dlg = this.getDialog('export-dialog');
+        const rowsGroup = dlg?.querySelector('#export-rows-group');
+        const colsGroup = dlg?.querySelector('#export-columns-group');
+        const rowsTitle = dlg?.querySelector('#export-rows-section .export-section-title');
+        const colsTitle = dlg?.querySelector('#export-columns-section .export-section-title');
+        const confirmBtn = dlg?.querySelector('#export-confirm-btn');
 
         if (!rowsGroup || !colsGroup) return;
 
@@ -159,20 +156,23 @@ class TSExportButton extends HTMLElement {
             });
         }
 
-        // Dialog event listeners
-        const cancelBtn = this.querySelector('#export-cancel-btn');
-        const confirmBtn = this.querySelector('#export-confirm-btn');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => {
-                const dialog = this.querySelector('#export-dialog');
-                if (dialog) dialog.hide();
-            });
-        }
-        if (confirmBtn) {
-            confirmBtn.addEventListener('click', () => {
-                this.onExportConfirm();
-            });
-        }
+        // Dialog event listeners - dialogy jsou v ts-table, musíme použít setTimeout pro případné zpoždění
+        setTimeout(() => {
+            const dlg = this.getDialog('export-dialog');
+            const cancelBtn = dlg?.querySelector('#export-cancel-btn');
+            const confirmBtn = dlg?.querySelector('#export-confirm-btn');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', () => {
+                    const dialog = this.getDialog('export-dialog');
+                    if (dialog) dialog.hide();
+                });
+            }
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', () => {
+                    this.onExportConfirm();
+                });
+            }
+        }, 0);
     }
 
     // Export helpers
@@ -265,13 +265,13 @@ class TSExportButton extends HTMLElement {
         }
 
         // Build dialog options dynamically
-        const dlg = this.querySelector('#export-dialog');
-        const rowsGroup = this.querySelector('#export-rows-group');
-        const colsGroup = this.querySelector('#export-columns-group');
-        const rowsSection = this.querySelector('#export-rows-section');
-        const colsSection = this.querySelector('#export-columns-section');
-        const rowsTitle = this.querySelector('#export-rows-section .export-section-title');
-        const colsTitle = this.querySelector('#export-columns-section .export-section-title');
+        const dlg = this.getDialog('export-dialog');
+        const rowsGroup = dlg?.querySelector('#export-rows-group');
+        const colsGroup = dlg?.querySelector('#export-columns-group');
+        const rowsSection = dlg?.querySelector('#export-rows-section');
+        const colsSection = dlg?.querySelector('#export-columns-section');
+        const rowsTitle = dlg?.querySelector('#export-rows-section .export-section-title');
+        const colsTitle = dlg?.querySelector('#export-columns-section .export-section-title');
         if (!dlg || !rowsGroup || !colsGroup || !rowsSection || !colsSection) return;
 
         // Track selected row options
@@ -349,12 +349,12 @@ class TSExportButton extends HTMLElement {
     }
 
     onExportConfirm() {
-        const dlg = this.querySelector('#export-dialog');
-        const rowsGroup = this.querySelector('#export-rows-group');
-        const colsGroup = this.querySelector('#export-columns-group');
+        const dlg = this.getDialog('export-dialog');
+        const rowsGroup = dlg?.querySelector('#export-rows-group');
+        const colsGroup = dlg?.querySelector('#export-columns-group');
 
         // Get selected checkboxes for rows
-        const checkedBoxes = rowsGroup.querySelectorAll('sl-checkbox[checked]');
+        const checkedBoxes = rowsGroup?.querySelectorAll('sl-checkbox[checked]');
         const selectedRowOptions = Array.from(checkedBoxes).map(cb => cb.getAttribute('value'));
 
         // Determine rows option based on selected checkboxes

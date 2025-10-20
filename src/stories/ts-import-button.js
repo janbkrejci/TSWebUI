@@ -74,49 +74,13 @@ class TSImportButton extends HTMLElement {
                     flex-shrink: 0;
                 }
             </style>
-            <sl-tooltip content="Importovat z Excelu">
+            <sl-tooltip hoist content="Importovat z Excelu">
                 <sl-button class="import-btn">
                     <sl-icon name="upload"></sl-icon>
                 </sl-button>
             </sl-tooltip>
             <!-- Hidden file input for importing Excel -->
             <input type="file" id="import-file-input" accept=".xlsx" class="import-file-input-hidden" />
-            <!-- Import error dialog -->
-            <sl-dialog id="import-error-dialog" label="Import nelze provést" hidden>
-                <sl-alert open variant="danger">
-                    <sl-icon slot="icon" name="exclamation-octagon" class="large-icon"></sl-icon>
-                    Struktura souboru neodpovídá. Import nebude proveden.
-                    <div id="import-missing-columns" class="import-missing-columns"></div>
-                </sl-alert>
-                <div slot="footer"></div>
-                <sl-button slot="footer" variant="default" id="import-error-close-btn">Zavřít</sl-button>
-            </sl-dialog>
-            <!-- Import summary dialog -->
-            <sl-dialog id="import-summary-dialog" label="Výsledek importu" hidden>
-                <div class="import-results">
-                    <div class="import-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Přidáno:</span>
-                            <span class="stat-value" id="import-added-count">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Upraveno:</span>
-                            <span class="stat-value" id="import-updated-count">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Přeskočeno:</span>
-                            <span class="stat-value" id="import-skipped-count">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Zamítnuto:</span>
-                            <span class="stat-value" id="import-rejected-count">0</span>
-                        </div>
-                    </div>
-                </div>
-                <div id="import-footer-placeholder" slot="footer" style="display: none;"></div>
-                <sl-button slot="footer" variant="default" id="import-rejected-save-btn">Exportovat zamítnuté řádky</sl-button>
-                <sl-button slot="footer" variant="primary" id="import-summary-close-btn">OK</sl-button>
-            </sl-dialog>
         `;
     }
 
@@ -137,6 +101,17 @@ class TSImportButton extends HTMLElement {
         this.columnsRequiredForImport = columns || [];
     }
 
+    getDialog(dialogId) {
+        // Dialogy jsou nyní v ts-table, musíme je najít v rodičovském stromu
+        let parent = this.parentElement;
+        while (parent) {
+            const dialog = parent.querySelector(`#${dialogId}`);
+            if (dialog) return dialog;
+            parent = parent.parentElement;
+        }
+        return null;
+    }
+
     setupEventListeners() {
         const button = this.querySelector('.import-btn');
         const importInput = this.querySelector('#import-file-input');
@@ -150,30 +125,32 @@ class TSImportButton extends HTMLElement {
             });
         }
 
-        // Dialog event listeners
-        const errorCloseBtn = this.querySelector('#import-error-close-btn');
-        const summaryCloseBtn = this.querySelector('#import-summary-close-btn');
-        const saveBtn = this.querySelector('#import-rejected-save-btn');
+        // Dialog event listeners - dialogy jsou v ts-table, musíme použít setTimeout pro případné zpoždění
+        setTimeout(() => {
+            const errorCloseBtn = this.getDialog('import-error-dialog')?.querySelector('sl-button[slot="footer"][variant="default"]');
+            const summaryCloseBtn = this.getDialog('import-summary-dialog')?.querySelector('#import-summary-close-btn');
+            const saveBtn = this.getDialog('import-summary-dialog')?.querySelector('#import-rejected-save-btn');
 
-        if (errorCloseBtn) {
-            errorCloseBtn.addEventListener('click', () => {
-                const dialog = this.querySelector('#import-error-dialog');
-                if (dialog) dialog.hide();
-            });
-        }
+            if (errorCloseBtn) {
+                errorCloseBtn.addEventListener('click', () => {
+                    const dialog = this.getDialog('import-error-dialog');
+                    if (dialog) dialog.hide();
+                });
+            }
 
-        if (summaryCloseBtn) {
-            summaryCloseBtn.addEventListener('click', () => {
-                const dialog = this.querySelector('#import-summary-dialog');
-                if (dialog) dialog.hide();
-            });
-        }
+            if (summaryCloseBtn) {
+                summaryCloseBtn.addEventListener('click', () => {
+                    const dialog = this.getDialog('import-summary-dialog');
+                    if (dialog) dialog.hide();
+                });
+            }
 
-        if (saveBtn) {
-            saveBtn.addEventListener('click', () => {
-                this.saveRejectedRows();
-            });
-        }
+            if (saveBtn) {
+                saveBtn.addEventListener('click', () => {
+                    this.saveRejectedRows();
+                });
+            }
+        }, 0);
     }
 
  
@@ -184,13 +161,13 @@ class TSImportButton extends HTMLElement {
         this.rejectedRowsData = rejectedRowsData || [];
 
         // Show summary dialog
-        const sumDlg = this.querySelector('#import-summary-dialog');
-        const addedCount = this.querySelector('#import-added-count');
-        const updatedCount = this.querySelector('#import-updated-count');
-        const rejectedCount = this.querySelector('#import-rejected-count');
-        const skippedCount = this.querySelector('#import-skipped-count');
-        const saveBtn = this.querySelector('#import-rejected-save-btn');
-        const placeholder = this.querySelector('#import-footer-placeholder');
+        const sumDlg = this.getDialog('import-summary-dialog');
+        const addedCount = sumDlg?.querySelector('#import-added-count');
+        const updatedCount = sumDlg?.querySelector('#import-updated-count');
+        const rejectedCount = sumDlg?.querySelector('#import-rejected-count');
+        const skippedCount = sumDlg?.querySelector('#import-skipped-count');
+        const saveBtn = sumDlg?.querySelector('#import-rejected-save-btn');
+        const placeholder = sumDlg?.querySelector('#import-footer-placeholder');
 
         // Update individual counters
         if (addedCount) addedCount.textContent = added || 0;
@@ -295,8 +272,8 @@ class TSImportButton extends HTMLElement {
                 if (!headersInFile.includes(col.key)) missing.push(col.key);
             }
             if (missing.length > 0) {
-                const errDlg = this.querySelector('#import-error-dialog');
-                const list = this.querySelector('#import-missing-columns');
+                const errDlg = this.getDialog('import-error-dialog');
+                const list = errDlg?.querySelector('#import-missing-columns');
                 const requiredLabel = this.columnsRequiredForImport && this.columnsRequiredForImport.length > 0
                     ? 'Chybějící povinné sloupce: '
                     : 'Chybějící sloupce: ';
@@ -327,8 +304,8 @@ class TSImportButton extends HTMLElement {
 
         } catch (e) {
             console.error('Import failed', e);
-            const errDlg = this.querySelector('#import-error-dialog');
-            const list = this.querySelector('#import-missing-columns');
+            const errDlg = this.getDialog('import-error-dialog');
+            const list = errDlg?.querySelector('#import-missing-columns');
             if (list) list.textContent = 'Chyba při čtení souboru.';
             if (errDlg) errDlg.show();
         }

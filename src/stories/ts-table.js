@@ -84,8 +84,101 @@ class TSTable extends HTMLElement {
                 
                 #pager {
                     width: 100%;
-                    z-index: 10;
                     grid-row: 3;
+                }
+                
+                /* Import dialog styles */
+                .large-icon {
+                    font-size: 32px;
+                }
+                .import-missing-columns {
+                    margin-top: 8px;
+                    font-size: var(--sl-font-size-small);
+                    font-family: var(--sl-font-sans);
+                }
+                .import-results {
+                    padding: 1rem 0;
+                    font-family: var(--sl-font-sans);
+                }
+                .import-stats {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                    gap: 1rem;
+                    margin-bottom: 1rem;
+                    font-family: var(--sl-font-sans);
+                }
+                .stat-item {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    padding: 1rem;
+                    background: var(--sl-color-neutral-50);
+                    border-radius: var(--sl-border-radius-medium);
+                    border: 1px solid var(--sl-color-neutral-200);
+                    font-family: var(--sl-font-sans);
+                }
+                .stat-label {
+                    font-size: var(--sl-font-size-small);
+                    color: var(--sl-color-neutral-600);
+                    margin-bottom: 0.5rem;
+                    font-weight: var(--sl-font-weight-medium);
+                    font-family: var(--sl-font-sans);
+                }
+                .stat-value {
+                    font-size: var(--sl-font-size-2x-large);
+                    font-weight: var(--sl-font-weight-bold);
+                    color: var(--sl-color-neutral-900);
+                    font-family: var(--sl-font-sans);
+                }
+                
+                /* Export dialog styles */
+                .export-options {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.5rem;
+                    font-family: var(--sl-font-sans);
+                }
+                .export-section {
+                    padding: 0.75rem 0;
+                }
+                .export-section-title {
+                    font-weight: var(--sl-font-weight-semibold);
+                    margin-bottom: 0.625rem;
+                    color: var(--sl-color-neutral-700);
+                    font-size: var(--sl-font-size-medium);
+                    font-family: var(--sl-font-sans);
+                }
+                .export-rows-section {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.625rem;
+                }
+                .export-option-item {
+                    margin: 0;
+                }
+                
+                /* Dialog common styles */
+                sl-dialog::part(title) {
+                    font-family: var(--sl-font-sans);
+                    flex-shrink: 0;
+                }
+                sl-dialog::part(body) {
+                    font-family: var(--sl-font-sans);
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                    flex: 1 1 auto;
+                    min-height: 0;
+                }
+                sl-dialog::part(panel) {
+                    max-height: 90vh;
+                    max-width: 90vw;
+                    display: flex;
+                    flex-direction: column;
+                }
+                sl-dialog::part(footer) {
+                    display: flex;
+                    justify-content: space-between;
+                    flex-shrink: 0;
                 }
             </style>
             <div class="ts-table-container">
@@ -95,6 +188,60 @@ class TSTable extends HTMLElement {
                 </div>
                 <ts-table-pager id="pager"></ts-table-pager>
             </div>
+            
+            <!-- Import error dialog -->
+            <sl-dialog hoist id="import-error-dialog" label="Import nelze provést">
+                <sl-alert open variant="danger">
+                    <sl-icon slot="icon" name="exclamation-octagon" class="large-icon"></sl-icon>
+                    Struktura souboru neodpovídá. Import nebude proveden.
+                    <div id="import-missing-columns" class="import-missing-columns"></div>
+                </sl-alert>
+                <div slot="footer"></div>
+                <sl-button slot="footer" variant="default" id="import-error-close-btn">Zavřít</sl-button>
+            </sl-dialog>
+            
+            <!-- Import summary dialog -->
+            <sl-dialog hoist id="import-summary-dialog" label="Výsledek importu">
+                <div class="import-results">
+                    <div class="import-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Přidáno:</span>
+                            <span class="stat-value" id="import-added-count">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Upraveno:</span>
+                            <span class="stat-value" id="import-updated-count">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Přeskočeno:</span>
+                            <span class="stat-value" id="import-skipped-count">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Zamítnuto:</span>
+                            <span class="stat-value" id="import-rejected-count">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="import-footer-placeholder" slot="footer" style="display: none;"></div>
+                <sl-button slot="footer" variant="default" id="import-rejected-save-btn">Exportovat zamítnuté řádky</sl-button>
+                <sl-button slot="footer" variant="primary" id="import-summary-close-btn">OK</sl-button>
+            </sl-dialog>
+            
+            <!-- Export dialog -->
+            <sl-dialog hoist id="export-dialog" label="Export do Excelu">
+                <div class="export-options">
+                    <div id="export-rows-section" class="export-section export-rows-section">
+                        <div class="export-section-title">Řádky</div>
+                        <div id="export-rows-group"></div>
+                    </div>
+                    <div id="export-columns-section" class="export-section">
+                        <div class="export-section-title">Sloupce</div>
+                        <sl-radio-group id="export-columns-group"></sl-radio-group>
+                    </div>
+                </div>
+                <sl-button slot="footer" variant="default" id="export-cancel-btn">Zrušit</sl-button>
+                <sl-button slot="footer" variant="primary" id="export-confirm-btn">Exportovat</sl-button>
+            </sl-dialog>
         `;
     }
     
