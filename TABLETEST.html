@@ -41,13 +41,14 @@
 
 <body>
     <!-- TS-Table component with all configurable attributes -->
-    <ts-table id="table" show-create-button="true" show-import-button="false" show-export-button="false"
+    <ts-table id="table" show-create-button="true" show-import-button="true" show-export-button="false"
         show-column-selector="true" enable-sorting="true" enable-filtering="true" enable-column-resizing="true"
         enable-column-reordering="true" enable-selection="true" enable-row-menu="true" enable-clickable-rows="true"
         enable-clickable-columns="true" enable-pagination="true"
         single-item-actions="edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek"
         multiple-items-actions="delete/Smazat vybrané,export/Exportovat vybrané"
         preselected-columns="name,email,turnover,contractDate,approved" unhideable-columns="name,email"
+        columns-required-for-import="id,name,email"
         unshowable-columns="id" items-per-page="5" items-per-page-options="3,5,10,20,50,-1">
     </ts-table>
 

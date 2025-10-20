@@ -87,6 +87,13 @@ class TSToolbar extends HTMLElement {
         }
     }
 
+    setColumnsRequiredForImport(columns) {
+        const importBtn = this.getImportButton();
+        if (importBtn && typeof importBtn.setColumnsRequiredForImport === 'function') {
+            importBtn.setColumnsRequiredForImport(columns);
+        }
+    }
+
     // Export Button methods
     getExportButton() {
         return this.querySelector('#export-btn');

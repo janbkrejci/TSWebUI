@@ -18,6 +18,7 @@ class TSTable extends HTMLElement {
         this.preselectedColumns = [];
         this.unhideableColumns = [];
         this.unshowableColumns = [];
+        this.columnsRequiredForImport = [];
         this.singleItemActions = '';
         this.multipleItemsActions = '';
         this.itemsPerPage = 5;
@@ -119,6 +120,7 @@ class TSTable extends HTMLElement {
             'preselected-columns',
             'unhideable-columns',
             'unshowable-columns',
+            'columns-required-for-import',
             'items-per-page',
             'items-per-page-options',
             'predefined-filters'
@@ -271,6 +273,16 @@ class TSTable extends HTMLElement {
                         this.setUnshowableColumns(cols);
                     } catch (e) {
                         console.error('Failed to parse unshowable-columns attribute:', e);
+                    }
+                }
+                break;
+            case 'columns-required-for-import':
+                if (newValue) {
+                    try {
+                        const cols = newValue.startsWith('[') ? JSON.parse(newValue) : newValue.split(',').map(s => s.trim());
+                        this.setColumnsRequiredForImport(cols);
+                    } catch (e) {
+                        console.error('Failed to parse columns-required-for-import attribute:', e);
                     }
                 }
                 break;
@@ -473,6 +485,13 @@ class TSTable extends HTMLElement {
         }
         if (this.toolbar) {
             this.toolbar.setUnshowableColumns(columns);
+        }
+    }
+    
+    setColumnsRequiredForImport(columns) {
+        this.columnsRequiredForImport = columns;
+        if (this.toolbar) {
+            this.toolbar.setColumnsRequiredForImport(columns);
         }
     }
     

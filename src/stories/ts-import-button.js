@@ -125,11 +125,16 @@ class TSImportButton extends HTMLElement {
     }
 
     connectedCallback() {
+        this.columnsRequiredForImport = [];
         this.setupEventListeners();
     }
 
     setImportData(dataProvider) {
         this.dataProvider = dataProvider;
+    }
+
+    setColumnsRequiredForImport(columns) {
+        this.columnsRequiredForImport = columns || [];
     }
 
     setupEventListeners() {
@@ -280,13 +285,22 @@ class TSImportButton extends HTMLElement {
             // Validate columns: require all exportable columns to be present by header KEY
             const headersInFile = Object.keys(json[0] || {});
             const missing = [];
-            for (const col of columnDefinitions) {
+            
+            // Determine which columns to validate
+            const columnsToValidate = this.columnsRequiredForImport && this.columnsRequiredForImport.length > 0
+                ? columnDefinitions.filter(col => this.columnsRequiredForImport.includes(col.key))
+                : columnDefinitions;
+            
+            for (const col of columnsToValidate) {
                 if (!headersInFile.includes(col.key)) missing.push(col.key);
             }
             if (missing.length > 0) {
                 const errDlg = this.querySelector('#import-error-dialog');
                 const list = this.querySelector('#import-missing-columns');
-                if (list) list.textContent = 'Chybějící sloupce: ' + missing.join(', ');
+                const requiredLabel = this.columnsRequiredForImport && this.columnsRequiredForImport.length > 0
+                    ? 'Chybějící povinné sloupce: '
+                    : 'Chybějící sloupce: ';
+                if (list) list.textContent = requiredLabel + missing.join(', ');
                 if (errDlg) errDlg.show();
                 return;
             }
