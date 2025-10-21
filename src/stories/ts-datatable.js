@@ -1230,28 +1230,36 @@ class TSDataTable extends HTMLElement {
                     const row = this.tableData.find(r => String(r.id) === rowId);
                     
                     if (row) {
-                        // Determine column key
+                        // Determine column key based on feature flags
                         let columnKey = null;
                         
-                        if (this.enableClickableColumns) {
-                            // If clickable columns is enabled, check if the clicked td is a clickable column
+                        // Case 1: Only clickable columns enabled (rows disabled)
+                        if (!this.enableClickableRows && this.enableClickableColumns) {
+                            // Only fire event if clicking on a clickable column
                             if (td.classList.contains('clickable-column')) {
                                 columnKey = td.getAttribute('data-column-key');
-                            } else if (!this.enableClickableRows) {
-                                // If only clickable columns is enabled and this isn't a clickable column, don't fire event
+                            } else {
+                                // Not a clickable column, don't fire event
                                 return;
                             }
                         }
-                        
-                        // If clickable columns is disabled, include column key for backwards compatibility
-                        if (!this.enableClickableColumns) {
-                            const fixedColumnsCount = (this.enableSelection ? 1 : 0) + (this.enableRowMenu ? 1 : 0);
-                            const tdIndex = Array.from(tr.children).indexOf(td);
-                            const visibleColumns = this.getVisibleColumns();
-                            const columnIndex = tdIndex - fixedColumnsCount;
-                            columnKey = columnIndex >= 0 && columnIndex < visibleColumns.length 
-                                ? visibleColumns[columnIndex].key 
-                                : null;
+                        // Case 2: Only clickable rows enabled (columns disabled)
+                        else if (this.enableClickableRows && !this.enableClickableColumns) {
+                            // Fire event for any cell, columnKey is always null
+                            columnKey = null;
+                        }
+                        // Case 3: Both clickable rows and clickable columns enabled
+                        else if (this.enableClickableRows && this.enableClickableColumns) {
+                            // Fire event for any cell
+                            // If clicking on clickable column, include columnKey, otherwise null
+                            if (td.classList.contains('clickable-column')) {
+                                columnKey = td.getAttribute('data-column-key');
+                            }
+                        }
+                        // Case 4: Both disabled
+                        else {
+                            // Don't fire event at all
+                            return;
                         }
                         
                         this.dispatchEvent(new CustomEvent('row-clicked', {
