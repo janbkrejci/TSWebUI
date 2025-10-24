@@ -1,57 +1,24 @@
 <div class="sl-theme-{{theme}} base-container main-container">
+    <div id="container">
+        <ts-table id="table"></ts-table>
+    </div>
 
-    <script src="/table-data.js"></script>
-    <script src="/column-definitions.js"></script>
+
     <script>
         // References to component
-        var table = null;
+        //počkat na definici web componenty ts-table
 
-        // Configuration
-        const singleItemActions = 'edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek';
-        const multipleItemsActions = 'delete/Smazat vybrané,export/Exportovat vybrané';
-        const preselectedColumns = ['name', 'email', 'turnover', 'contractDate', 'approved'];
-        const unhideableColumns = ['name', 'email'];
-        const unshowableColumns = ['id'];
-        const itemsPerPage = 3;
-        const itemsPerPageOptions = [3, 5, 10, 20, 50, -1];
-        // Example: Only show approved records (predefined filter that can't be cleared)
-        // const predefinedFilters = { approved: 'true' };
-        //  const predefinedFilters = { turnover: '..100000' };
-        const predefinedFilters = {};
+        var table = document.getElementById('table');
 
         // Initialize component when DOM is ready
         function initializeComponents() {
-            table = document.getElementById('table');
 
             // Configure table
             table.setColumnDefinitions(columnDefinitions);
-            table.setPreselectedColumns(preselectedColumns);
-            table.setUnhideableColumns(unhideableColumns);
-            table.setUnshowableColumns(unshowableColumns);
-            table.setSingleItemActions(singleItemActions);
-            table.setMultipleItemsActions(multipleItemsActions);
-            table.setItemsPerPage(itemsPerPage);
-            table.setItemsPerPageOptions(itemsPerPageOptions);
-            table.setPredefinedFilters(predefinedFilters);
-            
-            // UI visibility options (test)
-            // table.setShowColumnSelector(false); // Uncomment to hide column selector
-            // table.setShowImportButton(false); // Uncomment to hide import button
-            // table.setShowExportButton(false); // Uncomment to hide export button
-            // table.setShowCreateButton(false); // Uncomment to hide create button
-            // table.setEnableSorting(false); // Disable sorting for testing
-            // table.setEnableFiltering(false); // Disable filtering for testing
-            // table.setEnableColumnResizing(false); // Disable column resizing for testing
-            // table.setEnableColumnReordering(false); // Disable column reordering for testing
-            // table.setEnableSelection(false); // Disable selection for testing
-            // table.setEnableRowMenu(false); // Disable row menu for testing
-            // table.setEnableClickableRows(false); // Disable clickable rows for testing
-            // table.setEnablePagination(false); // Disable pagination for testing
-
             table.setData(tableData); // Set data after predefined filters
-            
+
             setupEventListeners();
-            
+
             // Initialize table
             table.run();
         }
@@ -66,7 +33,7 @@
                 const { action, rows } = event.detail;
                 console.log('Action:', action, 'for', rows.length, 'row(s):', rows);
             });
-            
+
             table.addEventListener('row-clicked', (event) => {
                 const { row, columnKey } = event.detail;
                 console.log('Row clicked:', row, 'in column:', columnKey);
@@ -75,27 +42,27 @@
             table.addEventListener('do-import', (event) => {
                 const { importData, file } = event.detail;
                 console.log('Import received:', importData.length, 'rows from file:', file.name);
-                
+
                 // Process import data - demo logic with random rejection
                 let added = 0, updated = 0, rejected = 0, skipped = 0;
                 const rejectedRows = [];
                 const rejectedRowsData = [];
                 const processedRows = [];
-                
+
                 importData.forEach(({ __index, data }) => {
                     // Randomly reject ~20% of rows for testing purposes
                     const shouldRejectRandomly = Math.random() < 0.2;
-                    
+
                     if (shouldRejectRandomly) {
                         rejected++;
                         rejectedRows.push(__index);
                         rejectedRowsData.push(data);
                         return;
                     }
-                    
+
                     // Check if row with same ID exists (for update vs add logic)
                     const existingRow = table.getAllRows().find(r => r.id === data.id);
-                    
+
                     if (!data.id) {
                         rejected++;
                         rejectedRows.push(__index);
@@ -110,7 +77,7 @@
                         processedRows.push({ ...data, __importAction: 'added' });
                     }
                 });
-                
+
                 // Show results via the table
                 table.showImportResults({
                     added,
@@ -120,15 +87,12 @@
                     rejectedRows,
                     rejectedRowsData
                 });
-                
+
                 console.log('Import completed:', processedRows);
             });
         }
 
+
         initializeComponents();
     </script>
-
-    <div id="container">
-        <ts-table id="table"></ts-table>
-    </div>
 </div>

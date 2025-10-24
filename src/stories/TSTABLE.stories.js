@@ -2,6 +2,7 @@ import { fn } from 'storybook/test';
 import template from './TSTABLE.html?raw';
 import './ts-table.js';
 
+
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
   title: 'TSWebUI/TSTABLE',
@@ -9,7 +10,7 @@ export default {
   render: (args) => {
     const theme = args.dark ? 'dark' : 'light';
     let html = template.replace(/\{\{theme\}\}/g, theme);
-    
+
     // Replace attributes in the ts-table element
     // Find the ts-table element and replace its attributes
     const tableRegex = /<ts-table([^>]*)>/;
@@ -39,8 +40,8 @@ export default {
         `items-per-page="${args.itemsPerPage}"`,
         `items-per-page-options="${args.itemsPerPageOptions}"`,
       ].join(' ');
-      
-      html = html.replace(tableRegex, `<ts-table ${attributes}>`);
+
+      html = html.replace(tableRegex, `<ts-table id="table" ${attributes}>`);
     }
     
     return html;
@@ -162,59 +163,5 @@ export const DEFAULT = {
     columnsRequiredForImport: 'id,name,email',
     itemsPerPage: 5,
     itemsPerPageOptions: '3,5,10,20,50,-1',
-  },
-};
-
-export const MinimalFeatures = {
-  args: {
-    dark: false,
-    showCreateButton: false,
-    showImportButton: false,
-    showExportButton: false,
-    showColumnSelector: false,
-    enableSorting: false,
-    enableFiltering: false,
-    enableColumnResizing: false,
-    enableColumnReordering: false,
-    enableSelection: false,
-    enableRowMenu: false,
-    enableClickableRows: false,
-    enableClickableColumns: false,
-    enablePagination: false,
-    singleItemActions: '',
-    multipleItemsActions: '',
-    preselectedColumns: 'name,email,turnover,contractDate,approved',
-    unhideableColumns: '',
-    unshowableColumns: 'id',
-    columnsRequiredForImport: '',
-    itemsPerPage: 5,
-    itemsPerPageOptions: '5,10,20',
-  },
-};
-
-export const ReadOnlyTable = {
-  args: {
-    dark: false,
-    showCreateButton: false,
-    showImportButton: false,
-    showExportButton: false,
-    showColumnSelector: true,
-    enableSorting: true,
-    enableFiltering: true,
-    enableColumnResizing: true,
-    enableColumnReordering: false,
-    enableSelection: false,
-    enableRowMenu: false,
-    enableClickableRows: true,
-    enableClickableColumns: false,
-    enablePagination: true,
-    singleItemActions: '',
-    multipleItemsActions: '',
-    preselectedColumns: 'name,email,turnover,contractDate,approved',
-    unhideableColumns: 'name',
-    unshowableColumns: 'id',
-    columnsRequiredForImport: '',
-    itemsPerPage: 10,
-    itemsPerPageOptions: '5,10,20,50,-1',
   },
 };
