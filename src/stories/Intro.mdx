@@ -97,15 +97,18 @@ Každý sloupec je definován objektem s následujícími atributy:
   </thead>
   <tbody>
     <tr><td>key</td><td>string</td><td>Unikátní klíč sloupce (povinný)</td></tr>
-    <tr><td>label</td><td>string</td><td>Zobrazovaný název sloupce</td></tr>
+    <tr><td>title</td><td>string</td><td>Zobrazovaný název sloupce</td></tr>
     <tr><td>type</td><td>string</td><td>Typ dat: "text", "number", "date", "boolean"</td></tr>
     <tr><td>sortable</td><td>boolean</td><td>Povolit řazení podle sloupce</td></tr>
+    <tr><td>sortDirection</td><td>string</td><td>Aktuální směr řazení: "asc", "desc", "none"</td></tr>
+    <tr><td>className</td><td>string</td><td>CSS třída pro sloupec</td></tr>
     <tr><td>filterable</td><td>boolean</td><td>Povolit filtrování</td></tr>
-    <tr><td>width</td><td>string</td><td>Výchozí šířka (např. "120px")</td></tr>
+    <tr><td>filterPlaceholder</td><td>string</td><td>Placeholder pro filtr</td></tr>
     <tr><td>visible</td><td>boolean</td><td>Zda je sloupec viditelný</td></tr>
-    <tr><td>clickable</td><td>boolean</td><td>Zda je sloupec klikatelný (pro eventy)</td></tr>
-    <tr><td>format</td><td>string</td><td>Formátování hodnoty (např. "cz-date")</td></tr>
-    <tr><td>...další</td><td>...</td><td>Další volitelné atributy</td></tr>
+    <tr><td>align</td><td>string</td><td>Zarovnání: "left", "center", "right"</td></tr>
+    <tr><td>order</td><td>number</td><td>Pořadí sloupce</td></tr>
+    <tr><td>isClickable</td><td>boolean</td><td>Zda je sloupec klikatelný (pro eventy)</td></tr>
+    <tr><td>canBeCopied</td><td>boolean</td><td>Zda lze hodnotu kopírovat</td></tr>
   </tbody>
 </table>
 
@@ -114,14 +117,18 @@ Příklad:
 ```js
 {
   key: "email",
-  label: "E-mail",
+  title: "E-mail",
   type: "text",
-  sortable: true,
+  sortable: false,
+  sortDirection: "none",
+  className: "",
   filterable: true,
-  width: "200px",
-  visible: true,
-  clickable: true,
-  format: "email"
+  filterPlaceholder: "Filtr e-mailu",
+  visible: false,
+  align: "left",
+  order: 3,
+  canBeCopied: true,
+  isClickable: true
 }
 ```
 
