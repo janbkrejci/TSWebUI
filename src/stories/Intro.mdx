@@ -1,78 +1,132 @@
 import { Meta } from "@storybook/addon-docs/blocks";
 
-<Meta title="TSGrid" />
+<Meta title="TSWebUI/TSTABLE" />
 
-# TSGrid - prototyp
+# TSTABLE
 
-Javascript, CSS a HTML plus Shoelace z CDN.
+Kompletní client-side webový datagrid bez frameworku, pouze HTML, JS, CSS a Shoelace z CDN.
 
-Žádný framework (React apod.), žádný bundler (Webpack).
+Je realizován jako web component. Stačí tedy naimportovat a do HTML vložit ```<ts-table></ts-table>```,
+samozřejmě musíte grid nakrmit daty a dát mu potřebné parametry.
 
-Veškerý kód je vidět přímo ve stránce.
+## Funkce - přehled
 
-## Podporuje:
+- stránkování, volba počtu položek na stránku
+- řazení podle sloupců (vzestupně/sestupně/bez řazení)
+- schovávání a změna pořadí sloupců
+- řádková nabídka (menu pro každý řádek)
+- filtrování podle sloupců (čísla, datum, text, výběr řádků)
+- formátování čísel a dat podle české lokalizace
+- výběr řádků (jednotlivě i hromadně, tri-state checkbox)
+- akční menu pro jeden i více vybraných řádků
+- export do Excelu, demo import z Excelu
+- klikatelné řádky (např. pro detail)
+- klikatelné vybrané sloupce (volitelně, např. pro akce nad buňkou)
+- dark/light mód
+- změna šířky sloupců
 
-* stránkování (zkuste napsat dole do inputu neexistující číslo stránky),
-* řazení podle jednoho sloupce (3 stavy - vzestupně, sestupně, neřadit),
-* schovávání a změnu pořadí sloupců,
-* řádkovou nabídku,
-* filtrování (inteligentní, viz dále)
-* formátování sloupců typu datum a číslo podle české lokalizace
-* výběr řádků a akční menu adaptivní pro jeden vybraný prvek i více vybraných prvků
-* export do Excelu a demo importu z Excelu (dopiš si svou logiku)
-* klikatelný každý řádek (např. pro přechod na detail)
-* dark/light mód
-* změnu šířky sloupců
+## Parametry (props)
 
-## Filtrování:
+<table>
+  <thead>
+    <tr>
+      <th>Parametr</th>
+      <th>Typ</th>
+      <th>Význam</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>dark</td><td>boolean</td><td>Dark theme</td></tr>
+    <tr><td>showCreateButton</td><td>boolean</td><td>Zobrazit tlačítko „Nový záznam“</td></tr>
+    <tr><td>showImportButton</td><td>boolean</td><td>Zobrazit tlačítko „Importovat“</td></tr>
+    <tr><td>showExportButton</td><td>boolean</td><td>Zobrazit tlačítko „Exportovat“</td></tr>
+    <tr><td>showColumnSelector</td><td>boolean</td><td>Zobrazit volbu sloupců</td></tr>
+    <tr><td>enableSorting</td><td>boolean</td><td>Povolit řazení</td></tr>
+    <tr><td>enableFiltering</td><td>boolean</td><td>Povolit filtrování</td></tr>
+    <tr><td>enableColumnResizing</td><td>boolean</td><td>Povolit změnu šířky sloupců</td></tr>
+    <tr><td>enableColumnReordering</td><td>boolean</td><td>Povolit změnu pořadí sloupců</td></tr>
+    <tr><td>enableSelection</td><td>boolean</td><td>Povolit výběr řádků</td></tr>
+    <tr><td>enableRowMenu</td><td>boolean</td><td>Povolit menu pro řádek</td></tr>
+    <tr><td>enableClickableRows</td><td>boolean</td><td>Povolit klikání na řádky</td></tr>
+    <tr><td>enableClickableColumns</td><td>boolean</td><td>Povolit klikání na sloupce</td></tr>
+    <tr><td>enablePagination</td><td>boolean</td><td>Povolit stránkování</td></tr>
+    <tr><td>singleItemActions</td><td>string</td><td>Akce pro jeden vybraný řádek (např. edit/delete)</td></tr>
+    <tr><td>multipleItemsActions</td><td>string</td><td>Akce pro více vybraných řádků</td></tr>
+    <tr><td>visibleColumns</td><td>string</td><td>Viditelné sloupce (klíče, čárkou oddělené)</td></tr>
+    <tr><td>unhideableColumns</td><td>string</td><td>Sloupce, které nelze skrýt</td></tr>
+    <tr><td>unshowableColumns</td><td>string</td><td>Sloupce, které nelze zobrazit</td></tr>
+    <tr><td>columnsRequiredForImport</td><td>string</td><td>Povinné sloupce pro import</td></tr>
+    <tr><td>itemsPerPage</td><td>number</td><td>Počet položek na stránku</td></tr>
+    <tr><td>itemsPerPageOptions</td><td>string</td><td>Volby počtu položek na stránku</td></tr>
+  </tbody>
+</table>
 
-Pokud je vybrán (checkboxem) aspoň jeden řádek, lze filtrovat i podle stavu výběru řádků (tedy zobrazit jen vybrané, jen nevybrané).
+## Externí události (events)
 
-Při focusu vstupního pole pro zadání filtru se vybere celý obsah vstupního pole pro rychlé přepsání celé hodnoty.
+Pouze eventy emitované přímo z `<ts-table>` (bublají z vnitřních komponent):
 
-Escape vymaže vstupní pole.
+<table>
+  <thead>
+    <tr>
+      <th>Event</th>
+      <th>Detail (event.detail)</th>
+      <th>Popis</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>create-new-record</td><td></td><td>Kliknutí na „Nový záznam“</td></tr>
+    <tr><td>selection-action-activated</td><td> action, rows</td><td>Aktivace akce pro vybrané řádky</td></tr>
+    <tr><td>row-clicked</td><td> row, columnKey</td><td>Kliknutí na řádek/sloupec</td></tr>
+    <tr><td>do-import</td><td> importData, file</td><td>Import dat z Excelu</td></tr>
+  </tbody>
+</table>
 
-Filtr pro číselné sloupce:
+Pokud je povoleno <code>enableClickableColumns</code>, event <code>row-clicked</code> obsahuje i klíč sloupce (<code>columnKey</code>).
 
-* ignoruje mezery, dovolí desetinnou čárku i tečku,
-* umožňuje použít range operátor ```..```
-    * ```..číslo``` zobrazí vše menší nebo rovné číslu
-    * ```číslo..``` zobrazí vše větší nebo rovné číslu
-    * ```číslo..číslo``` zobrazí vše v uzavřeném intervalu mezi čísly včetně
+## Struktura columnDefinition
 
-Filtr pro sloupce typu Datum
+Každý sloupec je definován objektem s následujícími atributy:
 
-* ignoruje mezery
-* umožňuje jako oddělovač dnů, měsíců a roků použít tečku, lomítko nebo pomlčku
-* lze zadat:
-    * ```rrrr```
-    * ```mm.rrrr```
-    * ```dd.mm.rrrr```
-    * a použít operátor range jako u číselného sloupce
+<table>
+  <thead>
+    <tr>
+      <th>Atribut</th>
+      <th>Typ</th>
+      <th>Význam</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>key</td><td>string</td><td>Unikátní klíč sloupce (povinný)</td></tr>
+    <tr><td>label</td><td>string</td><td>Zobrazovaný název sloupce</td></tr>
+    <tr><td>type</td><td>string</td><td>Typ dat: "text", "number", "date", "boolean"</td></tr>
+    <tr><td>sortable</td><td>boolean</td><td>Povolit řazení podle sloupce</td></tr>
+    <tr><td>filterable</td><td>boolean</td><td>Povolit filtrování</td></tr>
+    <tr><td>width</td><td>string</td><td>Výchozí šířka (např. "120px")</td></tr>
+    <tr><td>visible</td><td>boolean</td><td>Zda je sloupec viditelný</td></tr>
+    <tr><td>clickable</td><td>boolean</td><td>Zda je sloupec klikatelný (pro eventy)</td></tr>
+    <tr><td>format</td><td>string</td><td>Formátování hodnoty (např. "cz-date")</td></tr>
+    <tr><td>...další</td><td>...</td><td>Další volitelné atributy</td></tr>
+  </tbody>
+</table>
 
-Filtr pro textové sloupce
+Příklad:
 
-* hvězdička jako zástupný znak pro libovolnou i prázdnou sekvenci znaků
-* dvě hvězdičky jako skutečná hvězdička v textu, pokud ji potřebujete hledat
-* tečka na začátku znamená hledej od začátku
-* hledá podřetězec, case insensitive včetně české diakritiky
-
-
-
-## Výběr řádků:
-
-Individuálně nebo hromadně - v záhlaví tabulky je tri-state checkbox, který vybere vše, odvybere vše.
-Respektuje při tom aktivní filtry.
-
-## Volba a řazení zobrazených sloupců:
-
-Toto by mělo být intuitivní, stačí vědět, že to jde, přijdete na to, jak se to dělá.
-
-Jen poznámka - pokud si nastavíte filtr u některého sloupce a pak ho schováte,
-nezoufejte, filtr lze vymazat v pravém horním seznamu fiditelných sloupců.
+```js
+{
+  key: "email",
+  label: "E-mail",
+  type: "text",
+  sortable: true,
+  filterable: true,
+  width: "200px",
+  visible: true,
+  clickable: true,
+  format: "email"
+}
+```
 
 # Licence
 
-UNLICENSED - dělejte si s tím co chcete, ale nic po mně nechtějte :-)
+UNLICENSED – dělejte si s tím co chcete, ale nic po mně nechtějte :-)
 
 

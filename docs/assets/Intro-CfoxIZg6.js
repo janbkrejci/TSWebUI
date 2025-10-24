@@ -1,0 +1,45 @@
+import{j as e,M as r}from"./blocks-Bz2pryWs.js";import{useMDXComponents as t}from"./index-cdzuTo2t.js";import"./preload-helper-PPVm8Dsz.js";import"./iframe-CPOrgpQ8.js";function d(l){const n={code:"code",h1:"h1",h2:"h2",li:"li",p:"p",pre:"pre",ul:"ul",...t(),...l.components};return e.jsxs(e.Fragment,{children:[e.jsx(r,{title:"TSWebUI/TSTABLE"}),`
+`,e.jsx(n.h1,{id:"tstable",children:"TSTABLE"}),`
+`,e.jsx(n.p,{children:"Kompletní client-side webový datagrid bez frameworku, pouze HTML, JS, CSS a Shoelace z CDN."}),`
+`,e.jsxs(n.p,{children:["Je realizován jako web component. Stačí tedy naimportovat a do HTML vložit ",e.jsx(n.code,{children:"<ts-table></ts-table>"}),`,
+samozřejmě musíte grid nakrmit daty a dát mu potřebné parametry.`]}),`
+`,e.jsx(n.h2,{id:"funkce---přehled",children:"Funkce - přehled"}),`
+`,e.jsxs(n.ul,{children:[`
+`,e.jsx(n.li,{children:"stránkování, volba počtu položek na stránku"}),`
+`,e.jsx(n.li,{children:"řazení podle sloupců (vzestupně/sestupně/bez řazení)"}),`
+`,e.jsx(n.li,{children:"schovávání a změna pořadí sloupců"}),`
+`,e.jsx(n.li,{children:"řádková nabídka (menu pro každý řádek)"}),`
+`,e.jsx(n.li,{children:"filtrování podle sloupců (čísla, datum, text, výběr řádků)"}),`
+`,e.jsx(n.li,{children:"formátování čísel a dat podle české lokalizace"}),`
+`,e.jsx(n.li,{children:"výběr řádků (jednotlivě i hromadně, tri-state checkbox)"}),`
+`,e.jsx(n.li,{children:"akční menu pro jeden i více vybraných řádků"}),`
+`,e.jsx(n.li,{children:"export do Excelu, demo import z Excelu"}),`
+`,e.jsx(n.li,{children:"klikatelné řádky (např. pro detail)"}),`
+`,e.jsx(n.li,{children:"klikatelné vybrané sloupce (volitelně, např. pro akce nad buňkou)"}),`
+`,e.jsx(n.li,{children:"dark/light mód"}),`
+`,e.jsx(n.li,{children:"změna šířky sloupců"}),`
+`]}),`
+`,e.jsx(n.h2,{id:"parametry-props",children:"Parametry (props)"}),`
+`,e.jsxs("table",{children:[e.jsx("thead",{children:e.jsxs("tr",{children:[e.jsx("th",{children:"Parametr"}),e.jsx("th",{children:"Typ"}),e.jsx("th",{children:"Význam"})]})}),e.jsxs("tbody",{children:[e.jsxs("tr",{children:[e.jsx("td",{children:"dark"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Dark theme"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"showCreateButton"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Zobrazit tlačítko „Nový záznam“"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"showImportButton"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Zobrazit tlačítko „Importovat“"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"showExportButton"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Zobrazit tlačítko „Exportovat“"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"showColumnSelector"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Zobrazit volbu sloupců"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"enableSorting"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Povolit řazení"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"enableFiltering"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Povolit filtrování"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"enableColumnResizing"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Povolit změnu šířky sloupců"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"enableColumnReordering"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Povolit změnu pořadí sloupců"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"enableSelection"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Povolit výběr řádků"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"enableRowMenu"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Povolit menu pro řádek"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"enableClickableRows"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Povolit klikání na řádky"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"enableClickableColumns"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Povolit klikání na sloupce"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"enablePagination"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Povolit stránkování"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"singleItemActions"}),e.jsx("td",{children:"string"}),e.jsx("td",{children:"Akce pro jeden vybraný řádek (např. edit/delete)"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"multipleItemsActions"}),e.jsx("td",{children:"string"}),e.jsx("td",{children:"Akce pro více vybraných řádků"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"visibleColumns"}),e.jsx("td",{children:"string"}),e.jsx("td",{children:"Viditelné sloupce (klíče, čárkou oddělené)"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"unhideableColumns"}),e.jsx("td",{children:"string"}),e.jsx("td",{children:"Sloupce, které nelze skrýt"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"unshowableColumns"}),e.jsx("td",{children:"string"}),e.jsx("td",{children:"Sloupce, které nelze zobrazit"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"columnsRequiredForImport"}),e.jsx("td",{children:"string"}),e.jsx("td",{children:"Povinné sloupce pro import"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"itemsPerPage"}),e.jsx("td",{children:"number"}),e.jsx("td",{children:"Počet položek na stránku"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"itemsPerPageOptions"}),e.jsx("td",{children:"string"}),e.jsx("td",{children:"Volby počtu položek na stránku"})]})]})]}),`
+`,e.jsx(n.h2,{id:"externí-události-events",children:"Externí události (events)"}),`
+`,e.jsxs(n.p,{children:["Pouze eventy emitované přímo z ",e.jsx(n.code,{children:"<ts-table>"})," (bublají z vnitřních komponent):"]}),`
+`,e.jsxs("table",{children:[e.jsx("thead",{children:e.jsxs("tr",{children:[e.jsx("th",{children:"Event"}),e.jsx("th",{children:"Detail (event.detail)"}),e.jsx("th",{children:"Popis"})]})}),e.jsxs("tbody",{children:[e.jsxs("tr",{children:[e.jsx("td",{children:"create-new-record"}),e.jsx("td",{}),e.jsx("td",{children:"Kliknutí na „Nový záznam“"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"selection-action-activated"}),e.jsx("td",{children:" action, rows"}),e.jsx("td",{children:"Aktivace akce pro vybrané řádky"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"row-clicked"}),e.jsx("td",{children:" row, columnKey"}),e.jsx("td",{children:"Kliknutí na řádek/sloupec"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"do-import"}),e.jsx("td",{children:" importData, file"}),e.jsx("td",{children:"Import dat z Excelu"})]})]})]}),`
+`,e.jsxs(n.p,{children:["Pokud je povoleno ",e.jsx("code",{children:"enableClickableColumns"}),", event ",e.jsx("code",{children:"row-clicked"})," obsahuje i klíč sloupce (",e.jsx("code",{children:"columnKey"}),")."]}),`
+`,e.jsx(n.h2,{id:"struktura-columndefinition",children:"Struktura columnDefinition"}),`
+`,e.jsx(n.p,{children:"Každý sloupec je definován objektem s následujícími atributy:"}),`
+`,e.jsxs("table",{children:[e.jsx("thead",{children:e.jsxs("tr",{children:[e.jsx("th",{children:"Atribut"}),e.jsx("th",{children:"Typ"}),e.jsx("th",{children:"Význam"})]})}),e.jsxs("tbody",{children:[e.jsxs("tr",{children:[e.jsx("td",{children:"key"}),e.jsx("td",{children:"string"}),e.jsx("td",{children:"Unikátní klíč sloupce (povinný)"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"label"}),e.jsx("td",{children:"string"}),e.jsx("td",{children:"Zobrazovaný název sloupce"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"type"}),e.jsx("td",{children:"string"}),e.jsx("td",{children:'Typ dat: "text", "number", "date", "boolean"'})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"sortable"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Povolit řazení podle sloupce"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"filterable"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Povolit filtrování"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"width"}),e.jsx("td",{children:"string"}),e.jsx("td",{children:'Výchozí šířka (např. "120px")'})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"visible"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Zda je sloupec viditelný"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"clickable"}),e.jsx("td",{children:"boolean"}),e.jsx("td",{children:"Zda je sloupec klikatelný (pro eventy)"})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"format"}),e.jsx("td",{children:"string"}),e.jsx("td",{children:'Formátování hodnoty (např. "cz-date")'})]}),e.jsxs("tr",{children:[e.jsx("td",{children:"...další"}),e.jsx("td",{children:"..."}),e.jsx("td",{children:"Další volitelné atributy"})]})]})]}),`
+`,e.jsx(n.p,{children:"Příklad:"}),`
+`,e.jsx(n.pre,{children:e.jsx(n.code,{className:"language-js",children:`{
+  key: "email",
+  label: "E-mail",
+  type: "text",
+  sortable: true,
+  filterable: true,
+  width: "200px",
+  visible: true,
+  clickable: true,
+  format: "email"
+}
+`})}),`
+`,e.jsx(n.h1,{id:"licence",children:"Licence"}),`
+`,e.jsx(n.p,{children:"UNLICENSED – dělejte si s tím co chcete, ale nic po mně nechtějte :-)"})]})}function h(l={}){const{wrapper:n}={...t(),...l.components};return n?e.jsx(n,{...l,children:e.jsx(d,{...l})}):d(l)}export{h as default};
