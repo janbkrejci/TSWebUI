@@ -36,30 +36,78 @@ samozřejmě musíte grid nakrmit daty a dát mu potřebné parametry.
     </tr>
   </thead>
   <tbody>
-    <tr><td>dark</td><td>boolean</td><td>Dark theme</td></tr>
-    <tr><td>showCreateButton</td><td>boolean</td><td>Zobrazit tlačítko „Nový záznam“</td></tr>
-    <tr><td>showImportButton</td><td>boolean</td><td>Zobrazit tlačítko „Importovat“</td></tr>
-    <tr><td>showExportButton</td><td>boolean</td><td>Zobrazit tlačítko „Exportovat“</td></tr>
-    <tr><td>showColumnSelector</td><td>boolean</td><td>Zobrazit volbu sloupců</td></tr>
-    <tr><td>enableSorting</td><td>boolean</td><td>Povolit řazení</td></tr>
-    <tr><td>enableFiltering</td><td>boolean</td><td>Povolit filtrování</td></tr>
-    <tr><td>enableColumnResizing</td><td>boolean</td><td>Povolit změnu šířky sloupců</td></tr>
-    <tr><td>enableColumnReordering</td><td>boolean</td><td>Povolit změnu pořadí sloupců</td></tr>
-    <tr><td>enableSelection</td><td>boolean</td><td>Povolit výběr řádků</td></tr>
-    <tr><td>enableRowMenu</td><td>boolean</td><td>Povolit menu pro řádek</td></tr>
-    <tr><td>enableClickableRows</td><td>boolean</td><td>Povolit klikání na řádky</td></tr>
-    <tr><td>enableClickableColumns</td><td>boolean</td><td>Povolit klikání na sloupce</td></tr>
-    <tr><td>enablePagination</td><td>boolean</td><td>Povolit stránkování</td></tr>
-    <tr><td>singleItemActions</td><td>string</td><td>Akce pro jeden vybraný řádek (např. edit/delete)</td></tr>
-    <tr><td>multipleItemsActions</td><td>string</td><td>Akce pro více vybraných řádků</td></tr>
-    <tr><td>visibleColumns</td><td>string</td><td>Viditelné sloupce (klíče, čárkou oddělené)</td></tr>
-    <tr><td>unhideableColumns</td><td>string</td><td>Sloupce, které nelze skrýt</td></tr>
-    <tr><td>unshowableColumns</td><td>string</td><td>Sloupce, které nelze zobrazit</td></tr>
-    <tr><td>columnsRequiredForImport</td><td>string</td><td>Povinné sloupce pro import</td></tr>
-    <tr><td>itemsPerPage</td><td>number</td><td>Počet položek na stránku</td></tr>
-    <tr><td>itemsPerPageOptions</td><td>string</td><td>Volby počtu položek na stránku</td></tr>
+    <tr><td>show-create-button</td><td>boolean</td><td>Zobrazit tlačítko „Nový záznam“</td></tr>
+    <tr><td>show-import-button</td><td>boolean</td><td>Zobrazit tlačítko „Importovat“</td></tr>
+    <tr><td>show-export-button</td><td>boolean</td><td>Zobrazit tlačítko „Exportovat“</td></tr>
+    <tr><td>show-column-selector</td><td>boolean</td><td>Zobrazit volbu sloupců</td></tr>
+    <tr><td>enable-sorting</td><td>boolean</td><td>Povolit řazení</td></tr>
+    <tr><td>enable-filtering</td><td>boolean</td><td>Povolit filtrování</td></tr>
+    <tr><td>predefined-filters</td><td>string</td><td>Předdefinované filtry (JSON objekt, nelze vymazat uživatelem)</td></tr>
+    <tr><td>enable-column-resizing</td><td>boolean</td><td>Povolit změnu šířky sloupců</td></tr>
+    <tr><td>enable-column-reordering</td><td>boolean</td><td>Povolit změnu pořadí sloupců</td></tr>
+    <tr><td>enable-selection</td><td>boolean</td><td>Povolit výběr řádků</td></tr>
+    <tr><td>enable-row-menu</td><td>boolean</td><td>Povolit menu pro řádek</td></tr>
+    <tr><td>enable-clickable-rows</td><td>boolean</td><td>Povolit klikání na řádky</td></tr>
+    <tr><td>enable-clickable-columns</td><td>boolean</td><td>Povolit klikání na sloupce</td></tr>
+    <tr><td>enable-pagination</td><td>boolean</td><td>Povolit stránkování</td></tr>
+    <tr><td>single-item-actions</td><td>string</td><td>Akce pro jeden vybraný řádek (formát: action/label, čárkou oddělené)</td></tr>
+    <tr><td>multiple-items-actions</td><td>string</td><td>Akce pro více vybraných řádků (formát: action/label, čárkou oddělené)</td></tr>
+    <tr><td>visible-columns</td><td>string</td><td>Viditelné sloupce (klíče, čárkou oddělené)</td></tr>
+    <tr><td>unhideable-columns</td><td>string</td><td>Sloupce, které nelze skrýt</td></tr>
+    <tr><td>unshowable-columns</td><td>string</td><td>Sloupce, které nelze zobrazit</td></tr>
+    <tr><td>columns-required-for-import</td><td>string</td><td>Povinné sloupce pro import</td></tr>
+    <tr><td>items-per-page</td><td>number</td><td>Počet položek na stránku</td></tr>
+    <tr><td>items-per-page-options</td><td>string</td><td>Volby počtu položek na stránku</td></tr>
   </tbody>
 </table>
+
+### Konfigurace menu akcí
+
+Parametry `single-item-actions` a `multiple-items-actions` používají formát `action/label`, kde:
+- **action** (před lomítkem) - text akce, který se pošle v eventu `selection-action-activated`
+- **label** (za lomítkem) - zobrazovaný text v menu
+
+Příklady:
+- `edit/Upravit` - akce "edit" se zobrazí jako "Upravit"
+- `delete/Smazat` - akce "delete" se zobrazí jako "Smazat"
+
+### Předdefinované filtry
+
+Parametr `predefined-filters` umožňuje nastavit trvalé filtry, které se aplikují na data při načtení a **nelze je vymazat uživatelem**. Hodnota je JSON řetězec s objekty filtrů podle klíčů sloupců.
+
+Příklady:
+- `{"approved": "true"}` - zobrazí pouze schválené záznamy
+- `{"status": "active", "category": "premium"}` - kombinace filtrů
+
+### Příklad
+
+```HTML
+<ts-table
+    id="table"
+    show-create-button="false"
+    show-import-button="false"
+    show-export-button="false"
+    show-column-selector="true"
+    enable-sorting="true"
+    enable-filtering="false"
+    predefined-filters='{"approved": "true"}'
+    enable-column-resizing="true"
+    enable-column-reordering="false"
+    enable-selection="false"
+    enable-row-menu="false"
+    enable-clickable-rows="false"
+    enable-clickable-columns="true"
+    enable-pagination="false"
+    single-item-actions="edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek"
+    multiple-items-actions="delete/Smazat vybrané,export/Exportovat vybrané"
+    visible-columns="name,email,turnover,contractDate,approved"
+    unhideable-columns="name,email"
+    unshowable-columns="id"
+    columns-required-for-import="id,name,email"
+    items-per-page="5"
+    items-per-page-options="3,5,10,20,50,-1">
+</ts-table>
+```
 
 ## Externí události (events)
 
@@ -81,7 +129,7 @@ Pouze eventy emitované přímo z `<ts-table>` (bublají z vnitřních komponent
   </tbody>
 </table>
 
-Pokud je povoleno <code>enableClickableColumns</code>, event <code>row-clicked</code> obsahuje i klíč sloupce (<code>columnKey</code>).
+Pokud je povoleno <code>enable-clickable-columns</code> a sloupec má v <code>columnDefinitions</code> nastaveno <code>isClickable: true</code>, event <code>row-clicked</code> obsahuje i klíč sloupce (<code>columnKey</code>).
 
 ## Struktura columnDefinition
 
@@ -101,7 +149,6 @@ Každý sloupec je definován objektem s následujícími atributy:
     <tr><td>type</td><td>string</td><td>Typ dat: "text", "number", "date", "boolean"</td></tr>
     <tr><td>sortable</td><td>boolean</td><td>Povolit řazení podle sloupce</td></tr>
     <tr><td>sortDirection</td><td>string</td><td>Aktuální směr řazení: "asc", "desc", "none"</td></tr>
-    <tr><td>className</td><td>string</td><td>CSS třída pro sloupec</td></tr>
     <tr><td>filterable</td><td>boolean</td><td>Povolit filtrování</td></tr>
     <tr><td>filterPlaceholder</td><td>string</td><td>Placeholder pro filtr</td></tr>
     <tr><td>visible</td><td>boolean</td><td>Zda je sloupec viditelný</td></tr>
@@ -121,7 +168,6 @@ Příklad:
   type: "text",
   sortable: false,
   sortDirection: "none",
-  className: "",
   filterable: true,
   filterPlaceholder: "Filtr e-mailu",
   visible: false,

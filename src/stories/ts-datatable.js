@@ -867,7 +867,6 @@ class TSDataTable extends HTMLElement {
         const visibleColumns = this.getVisibleColumns();
         visibleColumns.forEach((col, index) => {
             const th = document.createElement('th');
-            if (col.className) th.className = col.className;
             if (!this.enableFiltering) th.classList.add('no-filtering');
             // Apply column alignment to header cell
             if (col.align) th.style.textAlign = col.align;
