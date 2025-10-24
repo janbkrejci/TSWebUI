@@ -1930,19 +1930,22 @@ class TSDataTable extends HTMLElement {
         const cellDate = new Date(cellValue);
         if (isNaN(cellDate.getTime())) return false;
         
+        // Normalize cellDate to local midnight (start of day)
+        const normalizedCellDate = new Date(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate());
+        
         // Parse date range
         const range = this.parseDateRange(filterValue);
         
         if (range.min && range.max) {
-            return cellDate >= range.min && cellDate <= range.max;
+            return normalizedCellDate >= range.min && normalizedCellDate <= range.max;
         } else if (range.min) {
-            return cellDate >= range.min;
+            return normalizedCellDate >= range.min;
         } else if (range.max) {
-            return cellDate <= range.max;
+            return normalizedCellDate <= range.max;
         }
         
         // Fallback to text matching on formatted date
-        const formatted = new Intl.DateTimeFormat('cs-CZ').format(cellDate);
+        const formatted = new Intl.DateTimeFormat('cs-CZ').format(normalizedCellDate);
         return this.matchTextPattern(formatted, filterValue);
     }
     
@@ -2023,15 +2026,11 @@ class TSDataTable extends HTMLElement {
     parseFlexibleDate(dateStr) {
         if (!dateStr) return null;
         
-        // Try ISO format first
-        let d = new Date(dateStr);
-        if (!isNaN(d.getTime())) return d;
-        
-        // Try DD.MM.YYYY
+        // Try DD.MM.YYYY first (most common Czech format)
         const match1 = dateStr.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
         if (match1) {
             const [, day, month, year] = match1;
-            d = new Date(Number(year), Number(month) - 1, Number(day));
+            const d = new Date(Number(year), Number(month) - 1, Number(day));
             if (!isNaN(d.getTime())) return d;
         }
         
@@ -2041,7 +2040,15 @@ class TSDataTable extends HTMLElement {
             let [, day, month, year] = match2;
             year = Number(year);
             const fullYear = year < 50 ? 2000 + year : 1900 + year;
-            d = new Date(fullYear, Number(month) - 1, Number(day));
+            const d = new Date(fullYear, Number(month) - 1, Number(day));
+            if (!isNaN(d.getTime())) return d;
+        }
+        
+        // Try ISO format (YYYY-MM-DD) - parse as local date, not UTC
+        const isoMatch = dateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if (isoMatch) {
+            const [, year, month, day] = isoMatch;
+            const d = new Date(Number(year), Number(month) - 1, Number(day));
             if (!isNaN(d.getTime())) return d;
         }
         
