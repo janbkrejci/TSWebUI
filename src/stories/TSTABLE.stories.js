@@ -35,6 +35,7 @@ export default {
         `show-column-selector="${args.showColumnSelector}"`,
         `enable-sorting="${args.enableSorting}"`,
         `enable-filtering="${args.enableFiltering}"`,
+        `predefined-filters="${args.predefinedFilters}"`,
         `enable-column-resizing="${args.enableColumnResizing}"`,
         `enable-column-reordering="${args.enableColumnReordering}"`,
         `enable-selection="${args.enableSelection}"`,
@@ -97,6 +98,10 @@ export default {
     enableFiltering: {
       control: 'boolean',
       description: 'Enable column filtering'
+    },
+    predefinedFilters: {
+      control: 'text',
+      description: 'Predefined filters (JSON object, cannot be cleared by user)'
     },
     enableColumnResizing: {
       control: 'boolean',
@@ -171,6 +176,7 @@ export const DEFAULT = {
     showColumnSelector: true,
     enableSorting: true,
     enableFiltering: true,
+    predefinedFilters: '{approved: true}',
     enableColumnResizing: true,
     enableColumnReordering: true,
     enableSelection: true,
