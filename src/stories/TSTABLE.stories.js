@@ -8,7 +8,16 @@ import './ts-table.js';
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
   title: 'TSWebUI/TSTABLE',
-  tags: ['autodocs'],
+  //tags: ['autodocs'],
+  parameters: {
+    docs: {
+      story: {
+        // Donutí Docs použít iframe, stejně jako Story
+        inline: false,
+        iframeHeight: '600px'
+      }
+    }
+  },
   render: (args) => {
     const theme = args.dark ? 'dark' : 'light';
     let html = template.replace(/\{\{theme\}\}/g, theme);
