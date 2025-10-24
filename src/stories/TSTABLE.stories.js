@@ -1,4 +1,5 @@
 import { fn } from 'storybook/test';
+import { action } from 'storybook/actions';
 import template from './TSTABLE.html?raw';
 import './TSTABLE.css';
 import './ts-table.js';
@@ -16,7 +17,7 @@ export default {
     // Find the ts-table element and replace its attributes
     const tableRegex = /<ts-table([^>]*)>/;
     const match = html.match(tableRegex);
-    
+
     if (match) {
       const attributes = [
         `show-create-button="${args.showCreateButton}"`,
@@ -44,95 +45,107 @@ export default {
 
       html = html.replace(tableRegex, `<ts-table id="table" ${attributes}>`);
     }
-    
+
+    setTimeout(() => {
+      const el = document.getElementById('table');
+      if (el) {
+        for (const e of ['create-new-record', 'selection-action-activated', 'row-clicked', 'do-import']) {
+          el.removeEventListener(e, action(e));
+          el.addEventListener(e, (ev) => {
+            action(e)(ev.detail);
+          });
+        }
+      }
+    }, 0);
+
     return html;
   },
   argTypes: {
-    dark: { 
+    dark: {
       control: 'boolean',
       description: 'Dark theme mode'
     },
-    showCreateButton: { 
+    showCreateButton: {
       control: 'boolean',
       description: 'Show create button in toolbar'
     },
-    showImportButton: { 
+    showImportButton: {
       control: 'boolean',
       description: 'Show import button in toolbar'
     },
-    showExportButton: { 
+    showExportButton: {
       control: 'boolean',
       description: 'Show export button in toolbar'
     },
-    showColumnSelector: { 
+    showColumnSelector: {
       control: 'boolean',
       description: 'Show column selector in toolbar'
     },
-    enableSorting: { 
+    enableSorting: {
       control: 'boolean',
       description: 'Enable column sorting'
     },
-    enableFiltering: { 
+    enableFiltering: {
       control: 'boolean',
       description: 'Enable column filtering'
     },
-    enableColumnResizing: { 
+    enableColumnResizing: {
       control: 'boolean',
       description: 'Enable column resizing'
     },
-    enableColumnReordering: { 
+    enableColumnReordering: {
       control: 'boolean',
       description: 'Enable column reordering'
     },
-    enableSelection: { 
+    enableSelection: {
       control: 'boolean',
       description: 'Enable row selection'
     },
-    enableRowMenu: { 
+    enableRowMenu: {
       control: 'boolean',
       description: 'Enable row menu'
     },
-    enableClickableRows: { 
+    enableClickableRows: {
       control: 'boolean',
       description: 'Enable clickable rows'
     },
-    enableClickableColumns: { 
+    enableClickableColumns: {
       control: 'boolean',
       description: 'Enable clickable columns'
     },
-    enablePagination: { 
+    enablePagination: {
       control: 'boolean',
       description: 'Enable pagination'
     },
-    singleItemActions: { 
+    singleItemActions: {
       control: 'text',
       description: 'Single item actions (format: action/Label,action2/Label2)'
     },
-    multipleItemsActions: { 
+    multipleItemsActions: {
       control: 'text',
       description: 'Multiple items actions (format: action/Label,action2/Label2)'
     },
-    visibleColumns: { 
+    visibleColumns: {
       control: 'text',
       description: 'visible columns (comma-separated keys)'
     },
-    unhideableColumns: { 
+    unhideableColumns: {
       control: 'text',
       description: 'Unhideable columns (comma-separated keys)'
     },
-    unshowableColumns: { 
+    unshowableColumns: {
       control: 'text',
       description: 'Unshowable columns (comma-separated keys)'
     },
-    columnsRequiredForImport: { 
+    columnsRequiredForImport: {
       control: 'text',
       description: 'Columns required for import (comma-separated keys)'
     },
-    itemsPerPage: { 
+    itemsPerPage: {
       control: 'number',
       description: 'Items per page'
     },
-    itemsPerPageOptions: { 
+    itemsPerPageOptions: {
       control: 'text',
       description: 'Items per page options (comma-separated numbers, -1 for all)'
     },
