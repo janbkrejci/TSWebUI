@@ -535,8 +535,15 @@ class TSDataTable extends HTMLElement {
     // Public API - Configuration
     setData(tableData) {
         this.originalData = tableData || [];
+        // Apply predefined filters to original data to create working tableData
         this.applyPredefinedFilters();
-        if (this.initialized) {
+
+        // If there are active column filters, re-apply them on top of the predefined-filtered tableData
+        if (Object.keys(this.columnFilters).length > 0) {
+            // applyFilters will reset pagination and re-render
+            this.applyFilters();
+        } else if (this.initialized) {
+            // No column filters active - just render current state
             this.render();
         }
     }
@@ -647,7 +654,14 @@ class TSDataTable extends HTMLElement {
         // If data already exists, re-apply predefined filters
         if (this.originalData.length > 0) {
             this.applyPredefinedFilters();
-            this.render();
+
+            // After applying predefined filters, ensure any active column filters are applied on top
+            if (Object.keys(this.columnFilters).length > 0) {
+                this.applyFilters();
+            } else {
+                // No column filters - render the newly prefiltered data
+                this.render();
+            }
         }
     }
     
