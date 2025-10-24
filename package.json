@@ -8,8 +8,8 @@
     "build": "vite build",
     "bundle": "vite build --config vite.bundle.config.js",
     "preview": "vite preview",
-    "storybook": "storybook dev --ci -p 3000",
-    "build-storybook": "storybook build",
+  "storybook": "storybook dev --ci -p 3000",
+  "build-storybook": "rm -rf docs && storybook build -o docs",
     "parcel": "parcel TABLETEST.html"
   },
   "devDependencies": {
