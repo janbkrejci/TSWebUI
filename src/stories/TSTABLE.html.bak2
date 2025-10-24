@@ -34,7 +34,7 @@
         }
 
         // Column visibility configuration
-        var preselectedColumns = ['name', 'email', 'turnover', 'contractDate', 'approved'];
+        var visibleColumns = ['name', 'email', 'turnover', 'contractDate', 'approved'];
         var unhideableColumns = ['name', 'email'];
         var unshowableColumns = ['id']; // These columns are hidden and cannot be shown in column selection menu
 
@@ -1634,12 +1634,12 @@
         // Initialize table with retry logic
         function initializeTable() {
             console.log('initializeTable called');
-            // set preselected columns visibility in columns definitions
+            // set visible columns visibility in columns definitions
             columnDefinitions.forEach(col => {
                 if (unshowableColumns.includes(col.key)) {
                     // Unshowable columns are always hidden
                     col.visible = false;
-                } else if (preselectedColumns.includes(col.key) || unhideableColumns.includes(col.key)) {
+                } else if (visibleColumns.includes(col.key) || unhideableColumns.includes(col.key)) {
                     col.visible = true;
                 } else {
                     col.visible = false;

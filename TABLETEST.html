@@ -47,7 +47,7 @@
         enable-clickable-columns="true" enable-pagination="true"
         single-item-actions="edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek"
         multiple-items-actions="delete/Smazat vybrané,export/Exportovat vybrané"
-        preselected-columns="name,email,turnover,contractDate,approved" unhideable-columns="name,email"
+        visible-columns="name,email,turnover,contractDate,approved" unhideable-columns="name,email"
         columns-required-for-import="id,name,email"
         unshowable-columns="id" items-per-page="5" items-per-page-options="3,5,10,20,50,-1">
     </ts-table>
@@ -541,7 +541,7 @@
         // Configuration
         // const singleItemActions = 'edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek';
         // const multipleItemsActions = 'delete/Smazat vybrané,export/Exportovat vybrané';
-        // const preselectedColumns = ['name', 'email', 'turnover', 'contractDate', 'approved'];
+        // const visibleColumns = ['name', 'email', 'turnover', 'contractDate', 'approved'];
         // const unhideableColumns = ['name', 'email'];
         // const unshowableColumns = ['id'];
         // const itemsPerPage = 5;
@@ -562,7 +562,7 @@
             table.setColumnDefinitions(columnDefinitions);
 
             // Note: The following are now set via HTML attributes and don't need to be set in code
-            // table.setPreselectedColumns(preselectedColumns);
+            // table.setvisibleColumns(visibleColumns);
             // table.setUnhideableColumns(unhideableColumns);
             // table.setUnshowableColumns(unshowableColumns);
             // table.setSingleItemActions(singleItemActions);

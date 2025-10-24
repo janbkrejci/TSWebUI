@@ -1,5 +1,6 @@
 import { fn } from 'storybook/test';
 import template from './TSTABLE.html?raw';
+import './TSTABLE.css';
 import './ts-table.js';
 
 
@@ -33,7 +34,7 @@ export default {
         `enable-pagination="${args.enablePagination}"`,
         `single-item-actions="${args.singleItemActions}"`,
         `multiple-items-actions="${args.multipleItemsActions}"`,
-        `preselected-columns="${args.preselectedColumns}"`,
+        `visible-columns="${args.visibleColumns}"`,
         `unhideable-columns="${args.unhideableColumns}"`,
         `unshowable-columns="${args.unshowableColumns}"`,
         `columns-required-for-import="${args.columnsRequiredForImport}"`,
@@ -111,9 +112,9 @@ export default {
       control: 'text',
       description: 'Multiple items actions (format: action/Label,action2/Label2)'
     },
-    preselectedColumns: { 
+    visibleColumns: { 
       control: 'text',
-      description: 'Preselected columns (comma-separated keys)'
+      description: 'visible columns (comma-separated keys)'
     },
     unhideableColumns: { 
       control: 'text',
@@ -157,7 +158,7 @@ export const DEFAULT = {
     enablePagination: true,
     singleItemActions: 'edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek',
     multipleItemsActions: 'delete/Smazat vybrané,export/Exportovat vybrané',
-    preselectedColumns: 'name,email,turnover,contractDate,approved',
+    visibleColumns: 'name,email,turnover,contractDate,approved',
     unhideableColumns: 'name,email',
     unshowableColumns: 'id',
     columnsRequiredForImport: 'id,name,email',

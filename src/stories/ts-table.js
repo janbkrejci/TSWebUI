@@ -15,7 +15,7 @@ class TSTable extends HTMLElement {
         // Internal data
         this.tableData = [];
         this.columnDefinitions = [];
-        this.preselectedColumns = [];
+        this.visibleColumns = [];
         this.unhideableColumns = [];
         this.unshowableColumns = [];
         this.columnsRequiredForImport = [];
@@ -264,7 +264,7 @@ class TSTable extends HTMLElement {
             'enable-pagination',
             'single-item-actions',
             'multiple-items-actions',
-            'preselected-columns',
+            'visible-columns',
             'unhideable-columns',
             'unshowable-columns',
             'columns-required-for-import',
@@ -392,14 +392,14 @@ class TSTable extends HTMLElement {
                     this.setMultipleItemsActions(newValue);
                 }
                 break;
-            case 'preselected-columns':
+            case 'visible-columns':
                 if (newValue) {
                     // Parse comma-separated list or JSON array
                     try {
                         const cols = newValue.startsWith('[') ? JSON.parse(newValue) : newValue.split(',').map(s => s.trim());
-                        this.setPreselectedColumns(cols);
+                        this.setvisibleColumns(cols);
                     } catch (e) {
-                        console.error('Failed to parse preselected-columns attribute:', e);
+                        console.error('Failed to parse visible-columns attribute:', e);
                     }
                 }
                 break;
@@ -608,10 +608,10 @@ class TSTable extends HTMLElement {
         }
     }
     
-    setPreselectedColumns(columns) {
-        this.preselectedColumns = columns;
+    setvisibleColumns(columns) {
+        this.visibleColumns = columns;
         if (this.datatable) {
-            this.datatable.setPreselectedColumns(columns);
+            this.datatable.setvisibleColumns(columns);
         }
     }
     

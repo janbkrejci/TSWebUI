@@ -549,7 +549,7 @@ const r=`<div class="sl-theme-{{theme}} base-container main-container">
         ];
 
         // Column visibility configuration
-        const preselectedColumns = ['name', 'email', 'turnover', 'contractDate', 'approved'];
+        const visibleColumns = ['name', 'email', 'turnover', 'contractDate', 'approved'];
         const unhideableColumns = ['name', 'email'];
         const unshowableColumns = ['id']; // These columns are hidden and cannot be shown in column selection menu
 
@@ -2352,12 +2352,12 @@ const r=`<div class="sl-theme-{{theme}} base-container main-container">
 
         // Initialize table with retry logic
         function initializeTable() {
-            // set preselected columns visibility in columns definitions
+            // set visible columns visibility in columns definitions
             columnDefinitions.forEach(col => {
                 if (unshowableColumns.includes(col.key)) {
                     // Unshowable columns are always hidden
                     col.visible = false;
-                } else if (preselectedColumns.includes(col.key) || unhideableColumns.includes(col.key)) {
+                } else if (visibleColumns.includes(col.key) || unhideableColumns.includes(col.key)) {
                     col.visible = true;
                 } else {
                     col.visible = false;

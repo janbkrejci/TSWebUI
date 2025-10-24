@@ -19,7 +19,7 @@ class TSDataTable extends HTMLElement {
         this.menuActions = [];
         this.singleItemActions = ''; // Store as string for selection menu
         this.multipleItemsActions = ''; // Store as string for selection menu
-        this.preselectedColumns = [];
+        this.visibleColumns = [];
         this.unhideableColumns = [];
         this.unshowableColumns = [];
         
@@ -567,8 +567,8 @@ class TSDataTable extends HTMLElement {
         this.multipleItemsActions = actions;
     }
     
-    setPreselectedColumns(columns) {
-        this.preselectedColumns = columns || [];
+    setvisibleColumns(columns) {
+        this.visibleColumns = columns || [];
     }
     
     setUnhideableColumns(columns) {
@@ -693,11 +693,11 @@ class TSDataTable extends HTMLElement {
     }
     
     initialize() {
-        // Set column visibility based on preselected columns
+        // Set column visibility based on visible columns
         this.columnDefinitions.forEach(col => {
             if (this.unshowableColumns.includes(col.key)) {
                 col.visible = false;
-            } else if (this.preselectedColumns.includes(col.key) || this.unhideableColumns.includes(col.key)) {
+            } else if (this.visibleColumns.includes(col.key) || this.unhideableColumns.includes(col.key)) {
                 col.visible = true;
             } else {
                 col.visible = false;
