@@ -813,6 +813,7 @@ const E=`<div class="sl-theme-{{theme}} base-container main-container">
             <style>
                 .create-record-btn {
                     display: inline-block;
+                    margin-bottom: 0.5em;
                 }
             </style>
             <sl-tooltip content="Nový záznam">
@@ -824,6 +825,7 @@ const E=`<div class="sl-theme-{{theme}} base-container main-container">
             <style>
                 .export-btn {
                     display: inline-block;
+                    margin-bottom: 0.5em;
                 }
                 .export-options {
                     display: flex;
@@ -900,6 +902,7 @@ const E=`<div class="sl-theme-{{theme}} base-container main-container">
             <style>
                 .import-btn {
                     display: inline-block;
+                    margin-bottom: 0.5em;
                 }
                 .large-icon {
                     font-size: 32px;
@@ -1010,6 +1013,7 @@ const E=`<div class="sl-theme-{{theme}} base-container main-container">
             <style>
                 .column-selector {
                     display: inline-block;
+                    margin-bottom: 0.5em;
                 }
                 
                 .columns-menu {
@@ -1061,7 +1065,6 @@ const E=`<div class="sl-theme-{{theme}} base-container main-container">
                     grid-template-rows: auto 1fr auto;
                     width: 100%;
                     height: 100%;
-                    gap: 0.5em;
                 }
                 
                 #toolbar {
@@ -1086,6 +1089,7 @@ const E=`<div class="sl-theme-{{theme}} base-container main-container">
                 #pager {
                     width: 100%;
                     grid-row: 3;
+                    margin-top: 0.5em;
                 }
                 
                 /* Import dialog styles */
