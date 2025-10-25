@@ -1,12 +1,12 @@
 // Import all web components
-import '../../packages/ts-table/src/ts-table-pager.js';
+import './ts-table-pager.js';
 import './ts-toolbar.js';
-import '../../packages/ts-table/src/ts-datatable.js';
-import '../../packages/ts-table/src/ts-create-record-button.js';
-import '../../packages/ts-table/src/ts-export-button.js';
-import '../../packages/ts-table/src/ts-import-button.js';
-import '../../packages/ts-table/src/ts-selection-menu.js';
-import '../../packages/ts-table/src/ts-column-selector.js';
+import './ts-datatable.js';
+import './ts-create-record-button.js';
+import './ts-export-button.js';
+import './ts-import-button.js';
+import './ts-selection-menu.js';
+import './ts-column-selector.js';
 
 class TSTable extends HTMLElement {
     constructor() {
@@ -879,11 +879,11 @@ customElements.define('ts-table', TSTable);
 
 // Export all web components for external use
 export { TSTable };
-export { TSTablePager } from '../../packages/ts-table/src/ts-table-pager.js';
+export { TSTablePager } from './ts-table-pager.js';
 export { TSToolbar } from './ts-toolbar.js';
-export { TSDataTable } from '../../packages/ts-table/src/ts-datatable.js';
-export { TSCreateRecordButton } from '../../packages/ts-table/src/ts-create-record-button.js';
-export { TSExportButton } from '../../packages/ts-table/src/ts-export-button.js';
-export { TSImportButton } from '../../packages/ts-table/src/ts-import-button.js';
-export { TSSelectionMenu } from '../../packages/ts-table/src/ts-selection-menu.js';
-export { TSColumnSelector } from '../../packages/ts-table/src/ts-column-selector.js';
+export { TSDataTable } from './ts-datatable.js';
+export { TSCreateRecordButton } from './ts-create-record-button.js';
+export { TSExportButton } from './ts-export-button.js';
+export { TSImportButton } from './ts-import-button.js';
+export { TSSelectionMenu } from './ts-selection-menu.js';
+export { TSColumnSelector } from './ts-column-selector.js';

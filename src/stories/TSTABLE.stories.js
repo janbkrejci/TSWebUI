@@ -2,7 +2,7 @@ import { fn } from 'storybook/test';
 import { action } from 'storybook/actions';
 import template from './TSTABLE.html?raw';
 import './TSTABLE.css';
-import './ts-table.js';
+import '../../packages/ts-table/src/ts-table.js';
 
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
