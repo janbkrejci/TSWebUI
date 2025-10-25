@@ -5,6 +5,7 @@ class TSCreateRecordButton extends HTMLElement {
             <style>
                 .create-record-btn {
                     display: inline-block;
+                    margin-bottom: 0.5em;
                 }
             </style>
             <sl-tooltip content="Nový záznam">

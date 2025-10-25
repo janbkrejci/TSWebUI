@@ -5,6 +5,7 @@ class TSImportButton extends HTMLElement {
             <style>
                 .import-btn {
                     display: inline-block;
+                    margin-bottom: 0.5em;
                 }
                 .large-icon {
                     font-size: 32px;

@@ -60,7 +60,6 @@ class TSTable extends HTMLElement {
                     grid-template-rows: auto 1fr auto;
                     width: 100%;
                     height: 100%;
-                    gap: 0.5em;
                 }
                 
                 #toolbar {
@@ -85,6 +84,7 @@ class TSTable extends HTMLElement {
                 #pager {
                     width: 100%;
                     grid-row: 3;
+                    margin-top: 0.5em;
                 }
                 
                 /* Import dialog styles */

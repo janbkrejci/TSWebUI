@@ -11,6 +11,7 @@ class TSColumnSelector extends HTMLElement {
             <style>
                 .column-selector {
                     display: inline-block;
+                    margin-bottom: 0.5em;
                 }
                 
                 .columns-menu {

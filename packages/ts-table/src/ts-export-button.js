@@ -5,6 +5,7 @@ class TSExportButton extends HTMLElement {
             <style>
                 .export-btn {
                     display: inline-block;
+                    margin-bottom: 0.5em;
                 }
                 .export-options {
                     display: flex;
