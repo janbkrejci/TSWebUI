@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html lang="cs" class="sl-theme-dark" >
 
 <head>
     <meta charset="UTF-8">
@@ -39,7 +39,7 @@
     <script type="module" src="packages/ts-table/dist/ts-table-bundle.js"></script>
 </head>
 
-<body>
+<body
     <!-- TS-Table component with all configurable attributes -->
     <ts-table id="table" show-create-button="true" show-import-button="true" show-export-button="true"
         show-column-selector="true" enable-sorting="true" enable-filtering="true" enable-column-resizing="true"
@@ -538,7 +538,7 @@
 
         // Example: Only show approved records (predefined filter that can't be cleared)
         // const predefinedFilters = { approved: 'true' };
-        const predefinedFilters = {};
+        const predefinedFilters = {"approved":"true"};
 
         // Initialize component when DOM is ready
         async function initializeComponents() {
@@ -558,7 +558,7 @@
             // table.setMultipleItemsActions(multipleItemsActions);
             // table.setItemsPerPage(itemsPerPage);
             // table.setItemsPerPageOptions(itemsPerPageOptions);
-            // table.setPredefinedFilters(predefinedFilters);
+             table.setPredefinedFilters(predefinedFilters);
 
             // UI visibility options
             // table.setShowColumnSelector(false); // Uncomment to hide column selector
