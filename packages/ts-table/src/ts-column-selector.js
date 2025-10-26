@@ -6,7 +6,7 @@ class TSColumnSelector extends HTMLElement {
 
     createContent() {
         if (this.innerHTML) return; // Already created
-        
+
         this.innerHTML = `
             <style>
                 .column-selector {
@@ -35,19 +35,19 @@ class TSColumnSelector extends HTMLElement {
                 }
             </style>
             <div class="column-selector">
-                <sl-tooltip content="Výběr sloupců">
-                    <sl-dropdown>
-                        <sl-button slot="trigger" caret>
+                <sl-tooltip content="Výběr sloupců" id="tooltip" trigger="manual">
+                <sl-dropdown>
+                    <sl-button slot="trigger" caret onmouseenter="document.getElementById('tooltip').show()" onmouseleave="document.getElementById('tooltip').hide()">
                             <sl-icon name="gear"></sl-icon>
-                        </sl-button>
-                        <sl-menu class="columns-menu">
-                            <!-- Menu items will be populated dynamically -->
-                        </sl-menu>
-                    </sl-dropdown>
+                    </sl-button>
+                    <sl-menu class="columns-menu">
+                        <!-- Menu items will be populated dynamically -->
+                    </sl-menu>
+                </sl-dropdown>
                 </sl-tooltip>
             </div>
         `;
-        
+
         this.setupEventListeners();
     }
 
@@ -58,22 +58,8 @@ class TSColumnSelector extends HTMLElement {
 
     setColumnDefinitions(columnDefinitions) {
         this.columnDefinitions = columnDefinitions;
-        
-        // Wait for Shoelace components to be defined before creating content
-        Promise.all([
-            customElements.whenDefined('sl-tooltip'),
-            customElements.whenDefined('sl-dropdown'),
-            customElements.whenDefined('sl-button'),
-            customElements.whenDefined('sl-menu'),
-            customElements.whenDefined('sl-input')
-        ]).then(() => {
-            this.createContent();
-            this.createColumnsMenu();
-        }).catch(() => {
-            // Fallback - create content anyway if waiting fails
-            this.createContent();
-            this.createColumnsMenu();
-        });
+        this.createContent();
+        this.createColumnsMenu();
     }
 
     setColumnFilters(columnFilters) {
@@ -161,9 +147,9 @@ class TSColumnSelector extends HTMLElement {
 
                         // Update the column visibility in definition
                         columnDef.visible = selectedItem.checked;
-                        
+
                         // Dispatch event
-                        this.dispatchEvent(new CustomEvent('column-visibility-changed', { 
+                        this.dispatchEvent(new CustomEvent('column-visibility-changed', {
                             detail: { columnKey, visible: selectedItem.checked },
                             bubbles: true,
                             composed: true
@@ -251,7 +237,7 @@ class TSColumnSelector extends HTMLElement {
                 searchElement.addEventListener(eventType, (event) => {
                     const value = event.target.value || '';
                     // Small delay to ensure DOM is ready
-                    setTimeout(() => this.filterColumnMenu(value), 10);
+                    setTimeout(() => this.filterColumnMenu(value), 50);
                 });
             });
 

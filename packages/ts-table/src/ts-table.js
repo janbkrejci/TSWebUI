@@ -8,6 +8,22 @@ import './ts-import-button.js';
 import './ts-selection-menu.js';
 import './ts-column-selector.js';
 
+ // Wait for Shoelace components to be defined before creating content
+        // Promise.all([
+        //     customElements.whenDefined('sl-tooltip'),
+        //     customElements.whenDefined('sl-dropdown'),
+        //     customElements.whenDefined('sl-button'),
+        //     customElements.whenDefined('sl-menu'),
+        //     customElements.whenDefined('sl-input')
+        // ]).then(() => {
+        //     this.createContent();
+        //     this.createColumnsMenu();
+        // }).catch(() => {
+        //     // Fallback - create content anyway if waiting fails
+        //     this.createContent();
+        //     this.createColumnsMenu();
+        // });
+
 class TSTable extends HTMLElement {
     constructor() {
         super();
