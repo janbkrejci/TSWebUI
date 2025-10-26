@@ -1,7 +1,7 @@
 class TSDataTable extends HTMLElement {
     constructor() {
         super();
-        
+
         // State
         this.originalData = []; // Original unfiltered data
         this.tableData = []; // Data after applying predefined filters
@@ -22,7 +22,7 @@ class TSDataTable extends HTMLElement {
         this.visibleColumns = [];
         this.unhideableColumns = [];
         this.unshowableColumns = [];
-        
+
         // Feature flags
         this.enableSorting = true;
         this.enableFiltering = true;
@@ -33,20 +33,20 @@ class TSDataTable extends HTMLElement {
         this.enableClickableRows = true;
         this.enableClickableColumns = false;
         this.enablePagination = true;
-        
+
         // Initialization state
         this.initialized = false;
-        
+
         // Resize state
         this.isResizing = false;
         this.resizeColKey = null;
         this.startX = 0;
         this.startWidth = 0;
         this.lastResizeEnd = 0;
-        
+
         // Dropdown state
         this.currentOpenDropdown = null;
-        
+
         // Create basic structure
         this.innerHTML = `
             <style>
@@ -502,25 +502,25 @@ class TSDataTable extends HTMLElement {
             </div>
         `;
     }
-    
+
     // Lifecycle methods
     connectedCallback() {
         // Will be initialized via setData method
         this.setupBodyEvents();
-        
+
         // Setup global listeners for resize
         window.addEventListener('resize', () => {
             if (this.isResizing) {
                 this.stopResize({ type: 'mouseup', clientX: this.startX });
             }
         });
-        
+
         // Listen for unselect-all-rows event from selection menu
         this.addEventListener('unselect-all-rows', () => {
             this.unselectAllRows();
         });
     }
-    
+
     disconnectedCallback() {
         if (this.boundOnResize) {
             document.removeEventListener('mousemove', this.boundOnResize);
@@ -531,7 +531,7 @@ class TSDataTable extends HTMLElement {
             document.removeEventListener('touchend', this.boundStopResize);
         }
     }
-    
+
     // Public API - Configuration
     setData(tableData) {
         this.originalData = tableData || [];
@@ -543,18 +543,17 @@ class TSDataTable extends HTMLElement {
             // applyFilters will reset pagination and re-render
             this.applyFilters();
         } else if (this.initialized) {
-            // No column filters active - just render current state
             this.render();
         }
     }
-    
+
     setColumnDefinitions(columnDefinitions) {
         this.columnDefinitions = columnDefinitions || [];
         if (this.initialized) {
             this.render();
         }
     }
-    
+
     setMenuActions(actions) {
         if (typeof actions === 'string') {
             // Store the string for later restoration
@@ -568,87 +567,90 @@ class TSDataTable extends HTMLElement {
             this.menuActions = actions || [];
         }
     }
-    
+
     setMultipleItemsActions(actions) {
         // Store the string for later restoration
         this.multipleItemsActions = actions;
+        if (this.initialized) {
+            this.render();
+        }
     }
-    
-    setvisibleColumns(columns) {
+
+    setVisibleColumns(columns) {
         this.visibleColumns = columns || [];
     }
-    
+
     setUnhideableColumns(columns) {
         this.unhideableColumns = columns || [];
     }
-    
+
     setUnshowableColumns(columns) {
         this.unshowableColumns = columns || [];
     }
-    
+
     setEnableSorting(enable) {
         this.enableSorting = enable !== false;
         if (this.initialized) {
             this.render();
         }
     }
-    
+
     setEnableFiltering(enable) {
         this.enableFiltering = enable !== false;
         if (this.initialized) {
             this.render();
         }
     }
-    
+
     setEnableColumnResizing(enable) {
         this.enableColumnResizing = enable !== false;
         if (this.initialized) {
             this.render();
         }
     }
-    
+
     setEnableColumnReordering(enable) {
         this.enableColumnReordering = enable !== false;
         if (this.initialized) {
             this.render();
         }
     }
-    
+
     setEnableSelection(enable) {
         this.enableSelection = enable !== false;
         if (this.initialized) {
             this.render();
         }
     }
-    
+
     setEnableRowMenu(enable) {
         this.enableRowMenu = enable !== false;
         if (this.initialized) {
             this.render();
         }
     }
-    
+
     setEnableClickableRows(enable) {
         this.enableClickableRows = enable !== false;
         if (this.initialized) {
             this.render();
         }
     }
-    
+
     setEnableClickableColumns(enable) {
         this.enableClickableColumns = enable !== false;
         if (this.initialized) {
             this.render();
         }
     }
-    
+
     setEnablePagination(enable) {
         this.enablePagination = enable !== false;
         if (this.initialized) {
             this.render();
         }
     }
-    
+
     setPredefinedFilters(filters) {
         this.predefinedFilters = filters || {};
         // If data already exists, re-apply predefined filters
@@ -664,7 +666,7 @@ class TSDataTable extends HTMLElement {
             }
         }
     }
-    
+
     applyPredefinedFilters() {
         // Apply predefined filters to originalData to create tableData
         if (Object.keys(this.predefinedFilters).length > 0) {
@@ -672,27 +674,27 @@ class TSDataTable extends HTMLElement {
                 return Object.keys(this.predefinedFilters).every(colKey => {
                     const filterValue = this.predefinedFilters[colKey];
                     if (!filterValue) return true;
-                    
+
                     const col = this.columnDefinitions.find(c => c.key === colKey);
                     if (!col) return true;
-                    
+
                     const cellValue = row[colKey];
-                    
+
                     // Boolean column
                     if (col.type === 'boolean') {
                         return String(cellValue) === filterValue;
                     }
-                    
+
                     // Date column
                     if (col.type === 'date') {
                         return this.matchDateFilter(cellValue, filterValue);
                     }
-                    
+
                     // Number column
                     if (col.type === 'number') {
                         return this.matchNumberFilter(cellValue, filterValue);
                     }
-                    
+
                     // Text column
                     return this.matchTextPattern(String(cellValue), filterValue);
                 });
@@ -701,11 +703,11 @@ class TSDataTable extends HTMLElement {
             // No predefined filters - use all original data
             this.tableData = this.originalData.slice();
         }
-        
+
         // Reset filteredData to match tableData
         this.filteredData = this.tableData.slice();
     }
-    
+
     initialize() {
         // Set column visibility based on visible columns
         this.columnDefinitions.forEach(col => {
@@ -717,7 +719,7 @@ class TSDataTable extends HTMLElement {
                 col.visible = false;
             }
         });
-        
+
         // Normalize sort state
         const activeSorts = this.columnDefinitions.filter(c => c.sortable && c.sortDirection && c.sortDirection !== 'none');
         if (activeSorts.length > 1) {
@@ -727,32 +729,32 @@ class TSDataTable extends HTMLElement {
             const keepKey = (firstVisible || activeSorts[0]).key;
             this.clearOtherSorts(keepKey);
         }
-        
+
         this.filteredData = this.tableData.slice();
         this.render();
         this.updateSelectionUI();
         this.initialized = true;
     }
-    
+
     // Rendering methods
     render() {
         if (!this.columnDefinitions.length) {
             return;
         }
-        
+
         this.rebuildColgroup();
         this.createTableHeaders();
         this.populateTableRows();
         this.updatePaginationUI();
     }
-    
+
     // Helper methods (to be implemented)
     getVisibleColumns() {
         return this.columnDefinitions
             .filter(col => col.visible)
             .sort((a, b) => a.order - b.order);
     }
-    
+
     // Selection Menu methods
     getSelectionMenu() {
         return this.querySelector('#selection-menu');
@@ -785,24 +787,24 @@ class TSDataTable extends HTMLElement {
             selectionMenu.setSelectionCount(count);
         }
     }
-    
+
     clearOtherSorts(exceptKey) {
         this.columnDefinitions.forEach(c => {
             if (c.key !== exceptKey) c.sortDirection = 'none';
         });
     }
-    
+
     rebuildColgroup() {
         const table = this.querySelector('#data-table');
         if (!table) return;
-        
+
         let colgroup = table.querySelector('colgroup');
         if (!colgroup) {
             colgroup = document.createElement('colgroup');
             table.insertBefore(colgroup, table.firstChild);
         }
         colgroup.innerHTML = '';
-        
+
         // Fixed columns: checkbox + menu
         if (this.enableSelection) {
             const colCheckbox = document.createElement('col');
@@ -810,14 +812,14 @@ class TSDataTable extends HTMLElement {
             colCheckbox.style.width = '44px';
             colgroup.appendChild(colCheckbox);
         }
-        
+
         if (this.enableRowMenu) {
             const colMenu = document.createElement('col');
             colMenu.setAttribute('data-fixed', 'menu');
             colMenu.style.width = '44px';
             colgroup.appendChild(colMenu);
         }
-        
+
         const visibleColumns = this.getVisibleColumns();
         visibleColumns.forEach(col => {
             const c = document.createElement('col');
@@ -830,17 +832,17 @@ class TSDataTable extends HTMLElement {
             colgroup.appendChild(c);
         });
     }
-    
+
     createTableHeaders() {
         const table = this.querySelector('#data-table');
         if (!table) return false;
-        
+
         const thead = table.querySelector('thead');
         if (!thead) return false;
-        
+
         thead.innerHTML = '';
         const headerRow = document.createElement('tr');
-        
+
         // Checkbox column
         if (this.enableSelection) {
             const checkboxHeader = document.createElement('th');
@@ -864,7 +866,7 @@ class TSDataTable extends HTMLElement {
             `;
             headerRow.appendChild(checkboxHeader);
         }
-        
+
         // Menu column
         if (this.enableRowMenu) {
             const menuHeader = document.createElement('th');
@@ -876,7 +878,7 @@ class TSDataTable extends HTMLElement {
             `;
             headerRow.appendChild(menuHeader);
         }
-        
+
         // Data columns
         const visibleColumns = this.getVisibleColumns();
         visibleColumns.forEach((col, index) => {
@@ -886,40 +888,40 @@ class TSDataTable extends HTMLElement {
             if (col.align) th.style.textAlign = col.align;
             if (col.type === 'boolean') th.style.minWidth = '140px';
             th.setAttribute('data-column-key', col.key);
-            
+
             // Set sortable attribute for cursor styling
             if (this.enableSorting && col.sortable) {
                 th.setAttribute('data-sortable', 'true');
             }
-            
+
             // Header content - simple flex structure
             const sortIndicator = this.enableSorting ? this.createSortIndicator(col.sortable, col.sortDirection) : '';
             const isRightAlign = col.align === 'right';
             const isCenterAlign = col.align === 'center';
-            
+
             let headerContent;
-            
+
             if (isCenterAlign && this.enableColumnReordering) {
                 // For center-aligned: left arrow, label in center, right arrow
                 // Always show both arrows for consistent layout (disabled when at edge)
-                const leftArrow = index > 0 ? 
+                const leftArrow = index > 0 ?
                     `<div class="column-ordering-control-left">
                         <sl-icon-button name="arrow-left" size="small" class="move-column-left" data-column-key="${col.key}" title="Move left"></sl-icon-button>
-                    </div>` : 
+                    </div>` :
                     `<div class="column-ordering-control-left">
                         <sl-icon-button name="arrow-left" size="small" class="move-column-left" data-column-key="${col.key}" disabled></sl-icon-button>
                     </div>`;
-                const rightArrow = index < visibleColumns.length - 1 ? 
+                const rightArrow = index < visibleColumns.length - 1 ?
                     `<div class="column-ordering-control-right">
                         <sl-icon-button name="arrow-right" size="small" class="move-column-right" data-column-key="${col.key}" title="Move right"></sl-icon-button>
-                    </div>` : 
+                    </div>` :
                     `<div class="column-ordering-control-right">
                         <sl-icon-button name="arrow-right" size="small" class="move-column-right" data-column-key="${col.key}" disabled></sl-icon-button>
                     </div>`;
-                
+
                 // For centered columns, show sort indicator on both sides (left one hidden) for perfect centering
                 const sortIndicatorLeft = sortIndicator ? `<span class="sort-indicator sort-indicator-hidden">${sortIndicator.replace('<span class="sort-indicator">', '').replace('</span>', '')}</span>` : '';
-                
+
                 headerContent = `
                     <div class="header-cell-content center-aligned">
                         ${leftArrow}
@@ -932,15 +934,15 @@ class TSDataTable extends HTMLElement {
                     </div>`;
             } else {
                 // For left/right aligned: both arrows together
-                const orderingControls = this.enableColumnReordering && (index > 0 || index < visibleColumns.length - 1) ? 
+                const orderingControls = this.enableColumnReordering && (index > 0 || index < visibleColumns.length - 1) ?
                     `<div class="column-ordering-controls">${index > 0 ? `<sl-icon-button name="arrow-left" size="small" class="move-column-left" data-column-key="${col.key}" title="Move left"></sl-icon-button>` : ''}${index < visibleColumns.length - 1 ? `<sl-icon-button name="arrow-right" size="small" class="move-column-right" data-column-key="${col.key}" title="Move right"></sl-icon-button>` : ''}</div>` : '';
-                
+
                 // Header label with sort indicator
                 const headerLabel = `<div class="column-header-label${isRightAlign ? ' right-aligned' : ''}">
                     ${col.title}
                     ${sortIndicator}
                 </div>`;
-                
+
                 // For right-aligned: controls first, label last
                 // For left-aligned: label first, controls last
                 headerContent = `
@@ -948,7 +950,7 @@ class TSDataTable extends HTMLElement {
                         ${isRightAlign ? orderingControls + headerLabel : headerLabel + orderingControls}
                     </div>`;
             }
-            
+
             th.innerHTML = `
                 ${headerContent}
                 ${this.enableFiltering ? `<div class="filter-cell-content">
@@ -956,28 +958,28 @@ class TSDataTable extends HTMLElement {
                 </div>` : ''}
                 ${this.enableColumnResizing ? `<span class="col-resizer" data-column-key="${col.key}"></span>` : ''}
             `;
-            
+
             headerRow.appendChild(th);
         });
-        
+
         thead.appendChild(headerRow);
         this.setupHeaderEvents(headerRow);
-        
+
         // Restore filter values after recreating headers
         this.restoreFilterValues();
-        
+
         // Restore selection menu configuration after recreating headers
         this.restoreSelectionMenuConfig();
-        
+
         return true;
     }
-    
+
     createSortIndicator(sortable = false, direction = 'none') {
         if (!sortable) return '';
-        
+
         const upColor = direction === 'asc' ? 'var(--sl-color-neutral-500)' : 'var(--sl-color-neutral-300)';
         const downColor = direction === 'desc' ? 'var(--sl-color-neutral-500)' : 'var(--sl-color-neutral-300)';
-        
+
         return `
             <span class="sort-indicator">
                 <svg width="10" height="16" viewBox="0 0 10 16" class="sort-svg">
@@ -987,7 +989,7 @@ class TSDataTable extends HTMLElement {
             </span>
         `;
     }
-    
+
     createFilterInput(col) {
         const inputId = `filter-${col.key}`;
         if (col.type === 'boolean') {
@@ -1009,16 +1011,16 @@ class TSDataTable extends HTMLElement {
             `;
         }
     }
-    
+
     restoreFilterValues() {
         // Restore filter input values from columnFilters
         Object.keys(this.columnFilters).forEach(colKey => {
             const filterValue = this.columnFilters[colKey];
             if (!filterValue) return;
-            
+
             const col = this.columnDefinitions.find(c => c.key === colKey);
             if (!col) return;
-            
+
             if (col.type === 'boolean') {
                 const button = this.querySelector(`#filter-${colKey}`);
                 if (button) {
@@ -1033,37 +1035,37 @@ class TSDataTable extends HTMLElement {
             }
         });
     }
-    
+
     restoreSelectionMenuConfig() {
         // Restore selection menu actions after recreating headers
         // Selection menu is always present when row menu is enabled
         if (!this.enableRowMenu) return;
-        
+
         const selectionMenu = this.querySelector('#selection-menu');
         if (!selectionMenu) {
             console.warn('Selection menu not found after header recreation');
             return;
         }
-        
+
         // Wait for the custom element to be defined and ready
         customElements.whenDefined('ts-selection-menu').then(() => {
             // Restore single item actions
             if (this.singleItemActions) {
                 selectionMenu.setAttribute('single-item-actions', this.singleItemActions);
             }
-            
+
             // Restore multiple items actions
             if (this.multipleItemsActions) {
                 selectionMenu.setAttribute('multiple-items-actions', this.multipleItemsActions);
             }
-            
+
             // Restore visibility and selection state
             if (this.selectedRowIds.size > 0) {
                 // Convert IDs to row objects
                 const selectedRows = Array.from(this.selectedRowIds)
                     .map(id => this.tableData.find(r => String(r.id) === String(id)))
                     .filter(r => r !== undefined);
-                
+
                 selectionMenu.setSelectedRows(selectedRows);
                 selectionMenu.setSelectionCount(this.selectedRowIds.size);
                 selectionMenu.show();
@@ -1072,20 +1074,20 @@ class TSDataTable extends HTMLElement {
             }
         });
     }
-    
+
     setupHeaderEvents(headerRow) {
         // Header select-all checkbox
         const headerCheckbox = headerRow.querySelector('#header-select-all');
         if (headerCheckbox) {
             headerCheckbox.addEventListener('sl-change', () => this.handleHeaderCheckboxChange());
         }
-        
+
         // Selection view toggle
         const viewToggle = headerRow.querySelector('#selection-view-toggle-btn');
         if (viewToggle) {
             viewToggle.addEventListener('click', () => this.toggleSelectionView());
         }
-        
+
         // Sorting - click on header
         headerRow.querySelectorAll('th[data-column-key]').forEach(th => {
             th.addEventListener('click', (e) => {
@@ -1093,7 +1095,7 @@ class TSDataTable extends HTMLElement {
                 const timeSinceResize = Date.now() - (this.lastResizeEnd || 0);
                 if (this.enableSorting &&
                     timeSinceResize > 100 &&
-                    !e.target.closest('.col-resizer') && 
+                    !e.target.closest('.col-resizer') &&
                     !e.target.closest('.filter-cell-content') &&
                     !e.target.closest('.column-ordering-controls')) {
                     const colKey = th.getAttribute('data-column-key');
@@ -1101,7 +1103,7 @@ class TSDataTable extends HTMLElement {
                 }
             });
         });
-        
+
         // Column reordering buttons
         headerRow.querySelectorAll('.move-column-left, .move-column-right').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -1111,14 +1113,14 @@ class TSDataTable extends HTMLElement {
                 this.moveColumn(colKey, isLeft ? 'left' : 'right');
             });
         });
-        
+
         // Column resizing
         headerRow.querySelectorAll('.col-resizer').forEach(resizer => {
             resizer.addEventListener('mousedown', (e) => this.startResize(e));
             resizer.addEventListener('touchstart', (e) => this.startResize(e), { passive: false });
             resizer.addEventListener('dblclick', (e) => this.autoSizeColumn(e));
         });
-        
+
         // Filters - debounced input
         headerRow.querySelectorAll('sl-input[data-column-key]').forEach(input => {
             input.addEventListener('sl-input', () => {
@@ -1129,7 +1131,7 @@ class TSDataTable extends HTMLElement {
                     this.applyFilters();
                 }, this.FILTER_DEBOUNCE_DELAY);
             });
-            
+
             // Handle escape key to clear filter
             input.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape') {
@@ -1139,7 +1141,7 @@ class TSDataTable extends HTMLElement {
                     this.applyFilters();
                 }
             });
-            
+
             // Handle focus to select all text
             input.addEventListener('focus', (event) => {
                 setTimeout(() => {
@@ -1147,7 +1149,7 @@ class TSDataTable extends HTMLElement {
                 }, 0);
             });
         });
-        
+
         // Boolean filters - dropdown (only in regular column headers, not in checkbox/menu columns)
         headerRow.querySelectorAll('th:not(.checkbox-column):not(.menu-column) sl-dropdown[hoist]').forEach(dropdown => {
             const menu = dropdown.querySelector('sl-menu');
@@ -1155,33 +1157,33 @@ class TSDataTable extends HTMLElement {
             menu.addEventListener('sl-select', (e) => {
                 const selectedItem = e.detail.item;
                 if (!selectedItem) return;
-                
+
                 const value = selectedItem.getAttribute('data-value');
                 if (value === null || value === undefined) return; // Not a filter item
-                
+
                 const button = dropdown.querySelector('sl-button');
                 if (!button) return;
-                
+
                 const colKey = button.getAttribute('data-column-key');
                 if (!colKey) return; // Not a column filter
-                
+
                 button.textContent = selectedItem.textContent;
-                
+
                 if (value === '') {
                     delete this.columnFilters[colKey];
                 } else {
                     this.columnFilters[colKey] = value;
                 }
-                
+
                 this.applyFilters();
             });
         });
     }
-    
+
     setupBodyEvents() {
         const tbody = this.querySelector('tbody');
         if (!tbody) return;
-        
+
         // Row checkboxes
         tbody.addEventListener('sl-change', (e) => {
             const rowCheckbox = e.target;
@@ -1191,19 +1193,19 @@ class TSDataTable extends HTMLElement {
                 this.handleRowCheckboxChange(rowId, rowCheckbox.checked);
             }
         });
-        
+
         // Row menu actions
         tbody.addEventListener('sl-select', (e) => {
             const menuItem = e.detail?.item; // Shoelace provides the selected item in detail
             if (!menuItem || menuItem.tagName !== 'SL-MENU-ITEM') return;
-            
+
             const dropdown = menuItem.closest('sl-dropdown');
             if (!dropdown || !dropdown.id || !dropdown.id.startsWith('row-menu-')) return;
-            
+
             const rowId = String(dropdown.id.replace('row-menu-', ''));
             const actionName = menuItem.getAttribute('data-action');
             const row = this.tableData.find(r => String(r.id) === rowId);
-            
+
             if (row && actionName) {
                 this.dispatchEvent(new CustomEvent('selection-action-activated', {
                     detail: { action: actionName, rows: [row] },
@@ -1213,39 +1215,39 @@ class TSDataTable extends HTMLElement {
             }
         });
     }
-    
+
     setupRowClickHandlers() {
         const tbody = this.querySelector('tbody');
         if (!tbody) return;
-        
+
         // Remove existing row click listener if any
         if (this.rowClickHandler) {
             tbody.removeEventListener('click', this.rowClickHandler);
             this.rowClickHandler = null;
         }
-        
+
         // Add row click listener if either clickable rows or clickable columns are enabled
         if (this.enableClickableRows || this.enableClickableColumns) {
             this.rowClickHandler = (e) => {
                 // Ignore clicks on checkboxes, menu dropdowns, copy buttons, switches, and their children
-                if (e.target.closest('.checkbox-column') || 
-                    e.target.closest('.menu-column') || 
+                if (e.target.closest('.checkbox-column') ||
+                    e.target.closest('.menu-column') ||
                     e.target.closest('sl-copy-button') ||
                     e.target.closest('sl-switch')) {
                     return;
                 }
-                
+
                 const tr = e.target.closest('tr');
                 const td = e.target.closest('td');
-                
+
                 if (tr && tr.hasAttribute('data-row-id') && td) {
                     const rowId = String(tr.getAttribute('data-row-id'));
                     const row = this.tableData.find(r => String(r.id) === rowId);
-                    
+
                     if (row) {
                         // Determine column key based on feature flags
                         let columnKey = null;
-                        
+
                         // Case 1: Only clickable columns enabled (rows disabled)
                         if (!this.enableClickableRows && this.enableClickableColumns) {
                             // Only fire event if clicking on a clickable column
@@ -1274,7 +1276,7 @@ class TSDataTable extends HTMLElement {
                             // Don't fire event at all
                             return;
                         }
-                        
+
                         this.dispatchEvent(new CustomEvent('row-clicked', {
                             detail: { row, columnKey },
                             bubbles: true,
@@ -1286,15 +1288,15 @@ class TSDataTable extends HTMLElement {
             tbody.addEventListener('click', this.rowClickHandler);
         }
     }
-    
+
     // Event handlers
     handleHeaderCheckboxChange(event) {
         const headerCheckbox = this.querySelector('#header-select-all');
         if (!headerCheckbox) return;
-        
+
         const checked = headerCheckbox.checked;
         const activeData = this.getActiveData();
-        
+
         if (checked) {
             // Select all active rows
             activeData.forEach(row => {
@@ -1306,109 +1308,109 @@ class TSDataTable extends HTMLElement {
                 this.selectedRowIds.delete(String(row.id));
             });
         }
-        
+
         // Emit selection change first (updates toolbar menu)
         this.emitSelectionChange();
-        
+
         // Re-render current page checkboxes to reflect new state
         this.populateTableRows();
-        
+
         // Update pagination UI
         this.updatePaginationUI();
-        
+
         // Update selection view toggle
         this.updateSelectionUI();
     }
-    
+
     handleRowCheckboxChange(rowId, isChecked) {
         if (isChecked) {
             this.selectedRowIds.add(rowId);
         } else {
             this.selectedRowIds.delete(rowId);
         }
-        
+
         // Update header checkbox state (tri-state)
         this.updateHeaderCheckbox();
-        
+
         // If we are in a filtered-by-selection mode, re-render rows so that the row disappears/appears immediately
         if (this.selectionViewMode !== 'all') {
             this.populateTableRows();
             this.updatePaginationUI();
         }
-        
+
         // Update selection UI and emit change
         this.emitSelectionChange();
         this.updateSelectionUI();
     }
-    
+
     toggleSort(colKey) {
         const col = this.columnDefinitions.find(c => c.key === colKey);
         if (!col || !col.sortable) return;
-        
+
         const currentDir = col.sortDirection || 'none';
         const newDir = currentDir === 'none' ? 'asc' : (currentDir === 'asc' ? 'desc' : 'none');
-        
+
         this.clearOtherSorts(colKey);
         col.sortDirection = newDir;
-        
+
         this.createTableHeaders();
         this.populateTableRows();
         this.updatePaginationUI();
     }
-    
+
     moveColumn(colKey, direction) {
         const visibleCols = this.getVisibleColumns();
         const currentIndex = visibleCols.findIndex(c => c.key === colKey);
         if (currentIndex === -1) return;
-        
+
         const targetIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
         if (targetIndex < 0 || targetIndex >= visibleCols.length) return;
-        
+
         const currentOrder = visibleCols[currentIndex].order;
         const targetOrder = visibleCols[targetIndex].order;
-        
+
         visibleCols[currentIndex].order = targetOrder;
         visibleCols[targetIndex].order = currentOrder;
-        
+
         // Notify about column order change
         this.dispatchEvent(new CustomEvent('column-order-changed', {
             detail: { columnDefinitions: this.columnDefinitions },
             bubbles: false // Internal event
         }));
-        
+
         this.render();
     }
-    
+
     toggleSelectionView() {
         // Cycle modes only if at least one row is selected
         if (this.selectedRowIds.size === 0) return;
-        
+
         const modes = ['all', 'selected', 'unselected'];
         const currentIndex = modes.indexOf(this.selectionViewMode);
         const nextIndex = (currentIndex + 1) % modes.length;
         this.selectionViewMode = modes[nextIndex];
-        
+
         this.currentPage = 1;
         this.populateTableRows();
         this.updatePaginationUI();
         this.updateSelectionViewUI();
     }
-    
+
     startResize(e) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const now = Date.now();
         if (now - this.lastResizeEnd < 50) return;
-        
+
         this.isResizing = true;
         this.resizeColKey = e.target.getAttribute('data-column-key');
         this.startX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
-        
+
         // Get actual computed width of the column from the header cell
         const table = this.querySelector('#data-table');
         const headerCell = table.querySelector(`th[data-column-key="${this.resizeColKey}"]`);
-        
+
         if (headerCell) {
             this.startWidth = headerCell.getBoundingClientRect().width;
         } else {
@@ -1419,77 +1421,77 @@ class TSDataTable extends HTMLElement {
                 this.startWidth = 200;
             }
         }
-        
+
         document.body.style.cursor = 'col-resize';
         document.body.style.userSelect = 'none';
-        
+
         this.boundOnResize = (e) => this.onResize(e);
         this.boundStopResize = (e) => this.stopResize(e);
-        
+
         document.addEventListener('mousemove', this.boundOnResize);
         document.addEventListener('mouseup', this.boundStopResize);
         document.addEventListener('touchmove', this.boundOnResize, { passive: false });
         document.addEventListener('touchend', this.boundStopResize);
     }
-    
+
     onResize(e) {
         if (!this.isResizing) return;
         e.preventDefault();
-        
+
         const currentX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
         const delta = currentX - this.startX;
         const newWidth = Math.max(50, this.startWidth + delta);
-        
+
         const table = this.querySelector('#data-table');
         const colElement = table.querySelector(`col[data-column-key="${this.resizeColKey}"]`);
         if (colElement) {
             colElement.style.width = `${newWidth}px`;
         }
     }
-    
+
     stopResize(e) {
         if (!this.isResizing) return;
-        
+
         document.removeEventListener('mousemove', this.boundOnResize);
         document.removeEventListener('mouseup', this.boundStopResize);
         document.removeEventListener('touchmove', this.boundOnResize);
         document.removeEventListener('touchend', this.boundStopResize);
-        
+
         const currentX = e.type === 'touchend' ? e.changedTouches[0].clientX : e.clientX;
         const delta = currentX - this.startX;
         const finalWidth = Math.max(50, this.startWidth + delta);
-        
+
         const col = this.columnDefinitions.find(c => c.key === this.resizeColKey);
         if (col) {
             col.width = finalWidth;
         }
-        
+
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
-        
+
         this.isResizing = false;
         this.lastResizeEnd = Date.now();
     }
-    
+
     autoSizeColumn(e) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const columnKey = e.target.getAttribute('data-column-key');
         if (!columnKey) return;
-        
+
         // Create a temporary element to measure text width (more accurate than Canvas)
         const tempSpan = document.createElement('span');
         tempSpan.style.visibility = 'hidden';
         tempSpan.style.position = 'absolute';
         tempSpan.style.whiteSpace = 'nowrap';
         tempSpan.style.left = '-9999px';
-        
+
         // Get the header cell to match font
         const table = this.querySelector('#data-table');
         const headerCell = table.querySelector(`th[data-column-key="${columnKey}"]`);
         if (!headerCell) return;
-        
+
         // Get a sample body cell for font styling
         const tbody = table.querySelector('tbody');
         const sampleCell = tbody ? tbody.querySelector(`td:not(.checkbox-column):not(.menu-column)`) : null;
@@ -1500,21 +1502,21 @@ class TSDataTable extends HTMLElement {
             tempSpan.style.fontFamily = bodyCellStyle.fontFamily;
             tempSpan.style.fontWeight = bodyCellStyle.fontWeight;
         }
-        
+
         document.body.appendChild(tempSpan);
-        
+
         // Measure header text
         tempSpan.textContent = headerCell.textContent.trim();
         let maxWidth = tempSpan.offsetWidth;
-        
+
         // Measure all cell values in this column
         const col = this.columnDefinitions.find(c => c.key === columnKey);
         if (col) {
-            
+
             this.tableData.forEach(row => {
                 let cellText = '';
                 const value = row[columnKey];
-                
+
                 // Format value based on column type
                 if (col.type === 'number' && value !== null && value !== undefined) {
                     cellText = value.toLocaleString('cs-CZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1525,7 +1527,7 @@ class TSDataTable extends HTMLElement {
                 } else {
                     cellText = String(value || '');
                 }
-                
+
                 if (cellText) {
                     tempSpan.textContent = cellText;
                     const textWidth = tempSpan.offsetWidth;
@@ -1533,45 +1535,45 @@ class TSDataTable extends HTMLElement {
                 }
             });
         }
-        
+
         // Clean up temporary element
         document.body.removeChild(tempSpan);
-        
+
         // Add padding for cell padding (1.25em left + 1.25em right = 2.5em ~ 40px at 16px font)
         let padding = 40; // Base padding for text + cell padding
         if (col && col.canBeCopied) {
             // Copy button is ~24-32px wide + gap 0.5em (~8px) = ~35-40px total
             padding += 40; // Extra space for copy button (reduced from 50px)
         }
-        
+
         const newWidth = Math.max(80, Math.ceil(maxWidth + padding));
-        
+
         // console.log(`Auto-sizing column ${columnKey}: maxWidth=${maxWidth.toFixed(2)}px, padding=${padding}px, newWidth=${newWidth}px, canBeCopied=${col?.canBeCopied || false}`);
-        
+
         // Update column width
         if (col) {
             col.width = newWidth;
         }
-        
+
         // Apply the width
         const colElement = table.querySelector(`col[data-column-key="${columnKey}"]`);
         if (colElement) {
             colElement.style.width = `${newWidth}px`;
         }
     }
-    
+
     populateTableRows() {
         const table = this.querySelector('#data-table');
         if (!table) return false;
-        
+
         const tbody = table.querySelector('tbody');
         if (!tbody) return false;
-        
+
         tbody.innerHTML = '';
-        
+
         const visibleColumns = this.getVisibleColumns();
         const currentPageData = this.getCurrentPageData();
-        
+
         if (currentPageData.length === 0) {
             const tr = document.createElement('tr');
             tr.className = 'no-data-row';
@@ -1588,24 +1590,24 @@ class TSDataTable extends HTMLElement {
                 tbody.appendChild(tr);
             });
         }
-        
+
         // After rows are rendered, update header tri-state and selection UI
         this.updateHeaderCheckbox();
         this.updateSelectionUI();
-        
+
         // Setup row click handlers after rows are rendered
         this.setupRowClickHandlers();
-        
+
         return true;
     }
-    
+
     createTableRow(row, visibleColumns) {
         const tr = document.createElement('tr');
         tr.setAttribute('data-row-id', row.id);
         if (this.enableClickableRows) {
             tr.classList.add('clickable');
         }
-        
+
         // Checkbox cell
         if (this.enableSelection) {
             const checkboxCell = document.createElement('td');
@@ -1615,7 +1617,7 @@ class TSDataTable extends HTMLElement {
             rowCheckbox.checked = this.selectedRowIds.has(String(row.id));
             tr.appendChild(checkboxCell);
         }
-        
+
         // Menu cell
         if (this.enableRowMenu) {
             const menuCell = document.createElement('td');
@@ -1633,22 +1635,22 @@ class TSDataTable extends HTMLElement {
             `;
             tr.appendChild(menuCell);
         }
-        
+
         // Data cells
         visibleColumns.forEach(col => {
             const td = document.createElement('td');
             if (col.align) td.style.textAlign = col.align;
             if (col.type === 'boolean') td.style.minWidth = '140px';
-            
+
             // Add clickable-column class if column is clickable and feature is enabled
             if (this.enableClickableColumns && col.isClickable) {
                 td.classList.add('clickable-column');
                 td.setAttribute('data-column-key', col.key);
             }
-            
+
             let cellContent = '';
             let copyValue = '';
-            
+
             // Format cell content
             if (col.key === 'turnover') {
                 cellContent = `<sl-format-number value="${row[col.key]}" type="decimal" minimum-fraction-digits="2" maximum-fraction-digits="2"></sl-format-number>`;
@@ -1669,16 +1671,16 @@ class TSDataTable extends HTMLElement {
                 cellContent = row[col.key];
                 copyValue = row[col.key];
             }
-            
+
             // Wrap content in clickable-cell-content span if column is clickable
             if (this.enableClickableColumns && col.isClickable && typeof cellContent === 'string') {
                 cellContent = `<span class="clickable-cell-content">${cellContent}</span>`;
             }
-            
+
             // Add copy button if canBeCopied is true
             if (col.canBeCopied && copyValue !== undefined && copyValue !== null) {
                 const copyButton = `<sl-copy-button value="${copyValue}" copy-label="Zkopírovat do schránky" success-label="Zkopírováno!" error-label="Váš prohlížeč nepodporuje tuto funkci"></sl-copy-button>`;
-                
+
                 // Always put copy button on the right, but adjust layout based on alignment
                 if (col.align === 'right') {
                     // For right-aligned: content pushed right, copy button at the end
@@ -1698,18 +1700,18 @@ class TSDataTable extends HTMLElement {
                     td.textContent = cellContent;
                 }
             }
-            
+
             tr.appendChild(td);
         });
-        
+
         return tr;
     }
-    
+
     // Pagination helpers
     getActiveData() {
         // Check if any column filters are active (predefined filters already applied to tableData)
         const base = Object.keys(this.columnFilters).length > 0 ? this.filteredData : this.tableData;
-        
+
         if (this.selectionViewMode === 'selected') {
             return base.filter(r => this.selectedRowIds.has(String(r.id)));
         }
@@ -1718,25 +1720,25 @@ class TSDataTable extends HTMLElement {
         }
         return base;
     }
-    
+
     getCurrentPageData() {
         const activeData = this.getActiveData();
         const sorted = this.getSortedData(activeData);
-        
+
         // If pagination is disabled or itemsPerPage is -1, return all data
         if (!this.enablePagination || this.itemsPerPage === -1) {
             return sorted;
         }
-        
+
         const startIndex = (this.currentPage - 1) * this.itemsPerPage;
         const endIndex = startIndex + this.itemsPerPage;
         return sorted.slice(startIndex, endIndex);
     }
-    
+
     getSortedData(data) {
         const activeCol = this.getActiveSortColumn();
         if (!activeCol || activeCol.sortDirection === 'none') return data;
-        
+
         const key = activeCol.key;
         const dir = activeCol.sortDirection;
         const sorted = data.slice().sort((a, b) => {
@@ -1745,31 +1747,31 @@ class TSDataTable extends HTMLElement {
         });
         return sorted;
     }
-    
+
     getActiveSortColumn() {
         const visibleActive = this.columnDefinitions
             .filter(c => c.visible && c.sortable && c.sortDirection && c.sortDirection !== 'none')
             .sort((a, b) => a.order - b.order);
         if (visibleActive.length > 0) return visibleActive[0];
-        
+
         const anyActive = this.columnDefinitions.find(c => c.sortable && c.sortDirection && c.sortDirection !== 'none');
         return anyActive || null;
     }
-    
+
     compareValues(aVal, bVal) {
         const aNull = aVal === null || aVal === undefined;
         const bNull = bVal === null || bVal === undefined;
         if (aNull && bNull) return 0;
         if (aNull) return 1;
         if (bNull) return -1;
-        
+
         if (typeof aVal === 'number' && typeof bVal === 'number') {
             return aVal - bVal;
         }
-        
+
         return String(aVal).localeCompare(String(bVal), undefined, { numeric: true, sensitivity: 'base' });
     }
-    
+
     updatePaginationUI() {
         // Will emit event for external pager component
         const activeData = this.getActiveData();
@@ -1785,26 +1787,26 @@ class TSDataTable extends HTMLElement {
             composed: true
         }));
     }
-    
+
     // Selection UI helpers
     updateHeaderCheckbox() {
         const headerCheckbox = this.querySelector('#header-select-all');
         if (!headerCheckbox) return;
-        
+
         const activeData = this.getActiveData();
         const total = activeData.length;
-        
+
         if (total === 0) {
             headerCheckbox.checked = false;
             headerCheckbox.indeterminate = false;
             return;
         }
-        
+
         let selectedCount = 0;
         for (const row of activeData) {
             if (this.selectedRowIds.has(String(row.id))) selectedCount++;
         }
-        
+
         if (selectedCount === 0) {
             headerCheckbox.checked = false;
             headerCheckbox.indeterminate = false;
@@ -1816,11 +1818,11 @@ class TSDataTable extends HTMLElement {
             headerCheckbox.indeterminate = true;
         }
     }
-    
+
     updateRowCheckboxes() {
         const tbody = this.querySelector('tbody');
         if (!tbody) return;
-        
+
         tbody.querySelectorAll('tr[data-row-id]').forEach(tr => {
             const rowId = tr.getAttribute('data-row-id');
             const checkbox = tr.querySelector('.row-select');
@@ -1829,13 +1831,13 @@ class TSDataTable extends HTMLElement {
             }
         });
     }
-    
+
     updateSelectionUI() {
         const toggle = this.querySelector('#selection-view-toggle');
         if (!toggle) return;
-        
+
         const selectedCount = this.selectedRowIds.size;
-        
+
         if (selectedCount === 0) {
             // Reset mode to all when nothing is selected and hide control
             if (this.selectionViewMode !== 'all') {
@@ -1849,21 +1851,21 @@ class TSDataTable extends HTMLElement {
             if (badge) badge.classList.add('selection-view-badge-hidden');
             return;
         }
-        
+
         // Show control
         toggle.classList.remove('invisible');
-        
+
         this.updateSelectionViewUI();
     }
-    
+
     updateSelectionViewUI() {
         const badge = this.querySelector('#selection-view-badge');
         const toggleBtn = this.querySelector('#selection-view-toggle-btn');
         const container = this.querySelector('#selection-view-toggle');
         const tooltip = container ? container.querySelector('sl-tooltip') : null;
-        
+
         if (!badge || !toggleBtn || !tooltip) return;
-        
+
         let label = '';
         if (this.selectionViewMode === 'all') {
             label = 'Režim zobrazení: všechny řádky';
@@ -1879,11 +1881,11 @@ class TSDataTable extends HTMLElement {
             badge.setAttribute('name', 'x');
             badge.style.color = 'var(--sl-color-danger-600)';
         }
-        
+
         toggleBtn.setAttribute('title', label);
         tooltip.setAttribute('content', label);
     }
-    
+
     emitSelectionChange() {
         this.dispatchEvent(new CustomEvent('selection-changed', {
             detail: {
@@ -1894,7 +1896,7 @@ class TSDataTable extends HTMLElement {
             composed: true
         }));
     }
-    
+
     // Filtering methods
     applyFilters() {
         this.filteredData = this.tableData.filter(row => {
@@ -1903,52 +1905,52 @@ class TSDataTable extends HTMLElement {
             return Object.keys(this.columnFilters).every(colKey => {
                 const filterValue = this.columnFilters[colKey];
                 if (!filterValue) return true;
-                
+
                 const col = this.columnDefinitions.find(c => c.key === colKey);
                 if (!col) return true;
-                
+
                 const cellValue = row[colKey];
-                
+
                 // Boolean column
                 if (col.type === 'boolean') {
                     return String(cellValue) === filterValue;
                 }
-                
+
                 // Date column
                 if (col.type === 'date') {
                     return this.matchDateFilter(cellValue, filterValue);
                 }
-                
+
                 // Number column
                 if (col.type === 'number') {
                     return this.matchNumberFilter(cellValue, filterValue);
                 }
-                
+
                 // Text column
                 return this.matchTextPattern(String(cellValue), filterValue);
             });
         });
-        
+
         this.currentPage = 1;
         this.populateTableRows();
         this.updatePaginationUI();
-        
+
         // Emit filter change event for toolbar
         this.emitFilterChange();
     }
-    
+
     matchDateFilter(cellValue, filterValue) {
         if (!cellValue) return false;
-        
+
         const cellDate = new Date(cellValue);
         if (isNaN(cellDate.getTime())) return false;
-        
+
         // Normalize cellDate to local midnight (start of day)
         const normalizedCellDate = new Date(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate());
-        
+
         // Parse date range
         const range = this.parseDateRange(filterValue);
-        
+
         if (range.min && range.max) {
             return normalizedCellDate >= range.min && normalizedCellDate <= range.max;
         } else if (range.min) {
@@ -1956,18 +1958,18 @@ class TSDataTable extends HTMLElement {
         } else if (range.max) {
             return normalizedCellDate <= range.max;
         }
-        
+
         // Fallback to text matching on formatted date
         const formatted = new Intl.DateTimeFormat('cs-CZ').format(normalizedCellDate);
         return this.matchTextPattern(formatted, filterValue);
     }
-    
+
     matchNumberFilter(cellValue, filterValue) {
         const num = Number(cellValue);
         if (isNaN(num)) return false;
-        
+
         const range = this.parseNumberRange(filterValue);
-        
+
         if (range.min !== null && range.max !== null) {
             return num >= range.min && num <= range.max;
         } else if (range.min !== null) {
@@ -1975,18 +1977,18 @@ class TSDataTable extends HTMLElement {
         } else if (range.max !== null) {
             return num <= range.max;
         }
-        
+
         // Fallback to text matching
         return this.matchTextPattern(String(cellValue), filterValue);
     }
-    
+
     matchTextPattern(text, pattern) {
         if (!pattern) return true;
         if (!text) return false;
-        
+
         const lowerText = text.toLowerCase();
         const lowerPattern = pattern.toLowerCase();
-        
+
         // Exact wildcards
         if (lowerPattern.includes('*') || lowerPattern.includes('?')) {
             const regexPattern = lowerPattern
@@ -1996,49 +1998,49 @@ class TSDataTable extends HTMLElement {
             const regex = new RegExp(`^${regexPattern}$`, 'i');
             return regex.test(lowerText);
         }
-        
+
         // Simple substring
         return lowerText.includes(lowerPattern);
     }
-    
+
     parseDateRange(rangeStr) {
         const trimmed = rangeStr.trim();
         if (!trimmed) return { min: null, max: null };
-        
+
         // Check for ".." separator
         if (trimmed.includes('..')) {
             const parts = trimmed.split('..').map(s => s.trim());
             const minStr = parts[0];
             const maxStr = parts[1];
-            
+
             let min = null;
             let max = null;
-            
+
             if (minStr) {
                 const parsedMin = this.parseFlexibleDate(minStr);
                 if (parsedMin) min = parsedMin;
             }
-            
+
             if (maxStr) {
                 const parsedMax = this.parseFlexibleDate(maxStr);
                 if (parsedMax) max = this.setEndOfDay(parsedMax);
             }
-            
+
             return { min, max };
         }
-        
+
         // Single date
         const parsed = this.parseFlexibleDate(trimmed);
         if (parsed) {
             return { min: parsed, max: this.setEndOfDay(new Date(parsed)) };
         }
-        
+
         return { min: null, max: null };
     }
-    
+
     parseFlexibleDate(dateStr) {
         if (!dateStr) return null;
-        
+
         // Try DD.MM.YYYY first (most common Czech format)
         const match1 = dateStr.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
         if (match1) {
@@ -2046,7 +2048,7 @@ class TSDataTable extends HTMLElement {
             const d = new Date(Number(year), Number(month) - 1, Number(day));
             if (!isNaN(d.getTime())) return d;
         }
-        
+
         // Try DD.MM.YY
         const match2 = dateStr.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2})$/);
         if (match2) {
@@ -2056,7 +2058,7 @@ class TSDataTable extends HTMLElement {
             const d = new Date(fullYear, Number(month) - 1, Number(day));
             if (!isNaN(d.getTime())) return d;
         }
-        
+
         // Try ISO format (YYYY-MM-DD) - parse as local date, not UTC
         const isoMatch = dateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
         if (isoMatch) {
@@ -2064,51 +2066,51 @@ class TSDataTable extends HTMLElement {
             const d = new Date(Number(year), Number(month) - 1, Number(day));
             if (!isNaN(d.getTime())) return d;
         }
-        
+
         return null;
     }
-    
+
     setEndOfDay(date) {
         const d = new Date(date);
         d.setHours(23, 59, 59, 999);
         return d;
     }
-    
+
     parseNumberRange(rangeStr) {
         const trimmed = rangeStr.trim();
         if (!trimmed) return { min: null, max: null };
-        
+
         // Check for ".." separator
         if (trimmed.includes('..')) {
             const parts = trimmed.split('..').map(s => s.trim());
             const minStr = parts[0];
             const maxStr = parts[1];
-            
+
             let min = null;
             let max = null;
-            
+
             if (minStr) {
                 const parsed = parseFloat(minStr);
                 if (!isNaN(parsed)) min = parsed;
             }
-            
+
             if (maxStr) {
                 const parsed = parseFloat(maxStr);
                 if (!isNaN(parsed)) max = parsed;
             }
-            
+
             return { min, max };
         }
-        
+
         // Single number - exact match
         const parsed = parseFloat(trimmed);
         if (!isNaN(parsed)) {
             return { min: parsed, max: parsed };
         }
-        
+
         return { min: null, max: null };
     }
-    
+
     emitFilterChange() {
         this.dispatchEvent(new CustomEvent('filters-changed', {
             detail: {
@@ -2119,12 +2121,12 @@ class TSDataTable extends HTMLElement {
             composed: true
         }));
     }
-    
+
     // Public methods for external control
     goToPage(page) {
         // If itemsPerPage is -1 (show all), no need to change pages
         if (this.itemsPerPage === -1) return;
-        
+
         const totalPages = Math.ceil(this.getActiveData().length / this.itemsPerPage);
         if (page >= 1 && page <= totalPages && page !== this.currentPage) {
             this.currentPage = page;
@@ -2132,7 +2134,7 @@ class TSDataTable extends HTMLElement {
             this.updatePaginationUI();
         }
     }
-    
+
     changePageSize(newSize) {
         if (this.itemsPerPage === newSize) return;
         this.itemsPerPage = newSize;
@@ -2140,18 +2142,18 @@ class TSDataTable extends HTMLElement {
         this.populateTableRows();
         this.updatePaginationUI();
     }
-    
+
     // Public methods for toolbar integration
     clearFilters() {
         this.columnFilters = {};
-        
+
         // Clear all filter inputs
         const thead = this.querySelector('thead');
         if (thead) {
             thead.querySelectorAll('sl-input[data-column-key]').forEach(input => {
                 input.value = '';
             });
-            
+
             thead.querySelectorAll('sl-dropdown[hoist]').forEach(dropdown => {
                 const button = dropdown.querySelector('sl-button');
                 if (button) {
@@ -2159,10 +2161,10 @@ class TSDataTable extends HTMLElement {
                 }
             });
         }
-        
+
         this.applyFilters();
     }
-    
+
     unselectAllRows() {
         this.selectedRowIds.clear();
         this.updateHeaderCheckbox();
@@ -2170,25 +2172,25 @@ class TSDataTable extends HTMLElement {
         this.updateSelectionUI();
         this.emitSelectionChange();
     }
-    
+
     getSelectedRows() {
         return this.tableData.filter(row => this.selectedRowIds.has(String(row.id)));
     }
-    
+
     getAllRows() {
         return this.tableData.slice();
     }
-    
+
     getFilteredRows() {
         // Return filtered data sorted by current sort order
         return this.getSortedData(this.getActiveData());
     }
-    
+
     getAllSortedRows() {
         // Return all table data sorted by current sort order
         return this.getSortedData(this.tableData);
     }
-    
+
     clearAllSelectedRecords() {
         this.selectedRowIds.clear();
         this.selectionViewMode = 'all';
@@ -2197,23 +2199,23 @@ class TSDataTable extends HTMLElement {
         this.updateSelectionUI();
         this.emitSelectionChange();
     }
-    
+
     // Import methods
     addImportedRow(rowData) {
         // Find max ID
-        const maxId = this.tableData.length > 0 
+        const maxId = this.tableData.length > 0
             ? Math.max(...this.tableData.map(r => Number(r.id) || 0))
             : 0;
-        
+
         const newRow = {
             ...rowData,
             id: String(maxId + 1)
         };
-        
+
         this.tableData.push(newRow);
         this.applyFilters();
     }
-    
+
     updateExistingRow(rowId, rowData) {
         const index = this.tableData.findIndex(r => String(r.id) === String(rowId));
         if (index !== -1) {
@@ -2224,7 +2226,7 @@ class TSDataTable extends HTMLElement {
             this.applyFilters();
         }
     }
-    
+
     // Column visibility management
     updateColumnVisibility(columnKey, isVisible) {
         const col = this.columnDefinitions.find(c => c.key === columnKey);
@@ -2233,30 +2235,15 @@ class TSDataTable extends HTMLElement {
             this.render();
         }
     }
-    
+
     getColumnDefinitions() {
         return this.columnDefinitions.slice();
     }
-    
+
     getColumnFilters() {
         return { ...this.columnFilters };
     }
-    
-    // Loading state
-    showLoadingOverlay() {
-        const overlay = this.querySelector('#table-loading-overlay');
-        if (overlay) {
-            overlay.classList.remove('hidden');
-        }
-    }
-    
-    hideLoadingOverlay() {
-        const overlay = this.querySelector('#table-loading-overlay');
-        if (overlay) {
-            overlay.classList.add('hidden');
-        }
-    }
-    
+
     // Refresh entire table
     refresh() {
         this.applyFilters();

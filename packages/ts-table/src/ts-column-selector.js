@@ -35,8 +35,8 @@ class TSColumnSelector extends HTMLElement {
                 }
             </style>
             <div class="column-selector">
-                <sl-tooltip content="Výběr sloupců" id="tooltip" trigger="manual">
-                <sl-dropdown>
+                <sl-tooltip hoist content="Výběr sloupců" id="tooltip" trigger="manual">
+                <sl-dropdown hoist>
                     <sl-button slot="trigger" caret onmouseenter="document.getElementById('tooltip').show()" onmouseleave="document.getElementById('tooltip').hide()">
                             <sl-icon name="gear"></sl-icon>
                     </sl-button>

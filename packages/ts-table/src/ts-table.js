@@ -8,26 +8,10 @@ import './ts-import-button.js';
 import './ts-selection-menu.js';
 import './ts-column-selector.js';
 
- // Wait for Shoelace components to be defined before creating content
-        // Promise.all([
-        //     customElements.whenDefined('sl-tooltip'),
-        //     customElements.whenDefined('sl-dropdown'),
-        //     customElements.whenDefined('sl-button'),
-        //     customElements.whenDefined('sl-menu'),
-        //     customElements.whenDefined('sl-input')
-        // ]).then(() => {
-        //     this.createContent();
-        //     this.createColumnsMenu();
-        // }).catch(() => {
-        //     // Fallback - create content anyway if waiting fails
-        //     this.createContent();
-        //     this.createColumnsMenu();
-        // });
-
 class TSTable extends HTMLElement {
     constructor() {
         super();
-        
+
         // Internal data
         this.tableData = [];
         this.columnDefinitions = [];
@@ -40,13 +24,13 @@ class TSTable extends HTMLElement {
         this.itemsPerPage = 5;
         this.itemsPerPageOptions = [5, 10, 20, 50, 100];
         this.predefinedFilters = {};
-        
+
         // UI visibility flags
         this.showColumnSelector = true;
         this.showImportButton = true;
         this.showExportButton = true;
         this.showCreateButton = true;
-        
+
         // Feature flags
         this.enableSorting = true;
         this.enableFiltering = true;
@@ -56,12 +40,12 @@ class TSTable extends HTMLElement {
         this.enableRowMenu = true;
         this.enableClickableRows = true;
         this.enablePagination = true;
-        
+
         // Component references
         this.datatable = null;
         this.toolbar = null;
         this.pager = null;
-        
+
         // Create structure
         this.innerHTML = `
             <style>
@@ -76,6 +60,7 @@ class TSTable extends HTMLElement {
                     grid-template-rows: auto 1fr auto;
                     width: 100%;
                     height: 100%;
+                    opacity: 0;
                 }
                 
                 #toolbar {
@@ -260,7 +245,7 @@ class TSTable extends HTMLElement {
             </sl-dialog>
         `;
     }
-    
+
     static get observedAttributes() {
         return [
             'table-data',
@@ -289,14 +274,14 @@ class TSTable extends HTMLElement {
             'predefined-filters'
         ];
     }
-    
+
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
-        
+
         // Parse boolean attributes
         const boolValue = newValue !== 'false' && newValue !== null;
-        
-        switch(name) {
+
+        switch (name) {
             case 'table-data':
                 if (newValue) {
                     try {
@@ -413,7 +398,7 @@ class TSTable extends HTMLElement {
                     // Parse comma-separated list or JSON array
                     try {
                         const cols = newValue.startsWith('[') ? JSON.parse(newValue) : newValue.split(',').map(s => s.trim());
-                        this.setvisibleColumns(cols);
+                        this.setVisibleColumns(cols);
                     } catch (e) {
                         console.error('Failed to parse visible-columns attribute:', e);
                     }
@@ -482,20 +467,20 @@ class TSTable extends HTMLElement {
                 break;
         }
     }
-    
+
     connectedCallback() {
         // Get component references
         this.datatable = this.querySelector('#datatable');
         this.toolbar = this.querySelector('#toolbar');
         this.pager = this.querySelector('#pager');
-        
+
         // Apply initial attribute values
         this.applyInitialAttributes();
-        
+
         // Setup event listeners
         this.setupEventListeners();
     }
-    
+
     applyInitialAttributes() {
         // Apply all attributes that were set in HTML
         const attrs = this.constructor.observedAttributes;
@@ -506,10 +491,10 @@ class TSTable extends HTMLElement {
             }
         });
     }
-    
+
     setupEventListeners() {
         if (!this.datatable || !this.toolbar || !this.pager) return;
-        
+
         // Datatable events
         this.datatable.addEventListener('pagination-changed', (event) => {
             const { totalRecordsCount, filteredRecordsCount, pageSize, currentPage, pageSizes } = event.detail;
@@ -519,59 +504,59 @@ class TSTable extends HTMLElement {
             this.pager.setAttribute('currentpage', currentPage);
             this.pager.setAttribute('pagesizes', JSON.stringify(pageSizes));
         });
-        
+
         this.datatable.addEventListener('selection-changed', (event) => {
             const { selectedRowIds, selectedCount } = event.detail;
-            
+
             // Convert IDs to row objects
             const selectedRows = selectedRowIds
                 .map(id => this.datatable.tableData.find(r => String(r.id) === String(id)))
                 .filter(r => r !== undefined);
-            
+
             this.datatable.setSelectedRows(selectedRows);
             this.datatable.setSelectionCount(selectedCount);
-            
+
             if (selectedCount > 0) {
                 this.datatable.showSelectionMenu();
             } else {
                 this.datatable.hideSelectionMenu();
             }
         });
-        
+
         this.datatable.addEventListener('filters-changed', (event) => {
             const { columnFilters, hasActiveFilters } = event.detail;
             this.toolbar.setColumnFilters(columnFilters);
         });
-        
+
         this.datatable.addEventListener('column-order-changed', (event) => {
             const { columnDefinitions } = event.detail;
             // Update column definitions in toolbar (which will refresh column selector)
             this.toolbar.setColumnDefinitions(columnDefinitions);
         });
-        
+
         // Public events bubble naturally from child components:
         // - create-new-record (from create-record-button)
         // - selection-action-activated (from selection-menu and datatable)
         // - row-clicked (from datatable)
         // - do-import (from import-button)
-        
+
         // Internal events - catch and stop propagation
         this.addEventListener('unselect-all-rows', (event) => {
             event.stopPropagation();
             this.datatable.unselectAllRows();
         });
-        
+
         this.addEventListener('column-visibility-changed', (event) => {
             event.stopPropagation();
             const { columnKey, visible } = event.detail;
             this.datatable.updateColumnVisibility(columnKey, visible);
         });
-        
+
         this.addEventListener('clear-filters', (event) => {
             event.stopPropagation();
             this.datatable.clearFilters();
         });
-        
+
         this.addEventListener('select-all-columns', (event) => {
             event.stopPropagation();
             this.columnDefinitions.forEach(col => {
@@ -581,7 +566,7 @@ class TSTable extends HTMLElement {
             });
             this.toolbar.refreshColumnMenu();
         });
-        
+
         this.addEventListener('clear-all-columns', (event) => {
             event.stopPropagation();
             this.columnDefinitions.forEach(col => {
@@ -591,21 +576,21 @@ class TSTable extends HTMLElement {
             });
             this.toolbar.refreshColumnMenu();
         });
-        
+
         // Pager events
         this.addEventListener('page-changed', (event) => {
             event.stopPropagation();
             const { page } = event.detail;
             this.datatable.goToPage(page);
         });
-        
+
         this.addEventListener('page-size-changed', (event) => {
             event.stopPropagation();
             const { pageSize } = event.detail;
             this.datatable.changePageSize(pageSize);
         });
     }
-    
+
     // Public API methods
     setData(data) {
         this.tableData = data;
@@ -613,7 +598,7 @@ class TSTable extends HTMLElement {
             this.datatable.setData(data);
         }
     }
-    
+
     setColumnDefinitions(definitions) {
         this.columnDefinitions = definitions;
         if (this.datatable) {
@@ -623,14 +608,14 @@ class TSTable extends HTMLElement {
             this.toolbar.setColumnDefinitions(definitions);
         }
     }
-    
-    setvisibleColumns(columns) {
+
+    setVisibleColumns(columns) {
         this.visibleColumns = columns;
         if (this.datatable) {
-            this.datatable.setvisibleColumns(columns);
+            this.datatable.setVisibleColumns(columns);
         }
     }
-    
+
     setUnhideableColumns(columns) {
         this.unhideableColumns = columns;
         if (this.datatable) {
@@ -640,7 +625,7 @@ class TSTable extends HTMLElement {
             this.toolbar.setUnhideableColumns(columns);
         }
     }
-    
+
     setUnshowableColumns(columns) {
         this.unshowableColumns = columns;
         if (this.datatable) {
@@ -650,35 +635,35 @@ class TSTable extends HTMLElement {
             this.toolbar.setUnshowableColumns(columns);
         }
     }
-    
+
     setColumnsRequiredForImport(columns) {
         this.columnsRequiredForImport = columns;
         if (this.toolbar) {
             this.toolbar.setColumnsRequiredForImport(columns);
         }
     }
-    
+
     setItemsPerPage(count) {
         this.itemsPerPage = count;
         if (this.datatable) {
             this.datatable.itemsPerPage = count;
         }
     }
-    
+
     setItemsPerPageOptions(options) {
         this.itemsPerPageOptions = options;
         if (this.datatable) {
             this.datatable.availablePageSizes = options;
         }
     }
-    
+
     setPredefinedFilters(filters) {
         this.predefinedFilters = filters;
         if (this.datatable) {
             this.datatable.setPredefinedFilters(filters);
         }
     }
-    
+
     setShowColumnSelector(show) {
         this.showColumnSelector = show !== false;
         if (this.toolbar) {
@@ -686,7 +671,7 @@ class TSTable extends HTMLElement {
             this.updateToolbarVisibility();
         }
     }
-    
+
     setShowImportButton(show) {
         this.showImportButton = show !== false;
         if (this.toolbar) {
@@ -694,7 +679,7 @@ class TSTable extends HTMLElement {
             this.updateToolbarVisibility();
         }
     }
-    
+
     setShowExportButton(show) {
         this.showExportButton = show !== false;
         if (this.toolbar) {
@@ -702,7 +687,7 @@ class TSTable extends HTMLElement {
             this.updateToolbarVisibility();
         }
     }
-    
+
     setShowCreateButton(show) {
         this.showCreateButton = show !== false;
         if (this.toolbar) {
@@ -710,16 +695,16 @@ class TSTable extends HTMLElement {
             this.updateToolbarVisibility();
         }
     }
-    
+
     updateToolbarVisibility() {
         if (!this.toolbar) return;
-        
+
         // Check if all toolbar items are disabled
-        const allDisabled = !this.showColumnSelector && 
-                           !this.showImportButton && 
-                           !this.showExportButton && 
-                           !this.showCreateButton;
-        
+        const allDisabled = !this.showColumnSelector &&
+            !this.showImportButton &&
+            !this.showExportButton &&
+            !this.showCreateButton;
+
         // Hide toolbar if all items are disabled
         if (allDisabled) {
             this.toolbar.style.display = 'none';
@@ -727,63 +712,63 @@ class TSTable extends HTMLElement {
             this.toolbar.style.display = '';
         }
     }
-    
+
     setEnableSorting(enable) {
         this.enableSorting = enable !== false;
         if (this.datatable) {
             this.datatable.setEnableSorting(this.enableSorting);
         }
     }
-    
+
     setEnableFiltering(enable) {
         this.enableFiltering = enable !== false;
         if (this.datatable) {
             this.datatable.setEnableFiltering(this.enableFiltering);
         }
     }
-    
+
     setEnableColumnResizing(enable) {
         this.enableColumnResizing = enable !== false;
         if (this.datatable) {
             this.datatable.setEnableColumnResizing(this.enableColumnResizing);
         }
     }
-    
+
     setEnableColumnReordering(enable) {
         this.enableColumnReordering = enable !== false;
         if (this.datatable) {
             this.datatable.setEnableColumnReordering(this.enableColumnReordering);
         }
     }
-    
+
     setEnableSelection(enable) {
         this.enableSelection = enable !== false;
         if (this.datatable) {
             this.datatable.setEnableSelection(this.enableSelection);
         }
     }
-    
+
     setEnableRowMenu(enable) {
         this.enableRowMenu = enable !== false;
         if (this.datatable) {
             this.datatable.setEnableRowMenu(this.enableRowMenu);
         }
     }
-    
+
     setEnableClickableRows(enable) {
         this.enableClickableRows = enable !== false;
         if (this.datatable) {
             this.datatable.setEnableClickableRows(this.enableClickableRows);
         }
     }
-    
+
     setEnableClickableColumns(enable) {
         this.enableClickableColumns = enable !== false;
         if (this.datatable) {
             this.datatable.setEnableClickableColumns(this.enableClickableColumns);
         }
     }
-    
+
     setEnablePagination(enable) {
         this.enablePagination = enable !== false;
         if (this.datatable) {
@@ -793,13 +778,13 @@ class TSTable extends HTMLElement {
             this.pager.style.display = this.enablePagination ? '' : 'none';
         }
     }
-    
+
     setSingleItemActions(actions) {
         this.singleItemActions = actions;
         if (this.datatable) {
             // Set row menu actions
             this.datatable.setMenuActions(actions);
-            
+
             // Set selection menu actions
             const selectionMenu = this.datatable.getSelectionMenu();
             if (selectionMenu) {
@@ -813,48 +798,48 @@ class TSTable extends HTMLElement {
         if (this.datatable) {
             // Store in datatable for restoration after header recreation
             this.datatable.setMultipleItemsActions(actions);
-            
+
             const selectionMenu = this.datatable.getSelectionMenu();
             if (selectionMenu) {
                 selectionMenu.setAttribute('multiple-items-actions', actions);
             }
         }
     }
-    
+
     showImportResults(results) {
         if (this.toolbar) {
             this.toolbar.showImportResults(results);
         }
     }
-    
+
     // Public methods for import processing (delegate to datatable)
     getAllRows() {
         return this.datatable ? this.datatable.getAllRows() : [];
     }
-    
+
     updateExistingRow(id, data) {
         if (this.datatable) {
             this.datatable.updateExistingRow(id, data);
         }
     }
-    
+
     addImportedRow(data) {
         if (this.datatable) {
             this.datatable.addImportedRow(data);
         }
     }
-    
+
     run() {
         if (!this.datatable || !this.toolbar) return;
-        
+
         // Set predefined filters before initializing
         if (Object.keys(this.predefinedFilters).length > 0) {
             this.datatable.setPredefinedFilters(this.predefinedFilters);
         }
-        
+
         // Initialize datatable
         this.datatable.initialize();
-        
+
         // Set selection menu actions after datatable is initialized
         if (this.singleItemActions) {
             this.setSingleItemActions(this.singleItemActions);
@@ -862,16 +847,16 @@ class TSTable extends HTMLElement {
         if (this.multipleItemsActions) {
             this.setMultipleItemsActions(this.multipleItemsActions);
         }
-        
+
         // Configure toolbar
         this.toolbar.setColumnFilters({});
-        
+
         // Set toolbar visibility options
         this.toolbar.setShowColumnSelector(this.showColumnSelector);
         this.toolbar.setShowImportButton(this.showImportButton);
         this.toolbar.setShowExportButton(this.showExportButton);
         this.toolbar.setShowCreateButton(this.showCreateButton);
-        
+
         // Configure toolbar export data provider
         this.toolbar.setExportData(() => ({
             tableData: this.datatable.getAllRows(),
@@ -883,11 +868,35 @@ class TSTable extends HTMLElement {
             getSortedActiveData: () => this.datatable.getFilteredRows(),
             getAllSortedRows: () => this.datatable.getAllSortedRows() // All data sorted
         }));
-        
+
         // Configure toolbar import data provider
         this.toolbar.setImportData(() => ({
             columnDefinitions: this.datatable.getColumnDefinitions()
         }));
+
+        // Wait for Shoelace components to be defined before creating content
+        Promise.all(
+            [
+                'sl-dialog',
+                'sl-alert',
+                'sl-icon',
+                'sl-button',
+                'sl-radio-group',
+                'sl-dropdown',
+                'sl-menu',
+                'sl-menu-item',
+                'sl-button-group',
+                'sl-input',
+                'sl-tooltip'
+            ].map(tag => customElements.whenDefined(tag)))
+            .then(() => {
+                this.querySelector('.ts-table-container').style.opacity = '1';
+            }).catch(() => {
+                // Fallback - create content anyway if waiting fails
+                this.querySelector('.ts-table-container').style.opacity = '1';
+            });
+
+
     }
 }
 
