@@ -8,7 +8,7 @@ class TSExportButton extends HTMLElement {
                     margin-bottom: 0.5em;
                 }
             </style>
-            <sl-tooltip hoist content="Exportovat do Excelu">
+            <sl-tooltip content="Exportovat do Excelu">
                 <sl-button class="export-btn">
                     <sl-icon name="download"></sl-icon>
                 </sl-button>

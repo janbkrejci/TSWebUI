@@ -11,7 +11,7 @@ class TSImportButton extends HTMLElement {
                     display: none;
                 }
             </style>
-            <sl-tooltip hoist content="Importovat z Excelu">
+            <sl-tooltip content="Importovat z Excelu">
                 <sl-button class="import-btn">
                     <sl-icon name="upload"></sl-icon>
                 </sl-button>
@@ -226,7 +226,8 @@ class TSImportButton extends HTMLElement {
                 for (const [key, val] of Object.entries(row)) {
                     if (knownKeys.has(key)) obj[key] = val;
                 }
-                return { __index: idx + 2, data: obj }; // +2 for header + 1-index
+                return obj; // +2 for header + 1-index
+                // return { __index: idx + 2, data: obj }; // +2 for header + 1-index
             });
 
             // Dispatch do-import event with parsed data for parent to handle

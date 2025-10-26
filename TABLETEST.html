@@ -627,11 +627,11 @@
                         rejectedRows.push(__index);
                         rejectedRowsData.push(data);
                     } else if (existingRow) {
-                        table.updateExistingRow(data.id, data);
+                        // table.updateExistingRow(data.id, data);
                         updated++;
                         processedRows.push({ ...data, __importAction: 'updated' });
                     } else {
-                        table.addImportedRow(data);
+                        // table.addImportedRow(data);
                         added++;
                         processedRows.push({ ...data, __importAction: 'added' });
                     }

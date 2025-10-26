@@ -58,12 +58,6 @@ class TSToolbar extends HTMLElement {
     }
 
     connectedCallback() {
-        this.setupEventForwarding();
-    }
-
-    setupEventForwarding() {
-        // All events now bubble naturally from child components
-        // No need to forward anything - events are caught in ts-table
     }
 
     // Proxy methods to access child components

@@ -50,6 +50,9 @@ class TSDataTable extends HTMLElement {
         // Create basic structure
         this.innerHTML = `
             <style>
+                sl-switch::part(control) {
+                    cursor: pointer !important;
+                }
                 :host {
                     display: block;
                     width: 100%;
@@ -851,7 +854,7 @@ class TSDataTable extends HTMLElement {
                 ${this.enableFiltering ? `
                 <div class="header-cell-content">
                     <div id="selection-view-toggle" class="selection-view-toggle invisible">
-                        <sl-tooltip hoist content="">
+                        <sl-tooltip content="">
                             <div class="selection-view-toggle-btn-wrapper">
                                 <sl-icon-button id="selection-view-toggle-btn" name="funnel" size="small" title=""></sl-icon-button>
                                 <sl-icon id="selection-view-badge" class="selection-view-badge selection-view-badge-hidden" name=""></sl-icon>
@@ -994,7 +997,7 @@ class TSDataTable extends HTMLElement {
         const inputId = `filter-${col.key}`;
         if (col.type === 'boolean') {
             return `
-                <sl-dropdown hoist placement="bottom" style="width: 100%;">
+                <sl-dropdown placement="bottom" style="width: 100%;">
                     <sl-button slot="trigger" size="small" variant="default" id="${inputId}" data-column-key="${col.key}" style="width: 100%; justify-content: space-between;">
                         Všechny<sl-icon name="chevron-down" slot="suffix"></sl-icon>
                     </sl-button>
@@ -1151,7 +1154,7 @@ class TSDataTable extends HTMLElement {
         });
 
         // Boolean filters - dropdown (only in regular column headers, not in checkbox/menu columns)
-        headerRow.querySelectorAll('th:not(.checkbox-column):not(.menu-column) sl-dropdown[hoist]').forEach(dropdown => {
+        headerRow.querySelectorAll('th:not(.checkbox-column):not(.menu-column) sl-dropdown').forEach(dropdown => {
             const menu = dropdown.querySelector('sl-menu');
             if (!menu) return;
             menu.addEventListener('sl-select', (e) => {
@@ -1232,8 +1235,8 @@ class TSDataTable extends HTMLElement {
                 // Ignore clicks on checkboxes, menu dropdowns, copy buttons, switches, and their children
                 if (e.target.closest('.checkbox-column') ||
                     e.target.closest('.menu-column') ||
-                    e.target.closest('sl-copy-button') ||
-                    e.target.closest('sl-switch')) {
+                    e.target.closest('sl-copy-button') /*||
+                    e.target.closest('sl-switch')*/) {
                     return;
                 }
 
@@ -1626,7 +1629,7 @@ class TSDataTable extends HTMLElement {
                 `<sl-menu-item data-action="${action.actionName}">${action.label}</sl-menu-item>`
             ).join('');
             menuCell.innerHTML = `
-                <sl-dropdown hoist id="row-menu-${row.id}">
+                <sl-dropdown id="row-menu-${row.id}">
                     <sl-button slot="trigger" size="small" variant="text" circle>
                         <sl-icon name="three-dots-vertical"></sl-icon>
                     </sl-button>
@@ -1652,13 +1655,13 @@ class TSDataTable extends HTMLElement {
             let copyValue = '';
 
             // Format cell content
-            if (col.key === 'turnover') {
+            if (col.type === 'number') {
                 cellContent = `<sl-format-number value="${row[col.key]}" type="decimal" minimum-fraction-digits="2" maximum-fraction-digits="2"></sl-format-number>`;
                 copyValue = row[col.key]; // unformatted number for copy
-            } else if (col.key === 'contractDate') {
+            } else if (col.type === 'number') {
                 cellContent = `<sl-format-date date="${row[col.key]}"></sl-format-date>`;
                 copyValue = new Date(row[col.key]).toLocaleDateString('cs-CZ').replace(/\s/g, ''); // formatted date without spaces
-            } else if (col.key === 'approved') {
+            } else if (col.type === 'boolean') {
                 const checkedAttr = row[col.key] ? 'checked' : '';
                 // Wrap switch in a flex container for proper centering
                 if (col.align === 'center') {
@@ -1673,7 +1676,7 @@ class TSDataTable extends HTMLElement {
             }
 
             // Wrap content in clickable-cell-content span if column is clickable
-            if (this.enableClickableColumns && col.isClickable && typeof cellContent === 'string') {
+            if (this.enableClickableColumns && col.isClickable /*&& typeof cellContent === 'string'*/) {
                 cellContent = `<span class="clickable-cell-content">${cellContent}</span>`;
             }
 
@@ -2154,7 +2157,7 @@ class TSDataTable extends HTMLElement {
                 input.value = '';
             });
 
-            thead.querySelectorAll('sl-dropdown[hoist]').forEach(dropdown => {
+            thead.querySelectorAll('sl-dropdown').forEach(dropdown => {
                 const button = dropdown.querySelector('sl-button');
                 if (button) {
                     button.textContent = 'Všechny';
@@ -2216,16 +2219,16 @@ class TSDataTable extends HTMLElement {
         this.applyFilters();
     }
 
-    updateExistingRow(rowId, rowData) {
-        const index = this.tableData.findIndex(r => String(r.id) === String(rowId));
-        if (index !== -1) {
-            this.tableData[index] = {
-                ...this.tableData[index],
-                ...rowData
-            };
-            this.applyFilters();
-        }
-    }
+    // updateExistingRow(rowId, rowData) {
+    //     const index = this.tableData.findIndex(r => String(r.id) === String(rowId));
+    //     if (index !== -1) {
+    //         this.tableData[index] = {
+    //             ...this.tableData[index],
+    //             ...rowData
+    //         };
+    //         this.applyFilters();
+    //     }
+    // }
 
     // Column visibility management
     updateColumnVisibility(columnKey, isVisible) {

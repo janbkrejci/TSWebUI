@@ -110,6 +110,7 @@ var columnDefinitions = [
         filterPlaceholder: 'Filtr obratu',
         visible: true,
         align: 'right',
+        isClickable: true,
         order: 8,
         canBeCopied: true
     },
@@ -136,6 +137,7 @@ var columnDefinitions = [
         filterPlaceholder: 'Filtr schválení',
         visible: true,
         align: 'center',
+        isClickable: true,
         order: 10,
         canBeCopied: true
     }

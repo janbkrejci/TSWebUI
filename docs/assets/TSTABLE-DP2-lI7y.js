@@ -1,4 +1,4 @@
-import{j as e,M as r}from"./blocks-CpjuZLoo.js";import{useMDXComponents as d}from"./index-Beiho4So.js";import"./preload-helper-PPVm8Dsz.js";import"./iframe-SW9VWgDG.js";function t(l){const n={code:"code",h1:"h1",h2:"h2",h3:"h3",li:"li",p:"p",pre:"pre",strong:"strong",ul:"ul",...d(),...l.components};return e.jsxs(e.Fragment,{children:[e.jsx(r,{title:"TSWebUI/TSTABLE"}),`
+import{j as e,M as r}from"./blocks-DoooidSh.js";import{useMDXComponents as d}from"./index-B837LsoW.js";import"./preload-helper-PPVm8Dsz.js";import"./iframe-VbCJBGJA.js";function t(l){const n={code:"code",h1:"h1",h2:"h2",h3:"h3",li:"li",p:"p",pre:"pre",strong:"strong",ul:"ul",...d(),...l.components};return e.jsxs(e.Fragment,{children:[e.jsx(r,{title:"TSWebUI/TSTABLE"}),`
 `,e.jsx(n.h1,{id:"tstable",children:"TSTABLE"}),`
 `,e.jsx(n.p,{children:"Kompletní client-side webový datagrid bez frameworku, pouze HTML, JS, CSS a Shoelace z CDN."}),`
 `,e.jsxs(n.p,{children:["Je realizován jako web component. Stačí tedy naimportovat a do HTML vložit ",e.jsx(n.code,{children:"<ts-table></ts-table>"}),`,

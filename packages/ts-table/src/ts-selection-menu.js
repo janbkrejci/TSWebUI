@@ -22,7 +22,7 @@ class TSSelectionMenu extends HTMLElement {
                 }
             </style>
             <div class="selection-menu-container selection-menu-container-hidden">
-                <sl-dropdown hoist>
+                <sl-dropdown>
                     <sl-button slot="trigger" size="small" variant="text" circle>
                         <sl-icon name="three-dots-vertical"></sl-icon>
                     </sl-button>

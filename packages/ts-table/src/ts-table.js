@@ -191,7 +191,7 @@ class TSTable extends HTMLElement {
             </div>
             
             <!-- Import error dialog -->
-            <sl-dialog hoist id="import-error-dialog" label="Import nelze provést">
+            <sl-dialog id="import-error-dialog" label="Import nelze provést">
                 <sl-alert open variant="danger">
                     <sl-icon slot="icon" name="exclamation-octagon" class="large-icon"></sl-icon>
                     Struktura souboru neodpovídá. Import nebude proveden.
@@ -202,7 +202,7 @@ class TSTable extends HTMLElement {
             </sl-dialog>
             
             <!-- Import summary dialog -->
-            <sl-dialog hoist id="import-summary-dialog" label="Výsledek importu">
+            <sl-dialog id="import-summary-dialog" label="Výsledek importu">
                 <div class="import-results">
                     <div class="import-stats">
                         <div class="stat-item">
@@ -229,7 +229,7 @@ class TSTable extends HTMLElement {
             </sl-dialog>
             
             <!-- Export dialog -->
-            <sl-dialog hoist id="export-dialog" label="Export do Excelu">
+            <sl-dialog id="export-dialog" label="Export do Excelu">
                 <div class="export-options">
                     <div id="export-rows-section" class="export-section export-rows-section">
                         <div class="export-section-title">Řádky</div>
@@ -817,17 +817,17 @@ class TSTable extends HTMLElement {
         return this.datatable ? this.datatable.getAllRows() : [];
     }
 
-    updateExistingRow(id, data) {
-        if (this.datatable) {
-            this.datatable.updateExistingRow(id, data);
-        }
-    }
+    // updateExistingRow(id, data) {
+    //     if (this.datatable) {
+    //         this.datatable.updateExistingRow(id, data);
+    //     }
+    // }
 
-    addImportedRow(data) {
-        if (this.datatable) {
-            this.datatable.addImportedRow(data);
-        }
-    }
+    // addImportedRow(data) {
+    //     if (this.datatable) {
+    //         this.datatable.addImportedRow(data);
+    //     }
+    // }
 
     run() {
         if (!this.datatable || !this.toolbar) return;
@@ -904,11 +904,11 @@ customElements.define('ts-table', TSTable);
 
 // Export all web components for external use
 export { TSTable };
-export { TSTablePager } from './ts-table-pager.js';
-export { TSToolbar } from './ts-toolbar.js';
-export { TSDataTable } from './ts-datatable.js';
-export { TSCreateRecordButton } from './ts-create-record-button.js';
-export { TSExportButton } from './ts-export-button.js';
-export { TSImportButton } from './ts-import-button.js';
-export { TSSelectionMenu } from './ts-selection-menu.js';
-export { TSColumnSelector } from './ts-column-selector.js';
+// export { TSTablePager } from './ts-table-pager.js';
+// export { TSToolbar } from './ts-toolbar.js';
+// export { TSDataTable } from './ts-datatable.js';
+// export { TSCreateRecordButton } from './ts-create-record-button.js';
+// export { TSExportButton } from './ts-export-button.js';
+// export { TSImportButton } from './ts-import-button.js';
+// export { TSSelectionMenu } from './ts-selection-menu.js';
+// export { TSColumnSelector } from './ts-column-selector.js';
