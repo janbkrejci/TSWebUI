@@ -232,8 +232,7 @@ class TSImportButton extends HTMLElement {
             // Dispatch do-import event with parsed data for parent to handle
             this.dispatchEvent(new CustomEvent('do-import', { 
                 detail: { 
-                    importData: mapped,
-                    file: file 
+                    data: mapped
                 },
                 bubbles: true,
                 composed: true

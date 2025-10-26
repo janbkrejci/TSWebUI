@@ -36,8 +36,8 @@ class TSColumnSelector extends HTMLElement {
             </style>
             <div class="column-selector">
                 <sl-tooltip hoist content="Výběr sloupců" id="tooltip" trigger="manual">
-                <sl-dropdown hoist>
-                    <sl-button slot="trigger" caret onmouseenter="document.getElementById('tooltip').show()" onmouseleave="document.getElementById('tooltip').hide()">
+                <sl-dropdown>
+                    <sl-button slot="trigger" caret>
                             <sl-icon name="gear"></sl-icon>
                     </sl-button>
                     <sl-menu class="columns-menu">
@@ -80,6 +80,7 @@ class TSColumnSelector extends HTMLElement {
     setupEventListeners() {
         const dropdown = this.querySelector('sl-dropdown');
         const menu = this.querySelector('.columns-menu');
+        const tooltip = this.querySelector('#tooltip');
 
         // Focus search input when dropdown opens
         if (dropdown) {
@@ -157,6 +158,18 @@ class TSColumnSelector extends HTMLElement {
                     }
                 }
             });
+        }
+
+        if (tooltip) {
+            const button = this.querySelector('sl-button[slot="trigger"]');
+            if (button) {
+                button.addEventListener('mouseenter', () => {
+                    tooltip.show();
+                });
+                button.addEventListener('mouseleave', () => {
+                    tooltip.hide();
+                });
+            } 
         }
     }
 
