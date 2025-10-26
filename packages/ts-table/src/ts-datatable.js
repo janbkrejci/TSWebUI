@@ -1546,7 +1546,7 @@ class TSDataTable extends HTMLElement {
         
         const newWidth = Math.max(80, Math.ceil(maxWidth + padding));
         
-        console.log(`Auto-sizing column ${columnKey}: maxWidth=${maxWidth.toFixed(2)}px, padding=${padding}px, newWidth=${newWidth}px, canBeCopied=${col?.canBeCopied || false}`);
+        // console.log(`Auto-sizing column ${columnKey}: maxWidth=${maxWidth.toFixed(2)}px, padding=${padding}px, newWidth=${newWidth}px, canBeCopied=${col?.canBeCopied || false}`);
         
         // Update column width
         if (col) {
