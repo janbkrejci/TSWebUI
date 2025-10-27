@@ -1,0 +1,36 @@
+import { Meta, Story } from "@storybook/addon-docs/blocks";
+import * as TSFORMStories from './TSFORM.stories';
+import { action } from 'storybook/actions';
+import { html } from 'lit-html';
+
+<Meta of={TSFORMStories} />
+
+# TSForm
+
+`ts-form` je klientsky konfigurovatelný formulář, který používá komponenty Shoelace.
+
+## Základní použití
+
+Komponentu `ts-form` lze použít k vytváření dynamických formulářů s různými typy polí a rozvržení.
+
+<Story name="Default">
+  {html`
+    <ts-form
+      layout='{
+        "tabs": [
+          {"label": "Základní informace", "rows": [
+            [{"field": "name", "width": "1fr"}, {"field": "email", "width": "1fr"}],
+            [{"field": "message", "width": "2fr"}]
+          ]}
+        ]
+      }'
+      fields='{
+        "name": {"type": "text", "label": "Jméno"},
+        "email": {"type": "email", "label": "E-mail"},
+        "message": {"type": "textarea", "label": "Zpráva"}
+      }'
+      @form-changed=${action('form-changed')}
+      @form-submit=${action('form-submit')}
+    ></ts-form>
+  `}
+</Story>
