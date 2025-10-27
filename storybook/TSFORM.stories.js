@@ -64,44 +64,58 @@ export default {
     },
 };
 
+const defaultArgs = {
+    dark: false,
+    layout: `{
+        "tabs": [
+            {
+                "label": "User Info",
+                "rows": [
+                    [{"field": "name", "width": "1fr"}, {"field": "email", "width": "1fr"}],
+                    [{"field": "userType", "width": "1fr"}, {"field": "preferences", "width": "1fr"}],
+                    [{"field": "newsletter", "width": "1fr"}],
+                    [{"field": "bio", "width": "2fr"}]
+                ]
+            }
+        ]
+    }`,
+    fields: `{
+        "name": {"type": "text", "label": "Name", "required": true},
+        "email": {"type": "email", "label": "Email", "required": true},
+        "userType": {
+            "type": "radio",
+            "label": "User Type",
+            "options": [
+                {"value": "admin", "label": "Admin"},
+                {"value": "user", "label": "User"}
+            ]
+        },
+        "preferences": {
+            "type": "select",
+            "label": "Preferences",
+            "options": [
+                {"value": "option1", "label": "Option 1"},
+                {"value": "option2", "label": "Option 2"}
+            ]
+        },
+        "newsletter": {"type": "checkbox", "label": "Subscribe to newsletter"},
+        "bio": {"type": "textarea", "label": "Bio"}
+    }`,
+    errors: `{}`
+};
+
 export const Default = {
     args: {
-        dark: false,
-        layout: `{
-            "tabs": [
-                {
-                    "label": "User Info",
-                    "rows": [
-                        [{"field": "name", "width": "1fr"}, {"field": "email", "width": "1fr"}],
-                        [{"field": "userType", "width": "1fr"}, {"field": "preferences", "width": "1fr"}],
-                        [{"field": "newsletter", "width": "1fr"}],
-                        [{"field": "bio", "width": "2fr"}]
-                    ]
-                }
-            ]
-        }`,
-        fields: `{
-            "name": {"type": "text", "label": "Name", "required": true},
-            "email": {"type": "email", "label": "Email", "required": true},
-            "userType": {
-                "type": "radio",
-                "label": "User Type",
-                "options": [
-                    {"value": "admin", "label": "Admin"},
-                    {"value": "user", "label": "User"}
-                ]
-            },
-            "preferences": {
-                "type": "select",
-                "label": "Preferences",
-                "options": [
-                    {"value": "option1", "label": "Option 1"},
-                    {"value": "option2", "label": "Option 2"}
-                ]
-            },
-            "newsletter": {"type": "checkbox", "label": "Subscribe to newsletter"},
-            "bio": {"type": "textarea", "label": "Bio"}
-        }`,
-        errors: `{}`
+        ...defaultArgs
     },
 };
+
+export const WithErrors = {
+    args: {
+        ...defaultArgs,
+        errors: `{
+            "name": "Name is required.",
+            "email": "Please enter a valid email address."
+        }`
+    }
+}

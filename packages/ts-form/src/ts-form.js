@@ -185,32 +185,13 @@ class TSForm extends HTMLElement {
 
     handleSubmit(event) {
         event.preventDefault();
-        if (this.validate()) {
-            this.dispatchEvent(new CustomEvent('form-submit', {
-                detail: {
-                    formData: this.formData
-                },
-                bubbles: true,
-                composed: true
-            }));
-        }
-    }
-
-    validate() {
-        let isValid = true;
-        this.validationErrors = {};
-        const fieldsConfig = JSON.parse(this.getAttribute('fields'));
-
-        for (const fieldName in fieldsConfig) {
-            const config = fieldsConfig[fieldName];
-            const field = this.shadowRoot.querySelector(`[name="${fieldName}"]`);
-            if (config.required && !this.formData[fieldName]) {
-                this.validationErrors[fieldName] = `${config.label} is required.`;
-                isValid = false;
-            }
-        }
-        this.setAttribute('errors', JSON.stringify(this.validationErrors));
-        return isValid;
+        this.dispatchEvent(new CustomEvent('form-submit', {
+            detail: {
+                formData: this.formData
+            },
+            bubbles: true,
+            composed: true
+        }));
     }
 }
 
