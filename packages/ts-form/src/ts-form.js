@@ -35,6 +35,17 @@ class TSForm extends HTMLElement {
             const fieldsConfig = JSON.parse(fields);
             this.validationErrors = errors ? JSON.parse(errors) : {};
 
+            // Inicializace formData pro všechna pole
+            this.formData = {};
+            Object.keys(fieldsConfig).forEach(fieldName => {
+                const config = fieldsConfig[fieldName];
+                if (config.type === 'checkbox') {
+                    this.formData[fieldName] = false;
+                } else {
+                    this.formData[fieldName] = '';
+                }
+            });
+
             const style = document.createElement('style');
             style.textContent = `
                 .form-row {
@@ -51,7 +62,7 @@ class TSForm extends HTMLElement {
                     margin-top: 0.25rem;
                 }
             `;
-                this.appendChild(style);
+            this.appendChild(style);
 
             const form = document.createElement('form');
             form.noValidate = true;
@@ -88,7 +99,7 @@ class TSForm extends HTMLElement {
             form.appendChild(actions);
 
             form.addEventListener('submit', this.handleSubmit.bind(this));
-                this.appendChild(form);
+            this.appendChild(form);
 
         } catch (e) {
             console.error('Failed to parse form configuration:', e);
@@ -170,7 +181,18 @@ class TSForm extends HTMLElement {
 
     handleFieldChange(event) {
         const field = event.target;
-        this.formData[field.name] = field.type === 'checkbox' ? field.checked : field.value;
+        if (field.tagName === 'SL-CHECKBOX') {
+            // Zkus použít event.detail.checked, případně field.checked nebo field.hasAttribute('checked')
+            if (event.detail && typeof event.detail.checked !== 'undefined') {
+                this.formData[field.name] = event.detail.checked;
+            } else if (typeof field.checked !== 'undefined') {
+                this.formData[field.name] = field.checked;
+            } else {
+                this.formData[field.name] = field.hasAttribute('checked');
+            }
+        } else {
+            this.formData[field.name] = field.value;
+        }
         this.dispatchEvent(new CustomEvent('form-changed', {
             detail: {
                 field: field.name,
