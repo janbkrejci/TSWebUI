@@ -76,6 +76,12 @@ const defaultArgs = {
                     [{"field": "newsletter", "width": "1fr"}],
                     [{"field": "bio", "width": "2fr"}]
                 ]
+            },
+            {
+                "label": "Settings",
+                "rows": [
+                    [{"field": "preferences", "width": "1fr"}]
+                ]
             }
         ]
     }`,
@@ -104,7 +110,7 @@ const defaultArgs = {
     errors: `{}`
 };
 
-export const Default = {
+export const DEFAULT = {
     args: {
         ...defaultArgs
     },

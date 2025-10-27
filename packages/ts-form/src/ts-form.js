@@ -2,7 +2,6 @@
 class TSForm extends HTMLElement {
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
         this.formData = {};
         this.validationErrors = {};
     }
@@ -22,7 +21,7 @@ class TSForm extends HTMLElement {
     }
 
     render() {
-        this.shadowRoot.innerHTML = ''; // Clear previous content
+    this.innerHTML = ''; // Clear previous content
         const layout = this.getAttribute('layout');
         const fields = this.getAttribute('fields');
         const errors = this.getAttribute('errors');
@@ -52,7 +51,7 @@ class TSForm extends HTMLElement {
                     margin-top: 0.25rem;
                 }
             `;
-            this.shadowRoot.appendChild(style);
+                this.appendChild(style);
 
             const form = document.createElement('form');
             form.noValidate = true;
@@ -89,11 +88,11 @@ class TSForm extends HTMLElement {
             form.appendChild(actions);
 
             form.addEventListener('submit', this.handleSubmit.bind(this));
-            this.shadowRoot.appendChild(form);
+                this.appendChild(form);
 
         } catch (e) {
             console.error('Failed to parse form configuration:', e);
-            this.shadowRoot.innerHTML = '<p>Error: Invalid form configuration.</p>';
+            this.innerHTML = '<p>Error: Invalid form configuration.</p>';
         }
     }
 
