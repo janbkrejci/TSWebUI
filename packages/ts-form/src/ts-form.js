@@ -73,8 +73,8 @@ class TSForm extends HTMLElement {
                     --sl-input-focus-ring-color: var(--sl-color-danger-300);
                 }
 
-                .invalid sl-radio {
-                    --sl-radio-label-color: var(--sl-color-danger-700);
+                .invalid sl-radio::part(label) {
+                    color: var(--sl-color-danger-700);
                 }
 
                 .invalid::part(form-control-label),
