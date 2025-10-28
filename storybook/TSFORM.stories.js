@@ -26,6 +26,7 @@ export default {
                 `layout='${args.layout}'`,
                 `fields='${args.fields}'`,
                 `errors='${args.errors}'`,
+                `buttons='${args.buttons}'`,
             ].join(' ');
             htmlContent = htmlContent.replace(formRegex, `<ts-form id="form" ${attributes}>`);
         }
@@ -60,12 +61,17 @@ export default {
         errors: {
             control: 'text',
             description: 'Form validation errors (JSON object)'
+        },
+        buttons: {
+            control: 'text',
+            description: 'Form buttons configuration (action/variant/label,action2/variant2/label2)'
         }
     },
 };
 
 const defaultArgs = {
     dark: false,
+    buttons: '',
     layout: `{
         "tabs": [
             {
@@ -117,12 +123,6 @@ const defaultArgs = {
     errors: `{}`
 };
 
-export const DEFAULT = {
-    args: {
-        ...defaultArgs
-    },
-};
-
 export const WithErrors = {
     args: {
         ...defaultArgs,
@@ -134,5 +134,12 @@ export const WithErrors = {
             "newsletter": "You must subscribe to the newsletter.",
             "bio": "Bio is required."
         }`
+    }
+}
+
+export const WithButtons = {
+    args: {
+        ...defaultArgs,
+        buttons: 'save/primary/Save,cancel/default/Cancel'
     }
 }

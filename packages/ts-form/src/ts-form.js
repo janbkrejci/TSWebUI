@@ -4,10 +4,11 @@ class TSForm extends HTMLElement {
         super();
         this.formData = {};
         this.validationErrors = {};
+        this.lastAction = null;
     }
 
     static get observedAttributes() {
-        return ['layout', 'fields', 'errors'];
+        return ['layout', 'fields', 'errors', 'buttons'];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -25,6 +26,7 @@ class TSForm extends HTMLElement {
         const layout = this.getAttribute('layout');
         const fields = this.getAttribute('fields');
         const errors = this.getAttribute('errors');
+        const buttons = this.getAttribute('buttons');
 
         if (!layout || !fields) {
             return;
@@ -165,14 +167,48 @@ class TSForm extends HTMLElement {
             actions.style.background = 'white';
             actions.style.padding = '1rem';
             actions.style.borderTop = '1px solid var(--sl-color-neutral-200)';
-            const submitButton = document.createElement('sl-button');
-            submitButton.variant = 'primary';
-            submitButton.textContent = 'Submit';
-            submitButton.type = 'submit';
-            actions.appendChild(submitButton);
-            form.appendChild(actions);
+
+            if (buttons) {
+                buttons.split(',').forEach(btnStr => {
+                    const [action, variant, label] = btnStr.split('/');
+                    const button = document.createElement('sl-button');
+                    button.variant = variant || 'primary';
+                    button.textContent = label || action;
+                    button.type = 'button'; // Prevent default submit
+                    button.addEventListener('click', () => {
+                        this.lastAction = action;
+                        this.dispatchEvent(new CustomEvent('form-submit', {
+                            detail: {
+                                formData: this.formData,
+                                action: action
+                            },
+                            bubbles: true,
+                            composed: true
+                        }));
+                    });
+                    actions.appendChild(button);
+                });
+            } else {
+                const submitButton = document.createElement('sl-button');
+                submitButton.variant = 'primary';
+                submitButton.textContent = 'Submit';
+                submitButton.type = 'button';
+                submitButton.addEventListener('click', () => {
+                    this.lastAction = 'submit';
+                    this.dispatchEvent(new CustomEvent('form-submit', {
+                        detail: {
+                            formData: this.formData,
+                            action: 'submit'
+                        },
+                        bubbles: true,
+                        composed: true
+                    }));
+                });
+                actions.appendChild(submitButton);
+            }
 
             form.addEventListener('submit', this.handleSubmit.bind(this));
+            form.appendChild(actions);
             this.appendChild(form);
 
         } catch (e) {
@@ -284,7 +320,8 @@ class TSForm extends HTMLElement {
         event.preventDefault();
         this.dispatchEvent(new CustomEvent('form-submit', {
             detail: {
-                formData: this.formData
+                formData: this.formData,
+                action: this.lastAction
             },
             bubbles: true,
             composed: true
