@@ -202,14 +202,27 @@ class TSForm extends HTMLElement {
                     }
                     button.addEventListener('click', () => {
                         this.lastAction = btn.action;
-                        this.dispatchEvent(new CustomEvent('form-submit', {
-                            detail: {
-                                formData: this.formData,
-                                action: btn.action
-                            },
-                            bubbles: true,
-                            composed: true
-                        }));
+                        if (btn.confirmation) {
+                            this.showConfirmationDialog(btn.confirmation, () => {
+                                this.dispatchEvent(new CustomEvent('form-submit', {
+                                    detail: {
+                                        formData: this.formData,
+                                        action: btn.action
+                                    },
+                                    bubbles: true,
+                                    composed: true
+                                }));
+                            });
+                        } else {
+                            this.dispatchEvent(new CustomEvent('form-submit', {
+                                detail: {
+                                    formData: this.formData,
+                                    action: btn.action
+                                },
+                                bubbles: true,
+                                composed: true
+                            }));
+                        }
                     });
                     this.buttons[btn.action] = button;
                     const position = btn.position || 'right';
@@ -384,6 +397,61 @@ class TSForm extends HTMLElement {
         if (this.buttons[action]) {
             this.buttons[action].style.display = '';
         }
+    }
+
+    showConfirmationDialog(confirmation, onConfirm) {
+        const dialog = document.createElement('sl-dialog');
+        dialog.label = confirmation.title || 'Confirm';
+        dialog.open = true;
+        dialog.size = 'medium';
+        dialog.style.fontFamily = 'var(--sl-font-sans)';
+
+        const content = document.createElement('div');
+        content.textContent = confirmation.text || 'Are you sure?';
+        dialog.appendChild(content);
+
+        const footer = document.createElement('div');
+        footer.slot = 'footer';
+        footer.style.display = 'flex';
+        footer.style.justifyContent = 'space-between';
+        footer.style.alignItems = 'center';
+
+        const leftDiv = document.createElement('div');
+        leftDiv.style.display = 'flex';
+        leftDiv.style.gap = '0.5rem';
+        const centerDiv = document.createElement('div');
+        centerDiv.style.display = 'flex';
+        centerDiv.style.gap = '0.5rem';
+        const rightDiv = document.createElement('div');
+        rightDiv.style.display = 'flex';
+        rightDiv.style.gap = '0.5rem';
+
+        footer.appendChild(leftDiv);
+        footer.appendChild(centerDiv);
+        footer.appendChild(rightDiv);
+
+        confirmation.buttons.forEach(btn => {
+            const button = document.createElement('sl-button');
+            button.variant = btn.variant || 'primary';
+            button.textContent = btn.label || btn.action;
+            button.addEventListener('click', () => {
+                dialog.hide();
+                if (btn.confirm) {
+                    onConfirm();
+                }
+            });
+            const position = btn.position || 'right';
+            if (position === 'left') {
+                leftDiv.appendChild(button);
+            } else if (position === 'center') {
+                centerDiv.appendChild(button);
+            } else {
+                rightDiv.appendChild(button);
+            }
+        });
+
+        dialog.appendChild(footer);
+        document.body.appendChild(dialog);
     }
 }
 

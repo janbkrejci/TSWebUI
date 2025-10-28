@@ -64,7 +64,7 @@ export default {
         },
         buttons: {
             control: 'text',
-            description: 'Form buttons configuration (JSON array of objects: [{action, variant, label, disabled?, hidden?, position?}])'
+            description: 'Form buttons configuration (JSON array of objects: [{action, variant, label, disabled?, hidden?, position?, confirmation?}])'
         }
     },
 };
@@ -149,5 +149,12 @@ export const WithDisabledAndHiddenButtons = {
     args: {
         ...defaultArgs,
         buttons: '[{"action":"cancel","variant":"default","label":"Cancel","hidden":true,"position":"left"},{"action":"save","variant":"primary","label":"Save","disabled":true,"position":"right"}]'
+    }
+}
+
+export const WithConfirmation = {
+    args: {
+        ...defaultArgs,
+        buttons: '[{"action":"cancel","variant":"text","label":"Cancel","position":"left"},{"action":"delete","variant":"danger","label":"Delete","position":"right","confirmation":{"title":"Potvrdit akci","text":"Opravdu smazat záznam?","buttons":[{"action":"no","variant":"default","label":"Ne","position":"left"},{"action":"yes","variant":"danger","label":"Ano","confirm":true,"position":"right"}]}}]'
     }
 }
