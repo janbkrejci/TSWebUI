@@ -35,7 +35,7 @@ export default {
         setTimeout(() => {
             const el = document.getElementById('form');
             if (el) {
-                for (const e of ['form-changed', 'form-submit']) {
+                for (const e of ['form-changed', 'form-submit', 'form-field-action']) {
                     el.removeEventListener(e, action(e));
                     el.addEventListener(e, (ev) => {
                         action(e)(ev.detail);
@@ -83,20 +83,15 @@ const defaultArgs = {
                 "label": "User Info",
                 "rows": [
                     [{"field": "name", "width": "1fr"}, {"field": "email", "width": "1fr"}],
+                    [{"field": "password", "width": "1fr"}],
                     [{"field": "userType", "width": "1fr"}, {"field": "preferences", "width": "1fr"}],
-                    [{"field": "newsletter", "width": "1fr"}],
-                    [{"field": "bio", "width": "2fr"}]
-                ]
-            },
-            {
-                "label": "Settings",
-                "rows": [
-                    [{"field": "preferences", "width": "1fr"}]
-                ]
-            },
-            {
-                "label": "Extra",
-                "rows": [
+                    [{"field": "combobox", "width": "1fr"}],
+                    [{"field": "newsletter", "width": "1fr"}, {"field": "enableFeature", "width": "1fr"}],
+                    [{"field": "volume", "width": "2fr"}],
+                    [{"field": "invoiceStatus", "width": "1fr"}],
+                    [{"field": "testButton", "width": "1fr"}],
+                    [{"field": "bio", "width": "2fr"}],
+                    [{"field": "uploadImage", "width": "1fr"}],
                     [{"field": "extraField", "width": "1fr"}]
                 ]
             }
@@ -105,6 +100,7 @@ const defaultArgs = {
     fields: `{
         "name": {"type": "text", "label": "Name", "required": true},
         "email": {"type": "email", "label": "Email", "required": true},
+        "password": {"type": "password", "label": "Password"},
         "userType": {
             "type": "radio",
             "label": "User Type",
@@ -121,9 +117,23 @@ const defaultArgs = {
                 {"value": "option2", "label": "Option 2"}
             ]
         },
+        "combobox": {
+            "type": "combobox",
+            "label": "Combobox",
+            "options": [
+                {"value": "item1", "label": "Item 1"},
+                {"value": "item2", "label": "Item 2"},
+                {"value": "item3", "label": "Item 3"}
+            ]
+        },
         "newsletter": {"type": "checkbox", "label": "Subscribe to newsletter"},
+        "enableFeature": {"type": "switch", "label": "Enable Feature"},
+        "volume": {"type": "slider", "label": "Volume", "min": 0, "max": 100, "step": 1},
+        "invoiceStatus": {"type": "button-group", "options": ["active/true/primary/Aktivní", "inactive/false/default/Neaktivní", "paid/true/default/Zaplaceno"]},
+        "testButton": {"type": "button", "label": "Test Button", "variant": "primary", "action": "test"},
         "bio": {"type": "textarea", "label": "Bio"},
-        "extraField": {"type": "text", "label": "Extra Field"}
+        "extraField": {"type": "text", "label": "Extra Field"},
+        "uploadImage": {"type": "image", "label": "Upload Image"}
     }`,
     errors: `{}`,
     values: `{}`
@@ -135,9 +145,14 @@ export const WithErrors = {
         errors: `{
             "name": "Name is required.",
             "email": "Please enter a valid email address.",
+            "password": "Password is required.",
             "userType": "Please select a user type.",
             "preferences": "Please select a preference.",
+            "combobox": "Please select an option.",
             "newsletter": "You must subscribe to the newsletter.",
+            "enableFeature": "Feature must be enabled.",
+            "volume": "Volume must be set.",
+            "invoiceStatus": "Please select invoice status.",
             "bio": "Bio is required."
         }`,
         buttons: '[{"action":"cancel","variant":"text","label":"Cancel","position":"left"}]'
@@ -171,9 +186,14 @@ export const WithValues = {
         values: `{
             "name": "John Doe",
             "email": "john@example.com",
+            "password": "secret123",
             "userType": "user",
             "preferences": "option1",
+            "combobox": "item2",
             "newsletter": true,
+            "enableFeature": true,
+            "volume": 75,
+            "invoiceStatus": "active",
             "bio": "Some bio text",
             "extraField": "Extra value"
         }`

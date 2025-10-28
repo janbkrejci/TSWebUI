@@ -87,6 +87,10 @@ class TSForm extends HTMLElement {
                     color: var(--sl-color-danger-700);
                 }
 
+                .input-invalid sl-switch::part(control) {
+                    border-color: var(--sl-color-danger-600);
+                }
+
                 .input-invalid::part(form-control-label),
                 .input-invalid::part(form-control-help-text),
                 .input-invalid::part(label) {
@@ -287,6 +291,14 @@ class TSForm extends HTMLElement {
                     const error = this.validationErrors[col.field];
                     if(error) {
                         field.classList.add('input-invalid');
+                        // For radio group, add class to individual radios
+                        if (field.tagName === 'SL-RADIO-GROUP') {
+                            field.querySelectorAll('sl-radio').forEach(radio => radio.classList.add('input-invalid'));
+                        }
+                        // For switch container, add class to sl-switch
+                        if (field.tagName === 'DIV' && field.querySelector('sl-switch')) {
+                            field.querySelector('sl-switch').classList.add('input-invalid');
+                        }
                         const errorDiv = document.createElement('div');
                         errorDiv.className = 'error-message';
                         errorDiv.textContent = error;
@@ -305,9 +317,89 @@ class TSForm extends HTMLElement {
             case 'textarea':
                 field = document.createElement('sl-textarea');
                 break;
+            case 'password':
+                field = document.createElement('sl-input');
+                field.type = 'password';
+                break;
             case 'checkbox':
                 field = document.createElement('sl-checkbox');
                 field.textContent = config.label;
+                break;
+            case 'switch':
+                const switchContainer = document.createElement('div');
+                switchContainer.style.display = 'flex';
+                switchContainer.style.alignItems = 'center';
+                field = document.createElement('sl-switch');
+                const switchLabel = document.createElement('label');
+                switchLabel.textContent = config.label;
+                if (config.labelPosition === 'left') {
+                    switchLabel.style.marginRight = '0.5rem';
+                    switchContainer.appendChild(switchLabel);
+                    switchContainer.appendChild(field);
+                } else {
+                    switchLabel.style.marginLeft = '0.5rem';
+                    switchContainer.appendChild(field);
+                    switchContainer.appendChild(switchLabel);
+                }
+                return switchContainer;
+            case 'slider':
+                field = document.createElement('sl-range');
+                if (config.min) field.min = config.min;
+                if (config.max) field.max = config.max;
+                if (config.step) field.step = config.step;
+                break;
+            case 'combobox':
+                field = document.createElement('sl-input');
+                field.setAttribute('list', `datalist-${fieldName}`);
+                const datalist = document.createElement('datalist');
+                datalist.id = `datalist-${fieldName}`;
+                config.options.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt.value;
+                    datalist.appendChild(option);
+                });
+                field.appendChild(datalist);
+                break;
+            case 'file':
+                field = document.createElement('sl-input');
+                field.type = 'file';
+                break;
+            case 'image':
+                field = document.createElement('sl-file-upload');
+                field.accept = 'image/*';
+                field.multiple = false;
+                // Shoelace file-upload has show-preview by default for images
+                break;
+            case 'button':
+                field = document.createElement('sl-button');
+                field.variant = config.variant || 'primary';
+                field.textContent = config.label || 'Button';
+                field.addEventListener('click', () => {
+                    console.log('Button clicked:', fieldName, config.action);
+                    this.dispatchEvent(new CustomEvent('form-field-action', {
+                        detail: {
+                            field: fieldName,
+                            action: config.action || 'click'
+                        },
+                        bubbles: true,
+                        composed: true
+                    }));
+                });
+                break;
+            case 'button-group':
+                field = document.createElement('sl-button-group');
+                config.options.forEach(btnStr => {
+                    const [value, enabled, variant, label] = btnStr.split('/');
+                    const button = document.createElement('sl-button');
+                    button.value = value;
+                    button.variant = variant || 'default';
+                    button.textContent = label;
+                    button.disabled = enabled === 'false';
+                    field.appendChild(button);
+                });
+                setTimeout(() => {
+                    field.value = this.formData[fieldName] || '';
+                }, 100);
                 break;
             case 'radio':
                 field = document.createElement('sl-radio-group');
@@ -349,9 +441,15 @@ class TSForm extends HTMLElement {
         // Set initial value
         if (config.type === 'checkbox') {
             field.checked = !!this.formData[fieldName];
+        } else if (config.type === 'switch') {
+            field.checked = !!this.formData[fieldName];
+        } else if (config.type === 'slider') {
+            field.value = this.formData[fieldName] || config.min || 0;
         } else if (config.type === 'radio') {
-            // Will set after appending radios
-        } else {
+            // Handled in case
+        } else if (config.type === 'select' || config.type === 'combobox') {
+            // Handled in case
+        } else if (config.type !== 'button' && config.type !== 'file' && config.type !== 'image') {
             field.value = this.formData[fieldName] || '';
         }
         field.addEventListener('sl-change', this.handleFieldChange.bind(this));
@@ -369,6 +467,16 @@ class TSForm extends HTMLElement {
             } else {
                 this.formData[field.name] = field.hasAttribute('checked');
             }
+        } else if (field.tagName === 'SL-SWITCH') {
+            this.formData[field.name] = event.detail.checked;
+        } else if (field.tagName === 'SL-RANGE') {
+            this.formData[field.name] = field.value;
+        } else if (field.tagName === 'SL-BUTTON-GROUP') {
+            this.formData[field.name] = event.detail.value;
+        } else if (field.tagName === 'SL-FILE-UPLOAD') {
+            this.formData[field.name] = event.detail.files;
+        } else if (field.type === 'file') {
+            this.formData[field.name] = field.files;
         } else {
             this.formData[field.name] = field.value;
         }
