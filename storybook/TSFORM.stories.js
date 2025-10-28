@@ -121,7 +121,11 @@ export const WithErrors = {
         ...defaultArgs,
         errors: `{
             "name": "Name is required.",
-            "email": "Please enter a valid email address."
+            "email": "Please enter a valid email address.",
+            "userType": "Please select a user type.",
+            "preferences": "Please select a preference.",
+            "newsletter": "You must subscribe to the newsletter.",
+            "bio": "Bio is required."
         }`
     }
 }

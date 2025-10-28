@@ -61,6 +61,31 @@ class TSForm extends HTMLElement {
                     font-size: var(--sl-font-size-small);
                     margin-top: 0.25rem;
                 }
+                /* invalid styles */
+                .invalid sl-input::part(base),
+                .invalid sl-textarea::part(base),
+                .invalid sl-select::part(combobox),
+                .invalid sl-checkbox::part(control) {
+                    border-color: var(--sl-color-danger-600);
+                }
+
+                .invalid::part(form-control-label),
+                .invalid::part(form-control-help-text),
+                .invalid sl-checkbox::part(label) {
+                    color: var(--sl-color-danger-700);
+                }
+
+                .invalid sl-checkbox::part(control) {
+                    outline: none;
+                }
+
+                .invalid sl-input:focus-within::part(base),
+                .invalid sl-textarea:focus-within::part(base),
+                .invalid sl-select:focus-within::part(combobox),
+                .invalid sl-checkbox:focus-within::part(control) {
+                    border-color: var(--sl-color-danger-600);
+                    box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-color-danger-300);
+                }
             `;
             this.appendChild(style);
 
@@ -122,6 +147,7 @@ class TSForm extends HTMLElement {
 
                     const error = this.validationErrors[col.field];
                     if(error) {
+                        field.classList.add('invalid');
                         const errorDiv = document.createElement('div');
                         errorDiv.className = 'error-message';
                         errorDiv.textContent = error;
