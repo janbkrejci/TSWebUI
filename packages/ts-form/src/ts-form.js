@@ -198,7 +198,7 @@ class TSForm extends HTMLElement {
                         button.disabled = true;
                     }
                     if (btn.hidden) {
-                        button.hidden = true;
+                        button.style.display = 'none';
                     }
                     button.addEventListener('click', () => {
                         this.lastAction = btn.action;
@@ -376,13 +376,13 @@ class TSForm extends HTMLElement {
 
     hideButton(action) {
         if (this.buttons[action]) {
-            this.buttons[action].hidden = true;
+            this.buttons[action].style.display = 'none';
         }
     }
 
     showButton(action) {
         if (this.buttons[action]) {
-            this.buttons[action].hidden = false;
+            this.buttons[action].style.display = '';
         }
     }
 }
