@@ -148,7 +148,8 @@ class TSForm extends HTMLElement {
                         }
                     };
                     tabGroup.addEventListener('sl-tab-show', () => setTimeout(updateIndicator, 0));
-                    updateIndicator(); // Initial check
+                    // Initial check after DOM is ready
+                    setTimeout(updateIndicator, 0);
                 }
                 tabGroup.style.flex = '1';
                 tabGroup.style.overflow = 'auto';
