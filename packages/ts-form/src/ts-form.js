@@ -86,6 +86,18 @@ class TSForm extends HTMLElement {
                 .invalid sl-checkbox::part(control) {
                     outline: none;
                 }
+
+                sl-tab.invalid::part(base) {
+                    color: var(--sl-color-danger-700);
+                }
+
+                sl-tab.invalid[active]::part(base) {
+                    color: var(--sl-color-danger-700);
+                }
+
+                sl-tab-group.invalid {
+                    --indicator-color: var(--sl-color-danger-600);
+                }
             `;
             this.appendChild(style);
 
@@ -94,12 +106,21 @@ class TSForm extends HTMLElement {
 
             if (layoutConfig.tabs) {
                 const tabGroup = document.createElement('sl-tab-group');
+                let hasAnyInvalidTab = false;
                 layoutConfig.tabs.forEach((tab, index) => {
                     const slTab = document.createElement('sl-tab');
                     slTab.slot = 'nav';
                     slTab.panel = `tab-${index}`;
                     slTab.textContent = tab.label;
                     if (index === 0) slTab.active = true;
+
+                    // Check if tab has any errors
+                    const hasErrors = tab.rows.some(row => row.some(col => this.validationErrors[col.field]));
+                    if (hasErrors) {
+                        slTab.classList.add('invalid');
+                        hasAnyInvalidTab = true;
+                    }
+
                     tabGroup.appendChild(slTab);
 
                     const tabPanel = document.createElement('sl-tab-panel');
@@ -109,6 +130,9 @@ class TSForm extends HTMLElement {
                     this.renderRows(tab.rows, fieldsConfig, tabPanel);
                     tabGroup.appendChild(tabPanel);
                 });
+                if (hasAnyInvalidTab) {
+                    tabGroup.classList.add('invalid');
+                }
                 form.appendChild(tabGroup);
             } else if (layoutConfig.rows) {
                 this.renderRows(layoutConfig.rows, fieldsConfig, form);
