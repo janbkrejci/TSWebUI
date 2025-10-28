@@ -96,7 +96,7 @@ class TSForm extends HTMLElement {
                 }
 
                 sl-tab-group.invalid {
-                    --indicator-color: var(--sl-color-danger-600);
+                    /* Indicator color set dynamically by JS */
                 }
             `;
             this.appendChild(style);
@@ -132,6 +132,17 @@ class TSForm extends HTMLElement {
                 });
                 if (hasAnyInvalidTab) {
                     tabGroup.classList.add('invalid');
+                    // Dynamically set indicator color based on active tab
+                    const updateIndicator = () => {
+                        const activeTab = tabGroup.querySelector('sl-tab[active]');
+                        if (activeTab && activeTab.classList.contains('invalid')) {
+                            tabGroup.style.setProperty('--indicator-color', 'var(--sl-color-danger-600)');
+                        } else {
+                            tabGroup.style.setProperty('--indicator-color', 'var(--sl-color-primary-600)');
+                        }
+                    };
+                    tabGroup.addEventListener('sl-tab-show', () => setTimeout(updateIndicator, 0));
+                    updateIndicator(); // Initial check
                 }
                 form.appendChild(tabGroup);
             } else if (layoutConfig.rows) {
