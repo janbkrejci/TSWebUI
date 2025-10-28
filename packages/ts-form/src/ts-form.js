@@ -5,6 +5,7 @@ class TSForm extends HTMLElement {
         this.formData = {};
         this.validationErrors = {};
         this.lastAction = null;
+        this.buttons = {};
     }
 
     static get observedAttributes() {
@@ -23,6 +24,7 @@ class TSForm extends HTMLElement {
 
     render() {
     this.innerHTML = ''; // Clear previous content
+        this.buttons = {}; // Reset button references
         const layout = this.getAttribute('layout');
         const fields = this.getAttribute('fields');
         const errors = this.getAttribute('errors');
@@ -167,26 +169,57 @@ class TSForm extends HTMLElement {
             actions.style.background = 'white';
             actions.style.padding = '1rem';
             actions.style.borderTop = '1px solid var(--sl-color-neutral-200)';
+            actions.style.display = 'flex';
+            actions.style.justifyContent = 'space-between';
+            actions.style.alignItems = 'center';
+
+            const leftDiv = document.createElement('div');
+            leftDiv.style.display = 'flex';
+            leftDiv.style.gap = '0.5rem';
+            const centerDiv = document.createElement('div');
+            centerDiv.style.display = 'flex';
+            centerDiv.style.gap = '0.5rem';
+            const rightDiv = document.createElement('div');
+            rightDiv.style.display = 'flex';
+            rightDiv.style.gap = '0.5rem';
+
+            actions.appendChild(leftDiv);
+            actions.appendChild(centerDiv);
+            actions.appendChild(rightDiv);
 
             if (buttons) {
-                buttons.split(',').forEach(btnStr => {
-                    const [action, variant, label] = btnStr.split('/');
+                const buttonsConfig = JSON.parse(buttons);
+                buttonsConfig.forEach(btn => {
                     const button = document.createElement('sl-button');
-                    button.variant = variant || 'primary';
-                    button.textContent = label || action;
+                    button.variant = btn.variant || 'primary';
+                    button.textContent = btn.label || btn.action;
                     button.type = 'button'; // Prevent default submit
+                    if (btn.disabled) {
+                        button.disabled = true;
+                    }
+                    if (btn.hidden) {
+                        button.hidden = true;
+                    }
                     button.addEventListener('click', () => {
-                        this.lastAction = action;
+                        this.lastAction = btn.action;
                         this.dispatchEvent(new CustomEvent('form-submit', {
                             detail: {
                                 formData: this.formData,
-                                action: action
+                                action: btn.action
                             },
                             bubbles: true,
                             composed: true
                         }));
                     });
-                    actions.appendChild(button);
+                    this.buttons[btn.action] = button;
+                    const position = btn.position || 'right';
+                    if (position === 'left') {
+                        leftDiv.appendChild(button);
+                    } else if (position === 'center') {
+                        centerDiv.appendChild(button);
+                    } else {
+                        rightDiv.appendChild(button);
+                    }
                 });
             } else {
                 const submitButton = document.createElement('sl-button');
@@ -204,7 +237,8 @@ class TSForm extends HTMLElement {
                         composed: true
                     }));
                 });
-                actions.appendChild(submitButton);
+                this.buttons['submit'] = submitButton;
+                rightDiv.appendChild(submitButton);
             }
 
             form.addEventListener('submit', this.handleSubmit.bind(this));
@@ -326,6 +360,30 @@ class TSForm extends HTMLElement {
             bubbles: true,
             composed: true
         }));
+    }
+
+    disableButton(action) {
+        if (this.buttons[action]) {
+            this.buttons[action].disabled = true;
+        }
+    }
+
+    enableButton(action) {
+        if (this.buttons[action]) {
+            this.buttons[action].disabled = false;
+        }
+    }
+
+    hideButton(action) {
+        if (this.buttons[action]) {
+            this.buttons[action].hidden = true;
+        }
+    }
+
+    showButton(action) {
+        if (this.buttons[action]) {
+            this.buttons[action].hidden = false;
+        }
     }
 }
 

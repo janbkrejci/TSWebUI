@@ -64,14 +64,14 @@ export default {
         },
         buttons: {
             control: 'text',
-            description: 'Form buttons configuration (action/variant/label,action2/variant2/label2)'
+            description: 'Form buttons configuration (JSON array of objects: [{action, variant, label, disabled?, hidden?, position?}])'
         }
     },
 };
 
 const defaultArgs = {
     dark: false,
-    buttons: '',
+    buttons: '[]',
     layout: `{
         "tabs": [
             {
@@ -133,13 +133,21 @@ export const WithErrors = {
             "preferences": "Please select a preference.",
             "newsletter": "You must subscribe to the newsletter.",
             "bio": "Bio is required."
-        }`
+        }`,
+        buttons: '[{"action":"cancel","variant":"text","label":"Cancel","position":"left"}]'
     }
 }
 
 export const WithButtons = {
     args: {
         ...defaultArgs,
-        buttons: 'save/primary/Save,cancel/default/Cancel'
+        buttons: '[{"action":"save","variant":"primary","label":"Save","position":"right"},{"action":"cancel","variant":"default","label":"Cancel","position":"left"}]'
+    }
+}
+
+export const WithDisabledAndHiddenButtons = {
+    args: {
+        ...defaultArgs,
+        buttons: '[{"action":"cancel","variant":"default","label":"Cancel","hidden":true,"position":"left"},{"action":"save","variant":"primary","label":"Save","disabled":true,"position":"right"}]'
     }
 }
