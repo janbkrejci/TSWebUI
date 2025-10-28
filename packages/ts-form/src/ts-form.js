@@ -190,6 +190,7 @@ class TSForm extends HTMLElement {
                 const fieldConfig = fieldsConfig[col.field];
                 if (fieldConfig) {
                     const fieldContainer = document.createElement('div');
+                    fieldContainer.style.padding = '0.5rem';
                     const field = this.createField(col.field, fieldConfig);
                     fieldContainer.appendChild(field);
 
