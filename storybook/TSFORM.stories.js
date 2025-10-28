@@ -27,6 +27,7 @@ export default {
                 `fields='${args.fields}'`,
                 `errors='${args.errors}'`,
                 `buttons='${args.buttons}'`,
+                `values='${args.values}'`,
             ].join(' ');
             htmlContent = htmlContent.replace(formRegex, `<ts-form id="form" ${attributes}>`);
         }
@@ -61,6 +62,10 @@ export default {
         errors: {
             control: 'text',
             description: 'Form validation errors (JSON object)'
+        },
+        values: {
+            control: 'text',
+            description: 'Initial form values (JSON object)'
         },
         buttons: {
             control: 'text',
@@ -120,7 +125,8 @@ const defaultArgs = {
         "bio": {"type": "textarea", "label": "Bio"},
         "extraField": {"type": "text", "label": "Extra Field"}
     }`,
-    errors: `{}`
+    errors: `{}`,
+    values: `{}`
 };
 
 export const WithErrors = {
@@ -156,5 +162,20 @@ export const WithConfirmation = {
     args: {
         ...defaultArgs,
         buttons: '[{"action":"cancel","variant":"text","label":"Cancel","position":"left"},{"action":"delete","variant":"danger","label":"Delete","position":"right","confirmation":{"title":"Potvrdit akci","text":"Opravdu smazat záznam?","buttons":[{"action":"no","variant":"default","label":"Ne","position":"left"},{"action":"yes","variant":"danger","label":"Ano","confirm":true,"position":"right"}]}}]'
+    }
+}
+
+export const WithValues = {
+    args: {
+        ...defaultArgs,
+        values: `{
+            "name": "John Doe",
+            "email": "john@example.com",
+            "userType": "user",
+            "preferences": "option1",
+            "newsletter": true,
+            "bio": "Some bio text",
+            "extraField": "Extra value"
+        }`
     }
 }

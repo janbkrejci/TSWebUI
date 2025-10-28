@@ -9,7 +9,7 @@ class TSForm extends HTMLElement {
     }
 
     static get observedAttributes() {
-        return ['layout', 'fields', 'errors', 'buttons'];
+        return ['layout', 'fields', 'errors', 'buttons', 'values'];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -29,6 +29,7 @@ class TSForm extends HTMLElement {
         const fields = this.getAttribute('fields');
         const errors = this.getAttribute('errors');
         const buttons = this.getAttribute('buttons');
+        const values = this.getAttribute('values');
 
         if (!layout || !fields) {
             return;
@@ -49,6 +50,11 @@ class TSForm extends HTMLElement {
                     this.formData[fieldName] = '';
                 }
             });
+
+            if (values) {
+                const valuesObj = JSON.parse(values);
+                this.formData = { ...this.formData, ...valuesObj };
+            }
 
             const style = document.createElement('style');
             style.textContent = `
@@ -312,6 +318,9 @@ class TSForm extends HTMLElement {
                     radio.textContent = opt.label;
                     field.appendChild(radio);
                 });
+                setTimeout(() => {
+                    field.value = this.formData[fieldName] || '';
+                }, 100);
                 break;
             case 'select':
                 field = document.createElement('sl-select');
@@ -322,6 +331,9 @@ class TSForm extends HTMLElement {
                     option.textContent = opt.label;
                     field.appendChild(option);
                 });
+                setTimeout(() => {
+                    field.value = this.formData[fieldName] || '';
+                }, 100);
                 break;
             default:
                 field = document.createElement('sl-input');
@@ -333,6 +345,14 @@ class TSForm extends HTMLElement {
         }
         if (config.required) {
             field.required = true;
+        }
+        // Set initial value
+        if (config.type === 'checkbox') {
+            field.checked = !!this.formData[fieldName];
+        } else if (config.type === 'radio') {
+            // Will set after appending radios
+        } else {
+            field.value = this.formData[fieldName] || '';
         }
         field.addEventListener('sl-change', this.handleFieldChange.bind(this));
         return field;
