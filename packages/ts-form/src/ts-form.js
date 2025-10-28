@@ -95,14 +95,20 @@ class TSForm extends HTMLElement {
                     color: var(--sl-color-danger-700);
                 }
 
-                sl-tab-group.invalid {
-                    /* Indicator color set dynamically by JS */
+                sl-tab-group::part(nav) {
+                    position: sticky;
+                    top: 0;
+                    background: white;
+                    z-index: 1;
                 }
             `;
             this.appendChild(style);
 
             const form = document.createElement('form');
             form.noValidate = true;
+            form.style.display = 'flex';
+            form.style.flexDirection = 'column';
+            form.style.height = '100%';
 
             if (layoutConfig.tabs) {
                 const tabGroup = document.createElement('sl-tab-group');
@@ -144,6 +150,8 @@ class TSForm extends HTMLElement {
                     tabGroup.addEventListener('sl-tab-show', () => setTimeout(updateIndicator, 0));
                     updateIndicator(); // Initial check
                 }
+                tabGroup.style.flex = '1';
+                tabGroup.style.overflow = 'auto';
                 form.appendChild(tabGroup);
             } else if (layoutConfig.rows) {
                 this.renderRows(layoutConfig.rows, fieldsConfig, form);
@@ -151,6 +159,11 @@ class TSForm extends HTMLElement {
 
             const actions = document.createElement('div');
             actions.className = 'form-actions';
+            actions.style.position = 'sticky';
+            actions.style.bottom = '0';
+            actions.style.background = 'white';
+            actions.style.padding = '1rem';
+            actions.style.borderTop = '1px solid var(--sl-color-neutral-200)';
             const submitButton = document.createElement('sl-button');
             submitButton.variant = 'primary';
             submitButton.textContent = 'Submit';
