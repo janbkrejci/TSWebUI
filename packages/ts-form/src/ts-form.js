@@ -83,12 +83,17 @@ class TSForm extends HTMLElement {
                     --sl-input-focus-ring-color: var(--sl-color-danger-300);
                 }
 
-                .input-invalid sl-radio::part(label) {
+                .input-invalid sl-switch::part(label) {
                     color: var(--sl-color-danger-700);
                 }
 
                 .input-invalid sl-switch::part(control) {
                     border-color: var(--sl-color-danger-600);
+                    background-color: var(--sl-color-danger-100);
+                }
+
+                .input-invalid label {
+                    color: var(--sl-color-danger-700);
                 }
 
                 .input-invalid::part(form-control-label),
@@ -473,6 +478,7 @@ class TSForm extends HTMLElement {
             this.formData[field.name] = field.value;
         } else if (field.tagName === 'SL-BUTTON-GROUP') {
             this.formData[field.name] = event.detail.value;
+            console.log('Button group changed:', field.name, event.detail.value);
         } else if (field.tagName === 'SL-FILE-UPLOAD') {
             this.formData[field.name] = event.detail.files;
         } else if (field.type === 'file') {
