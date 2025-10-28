@@ -82,6 +82,12 @@ const defaultArgs = {
                 "rows": [
                     [{"field": "preferences", "width": "1fr"}]
                 ]
+            },
+            {
+                "label": "Extra",
+                "rows": [
+                    [{"field": "extraField", "width": "1fr"}]
+                ]
             }
         ]
     }`,
@@ -105,7 +111,8 @@ const defaultArgs = {
             ]
         },
         "newsletter": {"type": "checkbox", "label": "Subscribe to newsletter"},
-        "bio": {"type": "textarea", "label": "Bio"}
+        "bio": {"type": "textarea", "label": "Bio"},
+        "extraField": {"type": "text", "label": "Extra Field"}
     }`,
     errors: `{}`
 };

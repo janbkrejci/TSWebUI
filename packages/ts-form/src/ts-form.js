@@ -62,28 +62,28 @@ class TSForm extends HTMLElement {
                     margin-top: 0.25rem;
                 }
                 /* invalid styles */
-                .invalid {
+                .input-invalid {
                     --sl-input-border-color: var(--sl-color-danger-600);
                     --sl-input-border-color-hover: var(--sl-color-danger-600);
                     --sl-input-border-color-focus: var(--sl-color-danger-600);
                 }
 
-                .invalid:focus-within {
+                .input-invalid:focus-within {
                     --sl-input-border-color: var(--sl-color-danger-600);
                     --sl-input-focus-ring-color: var(--sl-color-danger-300);
                 }
 
-                .invalid sl-radio::part(label) {
+                .input-invalid sl-radio::part(label) {
                     color: var(--sl-color-danger-700);
                 }
 
-                .invalid::part(form-control-label),
-                .invalid::part(form-control-help-text),
-                .invalid::part(label) {
+                .input-invalid::part(form-control-label),
+                .input-invalid::part(form-control-help-text),
+                .input-invalid::part(label) {
                     color: var(--sl-color-danger-700);
                 }
 
-                .invalid sl-checkbox::part(control) {
+                .input-invalid sl-checkbox::part(control) {
                     outline: none;
                 }
 
@@ -171,7 +171,7 @@ class TSForm extends HTMLElement {
 
                     const error = this.validationErrors[col.field];
                     if(error) {
-                        field.classList.add('invalid');
+                        field.classList.add('input-invalid');
                         const errorDiv = document.createElement('div');
                         errorDiv.className = 'error-message';
                         errorDiv.textContent = error;
