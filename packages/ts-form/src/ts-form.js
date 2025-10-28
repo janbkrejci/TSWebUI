@@ -93,6 +93,15 @@ class TSForm extends HTMLElement {
                     color: var(--sl-color-danger-700);
                 }
 
+                /* switch label when its container has .input-invalid */
+                .input-invalid label {
+                    color: var(--sl-color-danger-700);
+                }
+
+                .input-invalid sl-switch::part(label) {
+                    color: var(--sl-color-danger-700);
+                }
+
                 .input-invalid sl-checkbox::part(control) {
                     outline: none;
                 }

@@ -153,6 +153,7 @@ export const WithErrors = {
             "enableFeature": "Feature must be enabled.",
             "volume": "Volume must be set.",
             "invoiceStatus": "Please select invoice status.",
+            "extraField": "Extra field is required.",
             "bio": "Bio is required."
         }`,
         buttons: '[{"action":"cancel","variant":"text","label":"Cancel","position":"left"}]'
