@@ -62,29 +62,19 @@ class TSForm extends HTMLElement {
                     margin-top: 0.25rem;
                 }
                 /* invalid styles */
-                .invalid sl-input::part(base),
-                .invalid sl-textarea::part(base),
-                .invalid sl-select::part(combobox),
-                .invalid sl-checkbox::part(control) {
-                    border-color: var(--sl-color-danger-600);
+                .invalid {
+                    --sl-input-border-color: var(--sl-color-danger-600);
+                    --sl-input-focus-ring-color: var(--sl-color-danger-300);
                 }
 
                 .invalid::part(form-control-label),
                 .invalid::part(form-control-help-text),
-                .invalid sl-checkbox::part(label) {
+                .invalid::part(label) {
                     color: var(--sl-color-danger-700);
                 }
 
                 .invalid sl-checkbox::part(control) {
                     outline: none;
-                }
-
-                .invalid sl-input:focus-within::part(base),
-                .invalid sl-textarea:focus-within::part(base),
-                .invalid sl-select:focus-within::part(combobox),
-                .invalid sl-checkbox:focus-within::part(control) {
-                    border-color: var(--sl-color-danger-600);
-                    box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-color-danger-300);
                 }
             `;
             this.appendChild(style);
