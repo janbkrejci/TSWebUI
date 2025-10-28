@@ -144,8 +144,8 @@ export const WithErrors = {
         ...defaultArgs,
         errors: `{
             "name": "Name is required.",
-            "email": "Please enter a valid email address.",
             "password": "Password is required.",
+            "email": "Please enter a valid email address.",
             "userType": "Please select a user type.",
             "preferences": "Please select a preference.",
             "combobox": "Please select an option.",

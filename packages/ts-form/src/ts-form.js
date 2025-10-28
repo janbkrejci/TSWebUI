@@ -83,16 +83,7 @@ class TSForm extends HTMLElement {
                     --sl-input-focus-ring-color: var(--sl-color-danger-300);
                 }
 
-                .input-invalid sl-switch::part(label) {
-                    color: var(--sl-color-danger-700);
-                }
-
-                .input-invalid sl-switch::part(control) {
-                    border-color: var(--sl-color-danger-600);
-                    background-color: var(--sl-color-danger-100);
-                }
-
-                .input-invalid label {
+                .input-invalid sl-radio::part(label) {
                     color: var(--sl-color-danger-700);
                 }
 
@@ -296,14 +287,6 @@ class TSForm extends HTMLElement {
                     const error = this.validationErrors[col.field];
                     if(error) {
                         field.classList.add('input-invalid');
-                        // For radio group, add class to individual radios
-                        if (field.tagName === 'SL-RADIO-GROUP') {
-                            field.querySelectorAll('sl-radio').forEach(radio => radio.classList.add('input-invalid'));
-                        }
-                        // For switch container, add class to sl-switch
-                        if (field.tagName === 'DIV' && field.querySelector('sl-switch')) {
-                            field.querySelector('sl-switch').classList.add('input-invalid');
-                        }
                         const errorDiv = document.createElement('div');
                         errorDiv.className = 'error-message';
                         errorDiv.textContent = error;
@@ -392,20 +375,39 @@ class TSForm extends HTMLElement {
                 });
                 break;
             case 'button-group':
-                field = document.createElement('sl-button-group');
+                // Use Shoelace sl-button-group for toggles
+                const slButtonGroup = document.createElement('sl-button-group');
+                slButtonGroup.style.display = 'flex';
+                slButtonGroup.style.gap = '0.5rem';
+                // options are expected as array of strings: value/enabled/variant/label
                 config.options.forEach(btnStr => {
-                    const [value, enabled, variant, label] = btnStr.split('/');
-                    const button = document.createElement('sl-button');
-                    button.value = value;
-                    button.variant = variant || 'default';
-                    button.textContent = label;
-                    button.disabled = enabled === 'false';
-                    field.appendChild(button);
+                    const [value, enabled = 'true', variant = 'default', label = ''] = btnStr.split('/');
+                    const b = document.createElement('sl-button');
+                    b.dataset.value = value;
+                    // If this value matches current formData, mark primary
+                    b.variant = (this.formData[fieldName] === value) ? (variant || 'primary') : (variant || 'default');
+                    b.textContent = label || value;
+                    b.disabled = enabled === 'false';
+                    b.addEventListener('click', () => {
+                        // update selected value
+                        this.formData[fieldName] = value;
+                        // update variants: set all to default then selected to primary
+                        slButtonGroup.querySelectorAll('sl-button').forEach(btn => btn.variant = 'default');
+                        b.variant = 'primary';
+                        // emit same event as other selection fields
+                        this.dispatchEvent(new CustomEvent('form-changed', {
+                            detail: {
+                                field: fieldName,
+                                value: value,
+                                formData: this.formData
+                            },
+                            bubbles: true,
+                            composed: true
+                        }));
+                    });
+                    slButtonGroup.appendChild(b);
                 });
-                setTimeout(() => {
-                    field.value = this.formData[fieldName] || '';
-                }, 100);
-                break;
+                return slButtonGroup;
             case 'radio':
                 field = document.createElement('sl-radio-group');
                 field.label = config.label;
@@ -476,9 +478,6 @@ class TSForm extends HTMLElement {
             this.formData[field.name] = event.detail.checked;
         } else if (field.tagName === 'SL-RANGE') {
             this.formData[field.name] = field.value;
-        } else if (field.tagName === 'SL-BUTTON-GROUP') {
-            this.formData[field.name] = event.detail.value;
-            console.log('Button group changed:', field.name, event.detail.value);
         } else if (field.tagName === 'SL-FILE-UPLOAD') {
             this.formData[field.name] = event.detail.files;
         } else if (field.type === 'file') {
