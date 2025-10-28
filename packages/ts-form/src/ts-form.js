@@ -64,7 +64,17 @@ class TSForm extends HTMLElement {
                 /* invalid styles */
                 .invalid {
                     --sl-input-border-color: var(--sl-color-danger-600);
+                    --sl-input-border-color-hover: var(--sl-color-danger-600);
+                    --sl-input-border-color-focus: var(--sl-color-danger-600);
+                }
+
+                .invalid:focus-within {
+                    --sl-input-border-color: var(--sl-color-danger-600);
                     --sl-input-focus-ring-color: var(--sl-color-danger-300);
+                }
+
+                .invalid sl-radio {
+                    --sl-radio-label-color: var(--sl-color-danger-700);
                 }
 
                 .invalid::part(form-control-label),
