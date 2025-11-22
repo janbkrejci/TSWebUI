@@ -1658,7 +1658,7 @@ class TSDataTable extends HTMLElement {
             if (col.type === 'number') {
                 cellContent = `<sl-format-number value="${row[col.key]}" type="decimal" minimum-fraction-digits="2" maximum-fraction-digits="2"></sl-format-number>`;
                 copyValue = row[col.key]; // unformatted number for copy
-            } else if (col.type === 'number') {
+            } else if (col.type === 'date') {
                 cellContent = `<sl-format-date date="${row[col.key]}"></sl-format-date>`;
                 copyValue = new Date(row[col.key]).toLocaleDateString('cs-CZ').replace(/\s/g, ''); // formatted date without spaces
             } else if (col.type === 'boolean') {

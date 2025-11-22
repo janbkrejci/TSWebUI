@@ -53,13 +53,12 @@
 
     <!-- TS-Form -->
     <script type="module" src="packages/ts-form/src/ts-form.js"></script>
+    <!-- TS-Table -->
+    <script type="module" src="packages/ts-table/src/ts-table.js"></script>
 </head>
 
-<body>
-    <div class="container">
-        <h1>TS-Form Test</h1>
-        <ts-form id="form"></ts-form>
-    </div>
+<body style="margin: 0; height: 100vh; overflow: hidden;">
+    <ts-form id="form"></ts-form>
 
     <script>
         const fields = {
@@ -86,7 +85,7 @@
 
             // Details
             birthdate: { label: 'Datum narození', type: 'date' },
-            bio: { label: 'Životopis', type: 'textarea' },
+            bio: { label: 'Životopis', type: 'textarea', hideLabel: true, placeholder: 'Životopis (bez labelu)' },
             avatar: { label: 'Profilový obrázek', type: 'image' },
             resume: { label: 'Životopis (PDF)', type: 'file', multiple: true },
 
@@ -157,6 +156,67 @@
                     { id: 119, name: 'Documentation', code: 'PRJ-DOC' },
                     { id: 120, name: 'Legacy Retirement', code: 'PRJ-OLD' }
                 ]
+            },
+
+            // History Table
+            history: {
+                label: 'Historie aktivit',
+                type: 'table',
+                // Table feature flags
+                showCreateButton: true,
+                showImportButton: true,
+                showExportButton: true,
+                showColumnSelector: true,
+                enableSorting: true,
+                enableFiltering: true,
+                enableColumnResizing: true,
+                enableColumnReordering: true,
+                enableSelection: true,
+                enableRowMenu: true,
+                enableClickableRows: true,
+                enableClickableColumns: true,
+                enablePagination: true,
+                itemsPerPage: 5,
+                itemsPerPageOptions: [5, 10, 20],
+                singleItemActions: 'view_details/Zobrazit detaily,edit/Upravit,delete/Smazat',
+                multipleItemsActions: 'delete_selected/Smazat vybrané,export_selected/Exportovat vybrané',
+
+                columns: [
+                    {
+                        field: 'date',
+                        header: 'Datum',
+                        type: 'date',
+                        sortable: true,
+                        filterable: true,
+                        canBeCopied: true,
+                        isClickable: true,
+                        align: 'right'
+                    },
+                    {
+                        field: 'action',
+                        header: 'Akce',
+                        type: 'text',
+                        sortable: true,
+                        filterable: true,
+                        isClickable: true
+                    },
+                    {
+                        field: 'user',
+                        header: 'Uživatel',
+                        type: 'text',
+                        sortable: true,
+                        filterable: true
+                    }
+                ],
+                data: [
+                    { id: 1, date: '2023-01-01', action: 'Login', user: 'jnovak' },
+                    { id: 2, date: '2023-01-02', action: 'Update Profile', user: 'jnovak' },
+                    { id: 3, date: '2023-01-03', action: 'Logout', user: 'jnovak' },
+                    { id: 4, date: '2023-01-04', action: 'Login', user: 'jnovak' },
+                    { id: 5, date: '2023-01-05', action: 'View Report', user: 'jnovak' },
+                    { id: 6, date: '2023-01-06', action: 'Export Data', user: 'jnovak' },
+                    { id: 7, date: '2023-01-07', action: 'Logout', user: 'jnovak' }
+                ]
             }
         };
 
@@ -192,6 +252,12 @@
                         [{ field: 'theme' }],
                         [{ field: 'projects' }]
                     ]
+                },
+                {
+                    label: 'Tabulka',
+                    rows: [
+                        [{ field: 'history' }]
+                    ]
                 }
             ]
         };
@@ -225,6 +291,11 @@
         };
         form.setAttribute('values', JSON.stringify(initialValues));
 
+        // Initialize form
+        customElements.whenDefined('ts-form').then(() => {
+            form.run();
+        });
+
         form.addEventListener('form-submit', (e) => {
             console.log('Form submitted:', e.detail);
             if (e.detail.action === 'save') {
@@ -237,12 +308,16 @@
                         data[key] = Array.from(data[key]).map(f => `File: ${f.name} (${f.size} bytes)`);
                     }
                 }
-                alert('Uloženo!\n' + JSON.stringify(data, null, 2));
+                console.log('Uloženo!', data);
             }
         });
 
         form.addEventListener('form-changed', (e) => {
             console.log('Form changed:', e.detail);
+        });
+
+        form.addEventListener('form-table-action', (e) => {
+            console.log('Table action:', e.detail);
         });
     </script>
 </body>
