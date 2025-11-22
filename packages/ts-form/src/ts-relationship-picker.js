@@ -80,6 +80,28 @@ export class TSRelationshipPicker extends HTMLElement {
 
     connectedCallback() {
         this.render();
+
+        // Add ResizeObserver with debouncing to prevent loop errors
+        this.resizeObserver = new ResizeObserver(() => {
+            if (this.resizeTimeout) {
+                clearTimeout(this.resizeTimeout);
+            }
+            this.resizeTimeout = setTimeout(() => {
+                this.updateVisibleChips();
+            }, 10);
+        });
+
+        // We need to observe the container, but it might not be created yet if render() hasn't run.
+        // render() creates this.selectedContainer.
+        if (this.selectedContainer) {
+            this.resizeObserver.observe(this.selectedContainer);
+        }
+    }
+
+    disconnectedCallback() {
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+        }
     }
 
     render() {
@@ -89,11 +111,15 @@ export class TSRelationshipPicker extends HTMLElement {
             :host {
                 display: block;
                 font-family: var(--sl-font-sans);
+                width: 100%;
+                max-width: 100%;
             }
             .picker-container {
                 display: flex;
                 flex-direction: column;
-                gap: var(--sl-spacing-2x-small); /* Gap between label and input */
+                gap: var(--sl-spacing-2x-small);
+                width: 100%; /* Constrain parent width */
+                max-width: 100%;
             }
             .label {
                 font-size: var(--sl-input-label-font-size-medium);
@@ -102,16 +128,24 @@ export class TSRelationshipPicker extends HTMLElement {
             }
             .selected-items {
                 display: flex;
-                flex-wrap: wrap;
+                flex-wrap: nowrap; /* Prevent wrapping to second line */
                 gap: 0.5rem;
-                min-height: var(--sl-input-height-medium);
-                padding: 0.3rem 0.5rem;
+                height: 2.5rem; /* Fixed height */
+                width: 100%; /* Prevent horizontal expansion */
+                max-width: 100%; /* Enforce width limit */
+                min-width: 0; /* Allow shrinking below content size */
+                box-sizing: border-box; /* Include padding in width */
+                padding: 0.5rem;
                 border: 1px solid var(--sl-input-border-color);
                 border-radius: var(--sl-input-border-radius-medium);
                 background: var(--sl-input-background-color);
-                align-items: center;
-                cursor: pointer; /* Make it look clickable */
+                cursor: pointer;
                 transition: var(--sl-transition-fast) border-color, var(--sl-transition-fast) box-shadow;
+                overflow: hidden;
+                align-items: center; /* Vertically center all content */
+            }
+            .selected-items sl-tag {
+                flex-shrink: 0; /* Prevent tags from shrinking */
             }
             .selected-items:hover {
                 border-color: var(--sl-input-border-color-hover);
@@ -124,7 +158,6 @@ export class TSRelationshipPicker extends HTMLElement {
                 color: var(--sl-input-placeholder-color);
                 font-size: var(--sl-font-size-medium);
             }
-            /* Add a caret icon to indicate dropdown behavior */
             .selected-items::after {
                 content: '';
                 margin-left: auto;
@@ -134,14 +167,6 @@ export class TSRelationshipPicker extends HTMLElement {
                 background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23777'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
                 background-repeat: no-repeat;
                 background-position: center;
-            }
-            .actions {
-                display: none; /* Hide actions container as we don't need the button anymore */
-            }
-            .item-tag {
-                display: inline-flex;
-                align-items: center;
-                gap: 0.25rem;
             }
             .search-results {
                 margin-top: 1rem;
@@ -194,9 +219,7 @@ export class TSRelationshipPicker extends HTMLElement {
 
         const selectedContainer = document.createElement('div');
         selectedContainer.className = 'selected-items';
-        // Add click listener to the container
         selectedContainer.addEventListener('click', (e) => {
-            // Prevent opening if clicking on a remove button of a tag
             if (e.target.closest('sl-tag')) return;
             this.openDialog();
         });
@@ -206,15 +229,22 @@ export class TSRelationshipPicker extends HTMLElement {
 
         container.appendChild(selectedContainer);
         this.appendChild(container);
+
+        if (this.resizeObserver) {
+            this.resizeObserver.observe(this.selectedContainer);
+        }
     }
 
     renderSelectedItems() {
         if (this.selectedItems.length === 0) {
             this.selectedContainer.innerHTML = 'Žádné položky nevybrány';
             this.selectedContainer.classList.add('empty');
+            this.selectedContainer.style.visibility = 'visible';
             return;
         }
 
+        // Hide container during rendering to prevent expansion
+        this.selectedContainer.style.visibility = 'hidden';
         this.selectedContainer.innerHTML = '';
         this.selectedContainer.classList.remove('empty');
 
@@ -227,17 +257,127 @@ export class TSRelationshipPicker extends HTMLElement {
             // Use chipDisplayFields if available, otherwise fallback to displayFields
             const fieldsToShow = (this.chipDisplayFields && this.chipDisplayFields.length > 0)
                 ? this.chipDisplayFields
-                : this.displayFields;
+                : this.displayFields.slice(0, 1);
 
-            const label = fieldsToShow.map(field => item[field]).join(' - ');
-            tag.textContent = label;
+            const displayText = fieldsToShow.map(field => item[field]).join(' - ');
+            tag.textContent = displayText;
 
-            tag.addEventListener('sl-remove', () => {
+            tag.addEventListener('sl-remove', (e) => {
+                e.stopPropagation();
                 this.removeItem(item);
             });
 
             this.selectedContainer.appendChild(tag);
         });
+
+        // Immediately check for overflow and collapse if needed
+        // Wait for sl-tag to be defined, then wait for render
+        customElements.whenDefined('sl-tag').then(() => {
+            // Use double RAF to ensure tags are fully laid out
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    this.updateVisibleChips();
+                    // Show container after processing
+                    this.selectedContainer.style.visibility = 'visible';
+                });
+            });
+        });
+    }
+
+    updateVisibleChips() {
+        if (!this.selectedContainer || this.selectedItems.length === 0) return;
+
+        const tags = Array.from(this.selectedContainer.querySelectorAll('sl-tag:not(.summary-tag)'));
+        const existingSummary = this.selectedContainer.querySelector('.summary-tag');
+        if (existingSummary) existingSummary.remove();
+
+        // Reset all tags to visible
+        tags.forEach(tag => tag.style.display = '');
+
+        if (tags.length === 0) return;
+
+        // Get container width (excluding padding)
+        const containerStyle = window.getComputedStyle(this.selectedContainer);
+        const paddingLeft = parseFloat(containerStyle.paddingLeft);
+        const paddingRight = parseFloat(containerStyle.paddingRight);
+        // Use a safety margin of 2px to account for sub-pixel rendering issues
+        const availableWidth = this.selectedContainer.clientWidth - paddingLeft - paddingRight - 2;
+
+        // Get gap from computed style or default to 8px
+        const gapStr = containerStyle.gap || '8px';
+        const gap = parseFloat(gapStr) || 8;
+
+        // Calculate total width of all tags
+        let totalWidth = 0;
+        const tagWidths = tags.map(tag => {
+            // Use ceil to be safe with sub-pixels
+            const w = Math.ceil(tag.getBoundingClientRect().width);
+            totalWidth += w + gap;
+            return w;
+        });
+        totalWidth -= gap; // Remove last gap
+
+        // If everything fits, we're done
+        if (totalWidth <= availableWidth) return;
+
+        // Create summary tag to measure it
+        const summary = document.createElement('sl-tag');
+        summary.className = 'summary-tag';
+        summary.variant = 'neutral';
+        summary.size = 'medium';
+        summary.style.cursor = 'pointer';
+        summary.style.flexShrink = '0';
+        summary.textContent = `A další, celkem (${tags.length})`;
+
+        // Temporarily append to measure
+        summary.style.visibility = 'hidden';
+        summary.style.position = 'absolute';
+        this.selectedContainer.appendChild(summary);
+        // Add extra buffer to summary width just in case
+        const summaryWidth = Math.ceil(summary.getBoundingClientRect().width) + 4;
+        summary.remove();
+        summary.style.visibility = '';
+        summary.style.position = '';
+
+        summary.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.openDialog();
+        });
+
+        // Calculate how many tags fit with summary
+        let currentWidth = summaryWidth + gap;
+        let visibleCount = 0;
+
+        for (let i = 0; i < tagWidths.length; i++) {
+            if (currentWidth + tagWidths[i] <= availableWidth) {
+                currentWidth += tagWidths[i] + gap;
+                visibleCount++;
+            } else {
+                break;
+            }
+        }
+
+        // Update summary text with correct count if needed (though width shouldn't change much)
+        // We use the initial measurement as a safe upper bound
+
+        // Hide tags that don't fit
+        for (let i = 0; i < tags.length; i++) {
+            tags[i].style.display = (i < visibleCount) ? '' : 'none';
+        }
+
+        // Insert summary
+        if (visibleCount < tags.length) {
+            if (visibleCount > 0) {
+                const insertAfter = tags[visibleCount - 1];
+                if (insertAfter.nextSibling) {
+                    this.selectedContainer.insertBefore(summary, insertAfter.nextSibling);
+                } else {
+                    this.selectedContainer.appendChild(summary);
+                }
+            } else {
+                this.selectedContainer.insertBefore(summary, this.selectedContainer.firstChild);
+            }
+        }
     }
 
     removeItem(item) {
@@ -369,10 +509,25 @@ export class TSRelationshipPicker extends HTMLElement {
 
             row.addEventListener('click', () => {
                 if (this.mode === 'single') {
-                    this.addItem(item);
-                    if (dialog) dialog.hide();
+                    // Allow unselect in single mode by clicking on selected item
+                    const currentlySelected = this.selectedItems.some(i => i[this.valueField] === item[this.valueField]);
+
+                    if (currentlySelected) {
+                        // Clicking on already selected item = unselect
+                        this.selectedItems = [];
+                        this.renderSelectedItems();
+                        this.dispatchChange();
+                        if (dialog) dialog.hide();
+                    } else {
+                        // Clicking on unselected item = select
+                        this.addItem(item);
+                        if (dialog) dialog.hide();
+                    }
                 } else {
-                    if (isSelected) {
+                    // Recalculate isSelected state dynamically
+                    const currentlySelected = this.selectedItems.some(i => i[this.valueField] === item[this.valueField]);
+
+                    if (currentlySelected) {
                         this.removeItem(item);
                         row.classList.remove('selected');
                         actionIcon.name = 'circle';

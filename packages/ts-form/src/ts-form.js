@@ -157,11 +157,12 @@ class TSForm extends HTMLElement {
                 box-sizing: border-box;
             }
             .tab-content.full-height {
-                padding: 0;
+                padding: 1rem;
                 max-width: none;
                 overflow: hidden; /* Let table handle scrolling */
                 display: flex;
                 flex-direction: column;
+                box-sizing: border-box;
             }
             .tab-content.full-height .form-row {
                 height: 100%;
@@ -189,6 +190,8 @@ class TSForm extends HTMLElement {
             }
             .form-col {
                 flex: 1;
+                min-width: 0; /* Critical: allows flex item to shrink below content size */
+                overflow: hidden; /* Prevent overflow from expanding parent - critical for Safari */
             }
             .error-message {
                 color: var(--sl-color-danger-500);

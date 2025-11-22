@@ -105,32 +105,31 @@ export class TSFormField extends HTMLElement {
                 field.checked = value === true;
                 break;
             case 'switch':
-                const switchContainer = document.createElement('div');
-                switchContainer.style.display = 'flex';
-                switchContainer.style.alignItems = 'center';
-                field = document.createElement('sl-switch');
+                const switchWrapper = document.createElement('div');
+                switchWrapper.style.display = 'flex';
+                switchWrapper.style.flexDirection = 'column';
+                switchWrapper.style.gap = 'var(--sl-spacing-2x-small)';
 
                 if (!config.hideLabel) {
                     const switchLabel = document.createElement('label');
                     switchLabel.textContent = config.label;
-                    if (config.labelPosition === 'left') {
-                        switchLabel.style.marginRight = '0.5rem';
-                        switchContainer.appendChild(switchLabel);
-                        switchContainer.appendChild(field);
-                    } else {
-                        switchLabel.style.marginLeft = '0.5rem';
-                        switchContainer.appendChild(field);
-                        switchContainer.appendChild(switchLabel);
-                    }
-                } else {
-                    switchContainer.appendChild(field);
+                    switchLabel.style.fontSize = 'var(--sl-input-label-font-size-medium)';
+                    switchLabel.style.fontWeight = 'var(--sl-font-weight-semibold)';
+                    switchLabel.style.color = 'var(--sl-input-label-color)';
+                    switchWrapper.appendChild(switchLabel);
                 }
 
-                field.name = fieldName;
-                field.checked = value === true;
-                field.addEventListener('sl-change', (e) => this.handleFieldChange(e, fieldName));
+                const switchContainer = document.createElement('div');
+                switchContainer.style.display = 'flex';
+                switchContainer.style.alignItems = 'center';
+                switchContainer.style.minHeight = 'var(--sl-input-height-medium)';
 
-                return switchContainer;
+                field = document.createElement('sl-switch');
+                field.checked = value === true;
+
+                switchContainer.appendChild(field);
+                switchWrapper.appendChild(switchContainer);
+                return switchWrapper;
 
             case 'slider':
                 field = document.createElement('sl-range');
@@ -387,7 +386,7 @@ export class TSFormField extends HTMLElement {
         field.name = fieldName;
 
         if (!config.hideLabel) {
-            if (config.type !== 'checkbox' && config.type !== 'radio' && config.type !== 'switch' && config.type !== 'file' && config.type !== 'image') {
+            if (config.type !== 'checkbox' && config.type !== 'radio' && config.type !== 'file' && config.type !== 'image') {
                 field.label = config.label;
             }
         }
