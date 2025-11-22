@@ -1,3 +1,4 @@
+import './ts-form-field.js';
 
 class TSForm extends HTMLElement {
     constructor() {
@@ -20,10 +21,33 @@ class TSForm extends HTMLElement {
 
     connectedCallback() {
         this.render();
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        this.addEventListener('field-change', (e) => {
+            e.stopPropagation();
+            const { field, value } = e.detail;
+            this.formData[field] = value;
+
+            this.dispatchEvent(new CustomEvent('form-changed', {
+                detail: {
+                    field: field,
+                    value: value,
+                    formData: this.formData
+                },
+                bubbles: true,
+                composed: true
+            }));
+        });
+
+        this.addEventListener('form-field-action', (e) => {
+            // Re-dispatch or handle specific field actions
+        });
     }
 
     render() {
-    this.innerHTML = ''; // Clear previous content
+        this.innerHTML = ''; // Clear previous content
         this.buttons = {}; // Reset button references
         const layout = this.getAttribute('layout');
         const fields = this.getAttribute('fields');
@@ -40,16 +64,15 @@ class TSForm extends HTMLElement {
             const fieldsConfig = JSON.parse(fields);
             this.validationErrors = errors ? JSON.parse(errors) : {};
 
-            // Inicializace formData pro všechna pole
-            this.formData = {};
-            Object.keys(fieldsConfig).forEach(fieldName => {
-                const config = fieldsConfig[fieldName];
-                if (config.type === 'checkbox') {
-                    this.formData[fieldName] = false;
-                } else {
-                    this.formData[fieldName] = '';
-                }
-            });
+            // Initialize formData
+            // Only reset if empty to preserve state during re-renders if needed, 
+            // but for now we follow original logic to reset or merge with values
+            if (Object.keys(this.formData).length === 0) {
+                Object.keys(fieldsConfig).forEach(fieldName => {
+                    const config = fieldsConfig[fieldName];
+                    this.formData[fieldName] = config.type === 'checkbox' ? false : '';
+                });
+            }
 
             if (values) {
                 const valuesObj = JSON.parse(values);
@@ -58,6 +81,10 @@ class TSForm extends HTMLElement {
 
             const style = document.createElement('style');
             style.textContent = `
+                :host {
+                    display: block;
+                    --label-spacing: var(--sl-spacing-2x-small);
+                }
                 .form-row {
                     display: grid;
                     gap: 1rem;
@@ -71,6 +98,12 @@ class TSForm extends HTMLElement {
                     font-size: var(--sl-font-size-small);
                     margin-top: 0.25rem;
                 }
+                
+                /* Increase label spacing */
+                ts-form-field::part(form-control-label) {
+                    margin-bottom: var(--label-spacing);
+                }
+
                 /* invalid styles */
                 .input-invalid {
                     --sl-input-border-color: var(--sl-color-danger-600);
@@ -117,7 +150,7 @@ class TSForm extends HTMLElement {
                 sl-tab-group::part(nav) {
                     position: sticky;
                     top: 0;
-                    background: white;
+                    background: var(--sl-color-neutral-0);
                     z-index: 1;
                 }
             `;
@@ -181,12 +214,13 @@ class TSForm extends HTMLElement {
             actions.className = 'form-actions';
             actions.style.position = 'sticky';
             actions.style.bottom = '0';
-            actions.style.background = 'white';
+            actions.style.background = 'var(--sl-color-neutral-0)';
             actions.style.padding = '1rem';
             actions.style.borderTop = '1px solid var(--sl-color-neutral-200)';
             actions.style.display = 'flex';
             actions.style.justifyContent = 'space-between';
             actions.style.alignItems = 'center';
+
 
             const leftDiv = document.createElement('div');
             leftDiv.style.display = 'flex';
@@ -290,219 +324,31 @@ class TSForm extends HTMLElement {
                 if (fieldConfig) {
                     const fieldContainer = document.createElement('div');
                     fieldContainer.style.padding = '0.5rem';
-                    const field = this.createField(col.field, fieldConfig);
-                    fieldContainer.appendChild(field);
+
+                    const fieldComponent = document.createElement('ts-form-field');
+                    fieldComponent.setAttribute('field-name', col.field);
+                    fieldComponent.setAttribute('config', JSON.stringify(fieldConfig));
+
+                    const value = this.formData[col.field];
+                    if (value !== undefined && value !== null) {
+                        if (typeof value === 'object') {
+                            fieldComponent.setAttribute('value', JSON.stringify(value));
+                        } else {
+                            fieldComponent.setAttribute('value', value);
+                        }
+                    }
 
                     const error = this.validationErrors[col.field];
-                    if(error) {
-                        field.classList.add('input-invalid');
-                        const errorDiv = document.createElement('div');
-                        errorDiv.className = 'error-message';
-                        errorDiv.textContent = error;
-                        fieldContainer.appendChild(errorDiv);
+                    if (error) {
+                        fieldComponent.setAttribute('error', error);
                     }
+
+                    fieldContainer.appendChild(fieldComponent);
                     rowDiv.appendChild(fieldContainer);
                 }
             });
             parent.appendChild(rowDiv);
         });
-    }
-
-    createField(fieldName, config) {
-        let field;
-        switch (config.type) {
-            case 'textarea':
-                field = document.createElement('sl-textarea');
-                break;
-            case 'password':
-                field = document.createElement('sl-input');
-                field.type = 'password';
-                break;
-            case 'checkbox':
-                field = document.createElement('sl-checkbox');
-                field.textContent = config.label;
-                break;
-            case 'switch':
-                const switchContainer = document.createElement('div');
-                switchContainer.style.display = 'flex';
-                switchContainer.style.alignItems = 'center';
-                field = document.createElement('sl-switch');
-                const switchLabel = document.createElement('label');
-                switchLabel.textContent = config.label;
-                if (config.labelPosition === 'left') {
-                    switchLabel.style.marginRight = '0.5rem';
-                    switchContainer.appendChild(switchLabel);
-                    switchContainer.appendChild(field);
-                } else {
-                    switchLabel.style.marginLeft = '0.5rem';
-                    switchContainer.appendChild(field);
-                    switchContainer.appendChild(switchLabel);
-                }
-                return switchContainer;
-            case 'slider':
-                field = document.createElement('sl-range');
-                if (config.min) field.min = config.min;
-                if (config.max) field.max = config.max;
-                if (config.step) field.step = config.step;
-                break;
-            case 'combobox':
-                field = document.createElement('sl-input');
-                field.setAttribute('list', `datalist-${fieldName}`);
-                const datalist = document.createElement('datalist');
-                datalist.id = `datalist-${fieldName}`;
-                config.options.forEach(opt => {
-                    const option = document.createElement('option');
-                    option.value = opt.value;
-                    datalist.appendChild(option);
-                });
-                field.appendChild(datalist);
-                break;
-            case 'file':
-                field = document.createElement('sl-input');
-                field.type = 'file';
-                break;
-            case 'image':
-                field = document.createElement('sl-file-upload');
-                field.accept = 'image/*';
-                field.multiple = false;
-                // Shoelace file-upload has show-preview by default for images
-                break;
-            case 'button':
-                field = document.createElement('sl-button');
-                field.variant = config.variant || 'primary';
-                field.textContent = config.label || 'Button';
-                field.addEventListener('click', () => {
-                    console.log('Button clicked:', fieldName, config.action);
-                    this.dispatchEvent(new CustomEvent('form-field-action', {
-                        detail: {
-                            field: fieldName,
-                            action: config.action || 'click'
-                        },
-                        bubbles: true,
-                        composed: true
-                    }));
-                });
-                break;
-            case 'button-group':
-                // Use Shoelace sl-button-group for toggles
-                const slButtonGroup = document.createElement('sl-button-group');
-                slButtonGroup.style.display = 'flex';
-                slButtonGroup.style.gap = '0.5rem';
-                // options are expected as array of strings: value/enabled/variant/label
-                config.options.forEach(btnStr => {
-                    const [value, enabled = 'true', variant = 'default', label = ''] = btnStr.split('/');
-                    const b = document.createElement('sl-button');
-                    b.dataset.value = value;
-                    // If this value matches current formData, mark primary
-                    b.variant = (this.formData[fieldName] === value) ? (variant || 'primary') : (variant || 'default');
-                    b.textContent = label || value;
-                    b.disabled = enabled === 'false';
-                    b.addEventListener('click', () => {
-                        // update selected value
-                        this.formData[fieldName] = value;
-                        // update variants: set all to default then selected to primary
-                        slButtonGroup.querySelectorAll('sl-button').forEach(btn => btn.variant = 'default');
-                        b.variant = 'primary';
-                        // emit same event as other selection fields
-                        this.dispatchEvent(new CustomEvent('form-changed', {
-                            detail: {
-                                field: fieldName,
-                                value: value,
-                                formData: this.formData
-                            },
-                            bubbles: true,
-                            composed: true
-                        }));
-                    });
-                    slButtonGroup.appendChild(b);
-                });
-                return slButtonGroup;
-            case 'radio':
-                field = document.createElement('sl-radio-group');
-                field.label = config.label;
-                config.options.forEach(opt => {
-                    const radio = document.createElement('sl-radio');
-                    radio.value = opt.value;
-                    radio.textContent = opt.label;
-                    field.appendChild(radio);
-                });
-                setTimeout(() => {
-                    field.value = this.formData[fieldName] || '';
-                }, 100);
-                break;
-            case 'select':
-                field = document.createElement('sl-select');
-                field.label = config.label;
-                config.options.forEach(opt => {
-                    const option = document.createElement('sl-option');
-                    option.value = opt.value;
-                    option.textContent = opt.label;
-                    field.appendChild(option);
-                });
-                setTimeout(() => {
-                    field.value = this.formData[fieldName] || '';
-                }, 100);
-                break;
-            default:
-                field = document.createElement('sl-input');
-                field.type = config.type || 'text';
-        }
-        field.name = fieldName;
-        if (config.type !== 'checkbox' && config.type !== 'radio') {
-            field.label = config.label;
-        }
-        if (config.required) {
-            field.required = true;
-        }
-        // Set initial value
-        if (config.type === 'checkbox') {
-            field.checked = !!this.formData[fieldName];
-        } else if (config.type === 'switch') {
-            field.checked = !!this.formData[fieldName];
-        } else if (config.type === 'slider') {
-            field.value = this.formData[fieldName] || config.min || 0;
-        } else if (config.type === 'radio') {
-            // Handled in case
-        } else if (config.type === 'select' || config.type === 'combobox') {
-            // Handled in case
-        } else if (config.type !== 'button' && config.type !== 'file' && config.type !== 'image') {
-            field.value = this.formData[fieldName] || '';
-        }
-        field.addEventListener('sl-change', this.handleFieldChange.bind(this));
-        return field;
-    }
-
-    handleFieldChange(event) {
-        const field = event.target;
-        if (field.tagName === 'SL-CHECKBOX') {
-            // Zkus použít event.detail.checked, případně field.checked nebo field.hasAttribute('checked')
-            if (event.detail && typeof event.detail.checked !== 'undefined') {
-                this.formData[field.name] = event.detail.checked;
-            } else if (typeof field.checked !== 'undefined') {
-                this.formData[field.name] = field.checked;
-            } else {
-                this.formData[field.name] = field.hasAttribute('checked');
-            }
-        } else if (field.tagName === 'SL-SWITCH') {
-            this.formData[field.name] = event.detail.checked;
-        } else if (field.tagName === 'SL-RANGE') {
-            this.formData[field.name] = field.value;
-        } else if (field.tagName === 'SL-FILE-UPLOAD') {
-            this.formData[field.name] = event.detail.files;
-        } else if (field.type === 'file') {
-            this.formData[field.name] = field.files;
-        } else {
-            this.formData[field.name] = field.value;
-        }
-        this.dispatchEvent(new CustomEvent('form-changed', {
-            detail: {
-                field: field.name,
-                value: this.formData[field.name],
-                formData: this.formData
-            },
-            bubbles: true,
-            composed: true
-        }));
     }
 
     handleSubmit(event) {

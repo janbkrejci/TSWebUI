@@ -1,10 +1,20 @@
 <!DOCTYPE html>
-<html lang="cs" class="sl-theme-dark" >
+<html lang="cs">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TS-Table Test</title>
+    <script>
+        // Apply theme based on system preference
+        function applyTheme() {
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('sl-theme-dark', isDark);
+            document.documentElement.classList.toggle('sl-theme-light', !isDark);
+        }
+        applyTheme();
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+    </script>
     <style>
         * {
             margin: 0;
@@ -12,7 +22,8 @@
             box-sizing: border-box;
         }
 
-        html, body {
+        html,
+        body {
             height: 100%;
             margin: 0;
             padding: 0;
@@ -39,8 +50,7 @@
     <script type="module" src="packages/ts-table/dist/ts-table-bundle.js"></script>
 </head>
 
-<body
-    <!-- TS-Table component with all configurable attributes -->
+<body <!-- TS-Table component with all configurable attributes -->
     <ts-table id="table" show-create-button="true" show-import-button="true" show-export-button="true"
         show-column-selector="true" enable-sorting="true" enable-filtering="true" enable-column-resizing="true"
         enable-column-reordering="true" enable-selection="true" enable-row-menu="true" enable-clickable-rows="true"
@@ -48,8 +58,8 @@
         single-item-actions="edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek"
         multiple-items-actions="delete/Smazat vybrané,export/Exportovat vybrané"
         visible-columns="name,email,turnover,contractDate,approved" unhideable-columns="name,email"
-        columns-required-for-import="id,name,email"
-        unshowable-columns="id" items-per-page="5" items-per-page-options="3,5,10,20,50,-1">
+        columns-required-for-import="id,name,email" unshowable-columns="id" items-per-page="5"
+        items-per-page-options="3,5,10,20,50,-1">
     </ts-table>
 
     <!-- Table data and initialization -->
@@ -538,7 +548,7 @@
 
         // Example: Only show approved records (predefined filter that can't be cleared)
         // const predefinedFilters = { approved: 'true' };
-        const predefinedFilters = {"approved":"true"};
+        const predefinedFilters = { "approved": "true" };
 
         // Initialize component when DOM is ready
         async function initializeComponents() {
@@ -558,7 +568,7 @@
             // table.setMultipleItemsActions(multipleItemsActions);
             // table.setItemsPerPage(itemsPerPage);
             // table.setItemsPerPageOptions(itemsPerPageOptions);
-             table.setPredefinedFilters(predefinedFilters);
+            table.setPredefinedFilters(predefinedFilters);
 
             // UI visibility options
             // table.setShowColumnSelector(false); // Uncomment to hide column selector
