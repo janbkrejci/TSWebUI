@@ -134,12 +134,53 @@ class TSForm extends HTMLElement {
             }
             sl-tab-group::part(body) {
                 flex: 1;
-                overflow: auto;
+                overflow: hidden; /* Delegate scrolling to tab-content */
+                display: flex;
+                flex-direction: column;
+            }
+            sl-tab-panel {
+                height: 100%;
+                width: 100%;
+                --padding: 0;
+            }
+            sl-tab-panel::part(base) {
+                height: 100%;
+                width: 100%;
+                display: block; /* Ensure base part fills host */
             }
             .tab-content {
                 padding: 1rem;
                 max-width: 1200px;
                 margin: 0 auto;
+                height: 100%;
+                overflow: auto;
+                box-sizing: border-box;
+            }
+            .tab-content.full-height {
+                padding: 0;
+                max-width: none;
+                overflow: hidden; /* Let table handle scrolling */
+                display: flex;
+                flex-direction: column;
+            }
+            .tab-content.full-height .form-row {
+                height: 100%;
+                margin-bottom: 0;
+                gap: 0; /* Remove gap for single item */
+                min-height: 0; /* Allow shrinking */
+            }
+            .tab-content.full-height .form-col {
+                height: 100%;
+                min-height: 0;
+            }
+            .tab-content.full-height ts-form-field {
+                height: 100%;
+                display: block;
+                min-height: 0;
+            }
+            .tab-content.full-height ts-form-field ts-table {
+                height: 100%;
+                width: 100%;
             }
             .form-row {
                 display: flex;
@@ -206,8 +247,8 @@ class TSForm extends HTMLElement {
             sl-tab-group::part(nav) {
                 background: var(--sl-color-neutral-0);
                 z-index: 1;
-                padding-left: 1rem;
-                padding-right: 1rem;
+                padding-left: 0;
+                padding-right: 0;
             }
         `;
         this.appendChild(style);
@@ -322,8 +363,21 @@ class TSForm extends HTMLElement {
                         slPanel.active = true;
                     }
 
+                    // Check if tab should be full height
+                    // Heuristic: if tab has 1 row, 1 col, and that col is type 'table'
+                    let isFullHeight = false;
+                    if (tab.rows && tab.rows.length === 1 && tab.rows[0].length === 1) {
+                        const fieldName = tab.rows[0][0].field;
+                        if (fieldsConfig[fieldName] && fieldsConfig[fieldName].type === 'table') {
+                            isFullHeight = true;
+                        }
+                    }
+
                     const contentDiv = document.createElement('div');
                     contentDiv.className = 'tab-content';
+                    if (isFullHeight) {
+                        contentDiv.classList.add('full-height');
+                    }
 
                     // Render rows in tab
                     if (tab.rows) {

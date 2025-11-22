@@ -175,8 +175,9 @@ export class TSRelationshipPicker extends HTMLElement {
                 text-align: left;
             }
             .results-table td.icon-cell {
-                width: 2rem;
-                text-align: center;
+                width: auto;
+                text-align: right;
+                padding-right: 1rem;
             }
         `;
         this.appendChild(style);
@@ -294,6 +295,10 @@ export class TSRelationshipPicker extends HTMLElement {
 
         const footer = document.createElement('div');
         footer.slot = 'footer';
+        footer.style.display = 'flex';
+        footer.style.justifyContent = 'flex-end';
+        footer.style.alignItems = 'center';
+        footer.style.width = '100%';
 
         const closeBtn = document.createElement('sl-button');
         closeBtn.textContent = 'Zavřít';
