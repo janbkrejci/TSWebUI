@@ -48,17 +48,25 @@ class TSForm extends HTMLElement {
             ].map(tag => customElements.whenDefined(tag)))
             .then(() => {
                 const container = this.querySelector('.ts-form-container');
+                const loader = this.querySelector('.loader');
                 if (container) {
                     // Small delay to ensure DOM is painted
                     requestAnimationFrame(() => {
                         container.style.opacity = '1';
+                        if (loader) {
+                            loader.classList.add('hidden');
+                        }
                     });
                 }
             }).catch(() => {
                 // Fallback
                 const container = this.querySelector('.ts-form-container');
+                const loader = this.querySelector('.loader');
                 if (container) {
                     container.style.opacity = '1';
+                    if (loader) {
+                        loader.classList.add('hidden');
+                    }
                 }
             });
     }
@@ -96,12 +104,44 @@ class TSForm extends HTMLElement {
                 width: 100%;
                 height: 100vh;
                 --label-spacing: var(--sl-spacing-2x-small);
+                position: relative; /* For loader positioning */
             }
             .ts-form-container {
                 opacity: 0;
                 transition: opacity 0.3s ease-in-out;
                 width: 100%;
                 height: 100%;
+            }
+            .loader {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100%;
+                width: 100%;
+                position: absolute;
+                top: 0;
+                left: 0;
+                background: var(--sl-color-neutral-0);
+                z-index: 100;
+                transition: opacity 0.3s ease-out;
+            }
+            .loader.hidden {
+                opacity: 0;
+                pointer-events: none;
+            }
+            .dot {
+                width: 10px;
+                height: 10px;
+                margin: 0 5px;
+                background-color: var(--sl-color-primary-600);
+                border-radius: 50%;
+                animation: bounce 1.4s infinite ease-in-out both;
+            }
+            .dot:nth-child(1) { animation-delay: -0.32s; }
+            .dot:nth-child(2) { animation-delay: -0.16s; }
+            @keyframes bounce {
+                0%, 80%, 100% { transform: scale(0); }
+                40% { transform: scale(1); }
             }
             form {
                 display: grid;
@@ -192,6 +232,7 @@ class TSForm extends HTMLElement {
                 flex: 1;
                 min-width: 0; /* Critical: allows flex item to shrink below content size */
                 overflow: hidden; /* Prevent overflow from expanding parent - critical for Safari */
+                padding: 4px; /* Prevent focus ring clipping */
             }
             .error-message {
                 color: var(--sl-color-danger-500);
@@ -255,6 +296,15 @@ class TSForm extends HTMLElement {
             }
         `;
         this.appendChild(style);
+
+        const loader = document.createElement('div');
+        loader.className = 'loader';
+        loader.innerHTML = `
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        `;
+        this.appendChild(loader);
 
         const container = document.createElement('div');
         container.className = 'ts-form-container';

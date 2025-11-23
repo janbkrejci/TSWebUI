@@ -60,6 +60,7 @@ class TSTable extends HTMLElement {
                     display: block;
                     width: 100%;
                     height: 100vh;
+                    position: relative; /* For loader positioning */
                 }
                 
                 .ts-table-container {
@@ -68,6 +69,39 @@ class TSTable extends HTMLElement {
                     width: 100%;
                     height: 100%;
                     opacity: 0;
+                    transition: opacity 0.3s ease-in-out;
+                }
+
+                .loader {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100%;
+                    width: 100%;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    background: var(--sl-color-neutral-0);
+                    z-index: 100;
+                    transition: opacity 0.3s ease-out;
+                }
+                .loader.hidden {
+                    opacity: 0;
+                    pointer-events: none;
+                }
+                .dot {
+                    width: 10px;
+                    height: 10px;
+                    margin: 0 5px;
+                    background-color: var(--sl-color-primary-600);
+                    border-radius: 50%;
+                    animation: bounce 1.4s infinite ease-in-out both;
+                }
+                .dot:nth-child(1) { animation-delay: -0.32s; }
+                .dot:nth-child(2) { animation-delay: -0.16s; }
+                @keyframes bounce {
+                    0%, 80%, 100% { transform: scale(0); }
+                    40% { transform: scale(1); }
                 }
                 
                 #toolbar {
@@ -189,6 +223,11 @@ class TSTable extends HTMLElement {
                     flex-shrink: 0;
                 }
             </style>
+            <div class="loader">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
             <div class="ts-table-container">
                 <ts-toolbar id="toolbar"></ts-toolbar>
                 <div class="datatable-wrapper">
@@ -901,13 +940,25 @@ class TSTable extends HTMLElement {
                 'sl-tooltip'
             ].map(tag => customElements.whenDefined(tag)))
             .then(() => {
-                this.querySelector('.ts-table-container').style.opacity = '1';
+                const container = this.querySelector('.ts-table-container');
+                const loader = this.querySelector('.loader');
+                if (container) {
+                    container.style.opacity = '1';
+                    if (loader) {
+                        loader.classList.add('hidden');
+                    }
+                }
             }).catch(() => {
                 // Fallback - create content anyway if waiting fails
-                this.querySelector('.ts-table-container').style.opacity = '1';
+                const container = this.querySelector('.ts-table-container');
+                const loader = this.querySelector('.loader');
+                if (container) {
+                    container.style.opacity = '1';
+                    if (loader) {
+                        loader.classList.add('hidden');
+                    }
+                }
             });
-
-
     }
 }
 

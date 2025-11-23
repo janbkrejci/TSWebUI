@@ -2,6 +2,7 @@ import { action } from 'storybook/actions';
 import template from './TSFORM.html?raw';
 import './TSFORM.css';
 import '../packages/ts-form/src/ts-form.js';
+import '../packages/ts-table/src/ts-table.js';
 import { html } from 'lit-html';
 
 export default {
@@ -35,6 +36,10 @@ export default {
         setTimeout(() => {
             const el = document.getElementById('form');
             if (el) {
+                customElements.whenDefined('ts-form').then(() => {
+                    el.run();
+                });
+
                 for (const e of ['form-changed', 'form-submit', 'form-field-action']) {
                     el.removeEventListener(e, action(e));
                     el.addEventListener(e, (ev) => {
@@ -139,6 +144,12 @@ const defaultArgs = {
     values: `{}`
 };
 
+export const Default = {
+    args: {
+        ...defaultArgs
+    }
+};
+
 export const WithErrors = {
     args: {
         ...defaultArgs,
@@ -198,5 +209,230 @@ export const WithValues = {
             "bio": "Some bio text",
             "extraField": "Extra value"
         }`
+    }
+}
+
+export const Complex = {
+    args: {
+        ...defaultArgs,
+        layout: JSON.stringify({
+            tabs: [
+                {
+                    label: 'Osobní údaje',
+                    rows: [
+                        [{ field: 'name' }, { field: 'surname' }],
+                        [{ field: 'email' }, { field: 'phone' }],
+                        [{ field: 'birthdate' }]
+                    ]
+                },
+                {
+                    label: 'Účet',
+                    rows: [
+                        [{ field: 'username' }, { field: 'password' }],
+                        [{ field: 'role' }, { field: 'active' }],
+                        [{ field: 'department' }]
+                    ]
+                },
+                {
+                    label: 'Detaily',
+                    rows: [
+                        [{ field: 'bio' }],
+                        [{ field: 'avatar' }, { field: 'resume' }]
+                    ]
+                },
+                {
+                    label: 'Nastavení',
+                    rows: [
+                        [{ field: 'notifications' }],
+                        [{ field: 'theme' }],
+                        [{ field: 'projects' }]
+                    ]
+                },
+                {
+                    label: 'Tabulka',
+                    rows: [
+                        [{ field: 'history' }]
+                    ]
+                }
+            ]
+        }),
+        fields: JSON.stringify({
+            // Basic Info
+            name: { label: 'Jméno', type: 'text', required: true },
+            surname: { label: 'Příjmení', type: 'text', required: true },
+            email: { label: 'E-mail', type: 'text', required: true },
+            phone: { label: 'Telefon', type: 'text' },
+
+            // Account Info
+            username: { label: 'Uživatelské jméno', type: 'text', required: true },
+            password: { label: 'Heslo', type: 'password', required: true },
+            role: {
+                label: 'Role',
+                type: 'select',
+                options: [
+                    { value: 'admin', label: 'Administrátor' },
+                    { value: 'manager', label: 'Manažer' },
+                    { value: 'user', label: 'Uživatel' },
+                    { value: 'guest', label: 'Host' }
+                ]
+            },
+            active: { label: 'Aktivní účet', type: 'switch', labelPosition: 'right' },
+
+            // Details
+            birthdate: { label: 'Datum narození', type: 'date' },
+            bio: { label: 'Životopis', type: 'textarea', hideLabel: true, placeholder: 'Životopis (bez labelu)' },
+            avatar: { label: 'Profilový obrázek', type: 'image' },
+            resume: { label: 'Životopis (PDF)', type: 'file', multiple: true },
+
+            // Preferences
+            notifications: {
+                label: 'Notifikace',
+                type: 'select',
+                multiple: true,
+                options: [
+                    { value: 'email', label: 'E-mail' },
+                    { value: 'sms', label: 'SMS' },
+                    { value: 'push', label: 'Push notifikace' },
+                    { value: 'slack', label: 'Slack' }
+                ]
+            },
+            theme: {
+                label: 'Preferovaný vzhled',
+                type: 'radio',
+                options: [
+                    { value: 'light', label: 'Světlý' },
+                    { value: 'dark', label: 'Tmavý' },
+                    { value: 'auto', label: 'Automaticky' }
+                ]
+            },
+
+            // Relationships
+            department: {
+                label: 'Oddělení (N:1)',
+                type: 'relationship',
+                targetEntity: 'department',
+                mode: 'single',
+                displayFields: ['name'],
+                valueField: 'id',
+                options: [
+                    { id: 1, name: 'IT', code: 'DEP-01' },
+                    { id: 2, name: 'HR', code: 'DEP-02' },
+                    { id: 3, name: 'Sales', code: 'DEP-03' },
+                    { id: 4, name: 'Marketing', code: 'DEP-04' }
+                ]
+            },
+            projects: {
+                label: 'Projekty (M:N)',
+                type: 'relationship',
+                targetEntity: 'project',
+                mode: 'multiple',
+                displayFields: ['code', 'name'],
+                chipDisplayFields: ['name'],
+                valueField: 'id',
+                options: [
+                    { id: 101, name: 'Website Redesign', code: 'PRJ-WEB' },
+                    { id: 102, name: 'Mobile App', code: 'PRJ-APP' },
+                    { id: 103, name: 'Cloud Migration', code: 'PRJ-CLOUD' },
+                    { id: 104, name: 'Security Audit', code: 'PRJ-SEC' },
+                    { id: 105, name: 'AI Integration', code: 'PRJ-AI' },
+                    { id: 106, name: 'Database Optimization', code: 'PRJ-DB' },
+                    { id: 107, name: 'API Restructuring', code: 'PRJ-API' },
+                    { id: 108, name: 'Frontend Refactor', code: 'PRJ-FE' },
+                    { id: 109, name: 'Backend Refactor', code: 'PRJ-BE' },
+                    { id: 110, name: 'DevOps Pipeline', code: 'PRJ-OPS' },
+                    { id: 111, name: 'User Testing', code: 'PRJ-UX' },
+                    { id: 112, name: 'Market Research', code: 'PRJ-MKT' },
+                    { id: 113, name: 'Legal Compliance', code: 'PRJ-LEG' },
+                    { id: 114, name: 'GDPR Audit', code: 'PRJ-GDPR' },
+                    { id: 115, name: 'Network Upgrade', code: 'PRJ-NET' },
+                    { id: 116, name: 'Server Migration', code: 'PRJ-SRV' },
+                    { id: 117, name: 'Client Onboarding', code: 'PRJ-CLI' },
+                    { id: 118, name: 'Internal Training', code: 'PRJ-TRN' },
+                    { id: 119, name: 'Documentation', code: 'PRJ-DOC' },
+                    { id: 120, name: 'Legacy Retirement', code: 'PRJ-OLD' }
+                ]
+            },
+
+            // History Table
+            history: {
+                label: 'Historie aktivit',
+                type: 'table',
+                // Table feature flags
+                showCreateButton: true,
+                showImportButton: true,
+                showExportButton: true,
+                showColumnSelector: true,
+                enableSorting: true,
+                enableFiltering: true,
+                enableColumnResizing: true,
+                enableColumnReordering: true,
+                enableSelection: true,
+                enableRowMenu: true,
+                enableClickableRows: true,
+                enableClickableColumns: true,
+                enablePagination: true,
+                itemsPerPage: 5,
+                itemsPerPageOptions: [5, 10, 20],
+                singleItemActions: 'view_details/Zobrazit detaily,edit/Upravit,delete/Smazat',
+                multipleItemsActions: 'delete_selected/Smazat vybrané,export_selected/Exportovat vybrané',
+
+                columns: [
+                    {
+                        field: 'date',
+                        header: 'Datum',
+                        type: 'date',
+                        sortable: true,
+                        filterable: true,
+                        canBeCopied: true,
+                        isClickable: true,
+                        align: 'right'
+                    },
+                    {
+                        field: 'action',
+                        header: 'Akce',
+                        type: 'text',
+                        sortable: true,
+                        filterable: true,
+                        isClickable: true
+                    },
+                    {
+                        field: 'user',
+                        header: 'Uživatel',
+                        type: 'text',
+                        sortable: true,
+                        filterable: true
+                    }
+                ],
+                data: [
+                    { id: 1, date: '2023-01-01', action: 'Login', user: 'jnovak' },
+                    { id: 2, date: '2023-01-02', action: 'Update Profile', user: 'jnovak' },
+                    { id: 3, date: '2023-01-03', action: 'Logout', user: 'jnovak' },
+                    { id: 4, date: '2023-01-04', action: 'Login', user: 'jnovak' },
+                    { id: 5, date: '2023-01-05', action: 'View Report', user: 'jnovak' },
+                    { id: 6, date: '2023-01-06', action: 'Export Data', user: 'jnovak' },
+                    { id: 7, date: '2023-01-07', action: 'Logout', user: 'jnovak' }
+                ]
+            }
+        }),
+        buttons: JSON.stringify([
+            { action: 'cancel', label: 'Zrušit', variant: 'default' },
+            { action: 'save', label: 'Uložit', variant: 'primary' }
+        ]),
+        values: JSON.stringify({
+            name: 'Jan',
+            surname: 'Novák',
+            email: 'jan.novak@example.com',
+            phone: '+420 123 456 789',
+            username: 'jnovak',
+            password: 'password123',
+            role: 'user',
+            active: false,
+            birthdate: '1990-05-15',
+            bio: 'Zkušený vývojář se zaměřením na webové technologie.',
+            theme: 'dark',
+            notifications: ['email', 'push'],
+            department: 2,
+            projects: [101, 103]
+        })
     }
 }

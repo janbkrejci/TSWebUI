@@ -98,12 +98,23 @@ export class TSFormField extends HTMLElement {
                 field.value = value || '';
                 break;
             case 'checkbox':
+                const checkboxWrapper = document.createElement('div');
+                checkboxWrapper.style.display = 'flex';
+                checkboxWrapper.style.flexDirection = 'column';
+
+                // Add spacer to align with other inputs that have labels
+                const spacer = document.createElement('div');
+                spacer.style.height = 'calc(var(--sl-input-label-font-size-medium) + var(--sl-spacing-2x-small))';
+                spacer.style.marginBottom = 'var(--sl-spacing-2x-small)'; // Match label spacing
+                checkboxWrapper.appendChild(spacer);
+
                 field = document.createElement('sl-checkbox');
                 if (!config.hideLabel) {
                     field.textContent = config.label;
                 }
                 field.checked = value === true;
-                break;
+                checkboxWrapper.appendChild(field);
+                return checkboxWrapper;
             case 'switch':
                 const switchWrapper = document.createElement('div');
                 switchWrapper.style.display = 'flex';
@@ -123,6 +134,7 @@ export class TSFormField extends HTMLElement {
                 switchContainer.style.display = 'flex';
                 switchContainer.style.alignItems = 'center';
                 switchContainer.style.minHeight = 'var(--sl-input-height-medium)';
+                switchContainer.style.paddingLeft = '2px'; // Prevent clipping of focus ring/switch
 
                 field = document.createElement('sl-switch');
                 field.checked = value === true;
@@ -132,12 +144,17 @@ export class TSFormField extends HTMLElement {
                 return switchWrapper;
 
             case 'slider':
+                const sliderWrapper = document.createElement('div');
+                sliderWrapper.style.padding = '0.5rem 0.2rem'; // Add padding to prevent clipping and improve spacing
+
                 field = document.createElement('sl-range');
                 if (config.min) field.min = config.min;
                 if (config.max) field.max = config.max;
                 if (config.step) field.step = config.step;
                 field.value = value || config.min || 0;
-                break;
+
+                sliderWrapper.appendChild(field);
+                return sliderWrapper;
             case 'combobox':
                 field = document.createElement('sl-input');
                 field.setAttribute('list', `datalist-${fieldName}`);
@@ -211,20 +228,39 @@ export class TSFormField extends HTMLElement {
                 }
                 return slButtonGroup;
             case 'radio':
+                const radioWrapper = document.createElement('div');
+                radioWrapper.style.display = 'flex';
+                radioWrapper.style.flexDirection = 'column';
+                radioWrapper.style.gap = 'var(--sl-spacing-2x-small)';
+
+                if (!config.hideLabel) {
+                    const radioLabel = document.createElement('label');
+                    radioLabel.textContent = config.label;
+                    radioLabel.style.fontSize = 'var(--sl-input-label-font-size-medium)';
+                    radioLabel.style.fontWeight = 'var(--sl-font-weight-semibold)';
+                    radioLabel.style.color = 'var(--sl-input-label-color)';
+                    radioLabel.style.marginBottom = 'var(--sl-spacing-small)'; // Increased spacing
+                    radioWrapper.appendChild(radioLabel);
+                }
+
                 field = document.createElement('sl-radio-group');
-                field.label = config.label;
+                // field.label = config.label; // We use custom label for better control
+
                 if (config.options) {
                     config.options.forEach(opt => {
                         const radio = document.createElement('sl-radio');
                         radio.value = opt.value;
                         radio.textContent = opt.label;
+                        radio.style.marginBottom = 'var(--sl-spacing-2x-small)'; // Spacing between radios
                         field.appendChild(radio);
                     });
                 }
                 setTimeout(() => {
                     field.value = value || '';
                 }, 0);
-                break;
+
+                radioWrapper.appendChild(field);
+                return radioWrapper;
             case 'date':
                 field = document.createElement('sl-input');
                 field.type = 'date';
@@ -237,6 +273,7 @@ export class TSFormField extends HTMLElement {
                 break;
             case 'select':
                 field = document.createElement('sl-select');
+                field.hoist = true; // Fix clipping by hoisting dropdown
                 field.label = config.label;
                 if (config.multiple) {
                     field.multiple = true;

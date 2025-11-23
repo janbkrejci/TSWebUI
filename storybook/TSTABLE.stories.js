@@ -58,6 +58,10 @@ export default {
     setTimeout(() => {
       const el = document.getElementById('table');
       if (el) {
+        customElements.whenDefined('ts-table').then(() => {
+          el.run();
+        });
+
         for (const e of ['create-new-record', 'selection-action-activated', 'row-clicked', 'do-import']) {
           el.removeEventListener(e, action(e));
           el.addEventListener(e, (ev) => {
