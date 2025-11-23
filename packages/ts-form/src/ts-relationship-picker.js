@@ -333,8 +333,23 @@ export class TSRelationshipPicker extends HTMLElement {
         summary.style.visibility = 'hidden';
         summary.style.position = 'absolute';
         this.selectedContainer.appendChild(summary);
+
         // Add extra buffer to summary width just in case
-        const summaryWidth = Math.ceil(summary.getBoundingClientRect().width) + 4;
+        let summaryWidth = Math.ceil(summary.getBoundingClientRect().width);
+
+        // Fallback if summary width is suspiciously small (e.g. not upgraded/rendered yet)
+        if (summaryWidth < 20) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            const style = window.getComputedStyle(this.selectedContainer);
+            context.font = style.font; // Inherit font from container
+            const textWidth = context.measureText(summary.textContent).width;
+            // Add generous padding for the tag (approx 32px for padding + border)
+            summaryWidth = Math.ceil(textWidth) + 32;
+        } else {
+            summaryWidth += 4; // Small buffer for rendered tag
+        }
+
         summary.remove();
         summary.style.visibility = '';
         summary.style.position = '';
@@ -356,9 +371,6 @@ export class TSRelationshipPicker extends HTMLElement {
                 break;
             }
         }
-
-        // Update summary text with correct count if needed (though width shouldn't change much)
-        // We use the initial measurement as a safe upper bound
 
         // Hide tags that don't fit
         for (let i = 0; i < tags.length; i++) {
