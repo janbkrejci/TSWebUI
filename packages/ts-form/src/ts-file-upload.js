@@ -6,7 +6,7 @@ export class TSFileUpload extends HTMLElement {
         this.files = [];
         this.multiple = false;
         this.accept = '*';
-        this.label = 'Upload files';
+        this.label = 'Nahrát soubory';
     }
 
     static get observedAttributes() {
@@ -23,7 +23,15 @@ export class TSFileUpload extends HTMLElement {
         } else if (name === 'value') {
             // Handle initial value if needed (e.g. existing files)
         }
-        this.render();
+        if (this.hasRendered) {
+            if (name === 'multiple') {
+                this.updateUploadText();
+            } else if (name === 'label') {
+                this.render(); // Re-render for label change is safer as it affects multiple places
+            }
+        } else {
+            this.render();
+        }
     }
 
     connectedCallback() {
@@ -163,8 +171,8 @@ export class TSFileUpload extends HTMLElement {
                 <sl-icon name="cloud-upload"></sl-icon>
             </div>
             <div>${this.label}</div>
-            <div style="font-size: 0.8em; color: var(--sl-color-neutral-500); margin-top: 0.25rem;">
-                Drag & drop or click to upload
+            <div class="upload-text" style="font-size: 0.8em; color: var(--sl-color-neutral-500); margin-top: 0.25rem;">
+                ${this.multiple ? 'Přetáhněte soubory sem nebo klikněte pro nahrání' : 'Přetáhněte soubor sem nebo klikněte pro nahrání'}
             </div>
         `;
         dropZone.addEventListener('click', () => input.click());
@@ -219,7 +227,7 @@ export class TSFileUpload extends HTMLElement {
 
             const removeBtn = document.createElement('sl-icon-button');
             removeBtn.name = 'x';
-            removeBtn.label = 'Remove';
+            removeBtn.label = 'Odstranit';
             removeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.removeFile(index);
@@ -229,6 +237,19 @@ export class TSFileUpload extends HTMLElement {
             item.appendChild(removeBtn);
             this.fileListContainer.appendChild(item);
         });
+    }
+
+    updateUploadText() {
+        const textEl = this.querySelector('.upload-text');
+        if (textEl) {
+            textEl.textContent = this.multiple
+                ? 'Přetáhněte soubory sem nebo klikněte pro nahrání'
+                : 'Přetáhněte soubor sem nebo klikněte pro nahrání';
+        }
+        const input = this.querySelector('input[type="file"]');
+        if (input) {
+            input.multiple = this.multiple;
+        }
     }
 }
 

@@ -313,6 +313,10 @@ class TSForm extends HTMLElement {
                 color: var(--sl-color-danger-700);
             }
 
+            .input-invalid sl-checkbox::part(label) {
+                color: var(--sl-color-danger-700);
+            }
+
             .input-invalid sl-checkbox::part(control) {
                 outline: none;
             }

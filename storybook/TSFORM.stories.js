@@ -276,7 +276,7 @@ const defaultArgs = {
         "testButton": {"type": "button", "label": "Test Button", "variant": "primary", "action": "test"},
         "bio": {"type": "textarea", "label": "Bio"},
         "extraField": {"type": "text", "label": "Extra Field"},
-        "uploadImage": {"type": "image", "label": "Upload Image"}
+        "uploadImage": {"type": "image", "label": "Nahrát obrázky", "multiple": true}
     }`,
     errors: `{}`,
     values: `{}`
@@ -302,6 +302,7 @@ export const WithErrors = {
                 [{"field": "bio", "width": "2fr"}],
                 [{"field": "age", "width": "1fr"}, {"field": "website", "width": "1fr"}],
                 [{"field": "startDate", "width": "1fr"}, {"field": "meetingTime", "width": "1fr"}],
+                [{"field": "department", "width": "1fr"}, {"field": "projects", "width": "1fr"}],
                 [{"field": "uploadFile", "width": "1fr"}, {"field": "uploadImage", "width": "1fr"}]
             ]
         }`,
@@ -342,8 +343,33 @@ export const WithErrors = {
             "website": {"type": "url", "label": "Website"},
             "startDate": {"type": "date", "label": "Start Date"},
             "meetingTime": {"type": "datetime", "label": "Meeting Time"},
-            "uploadFile": {"type": "file", "label": "Upload File"},
-            "uploadImage": {"type": "image", "label": "Upload Image"}
+            "department": {
+                "label": "Department (N:1)",
+                "type": "relationship",
+                "targetEntity": "department",
+                "mode": "single",
+                "displayFields": ["name"],
+                "valueField": "id",
+                "options": [
+                    { "id": 1, "name": "IT" },
+                    { "id": 2, "name": "HR" }
+                ]
+            },
+            "projects": {
+                "label": "Projects (M:N)",
+                "type": "relationship",
+                "targetEntity": "project",
+                "mode": "multiple",
+                "displayFields": ["name"],
+                "chipDisplayFields": ["name"],
+                "valueField": "id",
+                "options": [
+                    { "id": 101, "name": "Project A" },
+                    { "id": 102, "name": "Project B" }
+                ]
+            },
+            "uploadFile": {"type": "file", "label": "Nahrát soubor"},
+            "uploadImage": {"type": "image", "label": "Nahrát obrázky", "multiple": true}
         }`,
         errors: `{
             "name": "Name is required.",
@@ -361,6 +387,8 @@ export const WithErrors = {
             "website": "Invalid URL.",
             "startDate": "Date is required.",
             "meetingTime": "Time is required.",
+            "department": "Department is required.",
+            "projects": "At least one project is required.",
             "uploadFile": "File is required.",
             "uploadImage": "Image is required."
         }`,
@@ -493,7 +521,7 @@ export const Complex = {
             // Details
             birthdate: { label: 'Datum narození', type: 'date' },
             bio: { label: 'Životopis', type: 'textarea', hideLabel: true, placeholder: 'Životopis (bez labelu)' },
-            avatar: { label: 'Profilový obrázek', type: 'image' },
+            avatar: { label: 'Profilový obrázek', type: 'image', multiple: true },
             resume: { label: 'Životopis (PDF)', type: 'file', multiple: true },
 
             // Preferences
@@ -727,6 +755,219 @@ export const Simple = {
             email: 'petr.svoboda@example.com',
             role: 'user',
             active: true
+        })
+    }
+}
+export const AllElements = {
+    args: {
+        ...defaultArgs,
+        layout: JSON.stringify({
+            tabs: [
+                {
+                    label: 'Text Inputs',
+                    rows: [
+                        [{ type: 'separator', label: 'Text Input' }],
+                        [{ field: 'text' }],
+                        [{ type: 'separator', label: 'Email Input' }],
+                        [{ field: 'email' }],
+                        [{ type: 'separator', label: 'Password Input' }],
+                        [{ field: 'password' }],
+                        [{ type: 'separator', label: 'URL Input' }],
+                        [{ field: 'url' }],
+                        [{ type: 'separator', label: 'Phone Input' }],
+                        [{ field: 'tel' }],
+                        [{ type: 'separator', label: 'Textarea' }],
+                        [{ field: 'textarea' }]
+                    ]
+                },
+                {
+                    label: 'Numeric & Date',
+                    rows: [
+                        [{ type: 'separator', label: 'Number Input' }],
+                        [{ field: 'number' }],
+                        [{ type: 'separator', label: 'Slider' }],
+                        [{ field: 'slider' }],
+                        [{ type: 'separator', label: 'Date Picker' }],
+                        [{ field: 'date' }],
+                        [{ type: 'separator', label: 'Datetime Picker' }],
+                        [{ field: 'datetime' }]
+                    ]
+                },
+                {
+                    label: 'Selects & Pickers',
+                    rows: [
+                        [{ type: 'separator', label: 'Select' }],
+                        [{ field: 'select' }],
+                        [{ type: 'separator', label: 'Multiselect' }],
+                        [{ field: 'multiselect' }],
+                        [{ type: 'separator', label: 'Combobox' }],
+                        [{ field: 'combobox' }],
+                        [{ type: 'separator', label: 'Relationship Picker (Single)' }],
+                        [{ field: 'relationshipSingle' }],
+                        [{ type: 'separator', label: 'Relationship Picker (Multiple)' }],
+                        [{ field: 'relationshipMultiple' }]
+                    ]
+                },
+                {
+                    label: 'Toggles & Buttons',
+                    rows: [
+                        [{ type: 'separator', label: 'Checkbox' }],
+                        [{ field: 'checkbox' }],
+                        [{ type: 'separator', label: 'Switch' }],
+                        [{ field: 'switch' }],
+                        [{ type: 'separator', label: 'Radio Group' }],
+                        [{ field: 'radio' }],
+                        [{ type: 'separator', label: 'Button Group' }],
+                        [{ field: 'buttonGroup' }],
+                        [{ type: 'separator', label: 'Button Field' }],
+                        [{ field: 'button' }]
+                    ]
+                },
+                {
+                    label: 'Files & Media',
+                    rows: [
+                        [{ type: 'separator', label: 'File Upload' }],
+                        [{ field: 'file' }],
+                        [{ type: 'separator', label: 'Image Upload' }],
+                        [{ field: 'image' }]
+                    ]
+                },
+                {
+                    label: 'Table',
+                    rows: [
+                        [{ type: 'separator', label: 'Data Table' }],
+                        [{ field: 'table' }]
+                    ]
+                }
+            ]
+        }),
+        fields: JSON.stringify({
+            // Text Inputs
+            text: { type: 'text', label: 'Text Field' },
+            email: { type: 'email', label: 'Email Field' },
+            password: { type: 'password', label: 'Password Field' },
+            url: { type: 'url', label: 'URL Field' },
+            tel: { type: 'tel', label: 'Phone Field' },
+            textarea: { type: 'textarea', label: 'Textarea Field', rows: 3 },
+
+            // Numeric & Date
+            number: { type: 'number', label: 'Number Field', min: 0, max: 100 },
+            slider: { type: 'slider', label: 'Slider Field', min: 0, max: 100, step: 10 },
+            date: { type: 'date', label: 'Date Field' },
+            datetime: { type: 'datetime', label: 'Datetime Field' },
+
+            // Selects & Pickers
+            select: {
+                type: 'select',
+                label: 'Select Field',
+                options: [{ value: '1', label: 'Option 1' }, { value: '2', label: 'Option 2' }]
+            },
+            multiselect: {
+                type: 'select',
+                label: 'Multiselect Field',
+                multiple: true,
+                options: [{ value: '1', label: 'Option 1' }, { value: '2', label: 'Option 2' }]
+            },
+            combobox: {
+                type: 'combobox',
+                label: 'Combobox Field',
+                options: [{ value: '1', label: 'Option 1' }, { value: '2', label: 'Option 2' }]
+            },
+            relationshipSingle: {
+                type: 'relationship',
+                label: 'Relationship (Single)',
+                targetEntity: 'entity',
+                mode: 'single',
+                displayFields: ['name'],
+                valueField: 'id',
+                options: [{ id: 1, name: 'Entity 1' }, { id: 2, name: 'Entity 2' }]
+            },
+            relationshipMultiple: {
+                type: 'relationship',
+                label: 'Relationship (Multiple)',
+                targetEntity: 'entity',
+                mode: 'multiple',
+                displayFields: ['name'],
+                chipDisplayFields: ['name'],
+                valueField: 'id',
+                options: [{ id: 1, name: 'Entity 1' }, { id: 2, name: 'Entity 2' }]
+            },
+
+            // Toggles & Buttons
+            checkbox: { type: 'checkbox', label: 'Checkbox Field' },
+            switch: { type: 'switch', label: 'Switch Field' },
+            radio: {
+                type: 'radio',
+                label: 'Radio Field',
+                options: [{ value: '1', label: 'Option 1' }, { value: '2', label: 'Option 2' }]
+            },
+            buttonGroup: {
+                type: 'button-group',
+                label: 'Button Group',
+                options: ['1/true/default/Option 1', '2/true/primary/Option 2']
+            },
+            button: { type: 'button', label: 'Button Field', variant: 'primary', action: 'click' },
+
+            // Files & Media
+            file: { type: 'file', label: 'Nahrát soubor' },
+            image: { type: 'image', label: 'Nahrát obrázky', multiple: true },
+
+            // Table
+            table: {
+                label: 'Example Table',
+                type: 'table',
+                showCreateButton: true,
+                showImportButton: true,
+                showExportButton: true,
+                showColumnSelector: true,
+                enableSorting: true,
+                enableFiltering: true,
+                enableColumnResizing: true,
+                enableColumnReordering: true,
+                enableSelection: true,
+                enableRowMenu: true,
+                enableClickableRows: true,
+                enableClickableColumns: true,
+                enablePagination: true,
+                itemsPerPage: 5,
+                itemsPerPageOptions: [5, 10, 20],
+                singleItemActions: 'view_details/Zobrazit detaily,edit/Upravit,delete/Smazat',
+                multipleItemsActions: 'delete_selected/Smazat vybrané,export_selected/Exportovat vybrané',
+                columns: [
+                    { field: 'id', header: 'ID', type: 'number', sortable: true, filterable: true, width: '80px' },
+                    { field: 'name', header: 'Name', type: 'text', sortable: true, filterable: true },
+                    { field: 'status', header: 'Status', type: 'text', sortable: true, filterable: true }
+                ],
+                data: [
+                    { id: 1, name: 'Item 1', status: 'Active' },
+                    { id: 2, name: 'Item 2', status: 'Inactive' },
+                    { id: 3, name: 'Item 3', status: 'Active' }
+                ]
+            }
+        }),
+        values: '{}'
+    }
+}
+
+export const ErrorExample = {
+    args: {
+        ...defaultArgs,
+        layout: JSON.stringify({
+            rows: [
+                [{ field: 'username' }],
+                [{ field: 'email' }]
+            ]
+        }),
+        fields: JSON.stringify({
+            username: { type: 'text', label: 'Uživatelské jméno' },
+            email: { type: 'text', label: 'Email' }
+        }),
+        errors: JSON.stringify({
+            email: 'Toto pole je povinné a musí obsahovat platný email.'
+        }),
+        values: JSON.stringify({
+            username: 'jan.novak',
+            email: ''
         })
     }
 }

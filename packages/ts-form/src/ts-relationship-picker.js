@@ -481,6 +481,7 @@ export class TSRelationshipPicker extends HTMLElement {
         const dialog = document.createElement('sl-dialog');
         dialog.label = `Vybrat ${this.targetEntity}`;
         dialog.style.setProperty('--width', '600px');
+        dialog.style.fontFamily = 'var(--sl-font-sans)'; // Ensure header and content use sans-serif
 
         const content = document.createElement('div');
 
@@ -541,6 +542,10 @@ export class TSRelationshipPicker extends HTMLElement {
 
         const table = document.createElement('table');
         table.className = 'results-table';
+        table.style.fontFamily = 'var(--sl-font-sans)'; // Ensure sans-serif font
+        table.style.width = '100%';
+        table.style.borderCollapse = 'collapse';
+        table.style.fontSize = 'var(--sl-font-size-small)';
 
         filtered.forEach(item => {
             const row = document.createElement('tr');

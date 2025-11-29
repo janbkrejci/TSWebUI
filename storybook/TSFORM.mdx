@@ -163,6 +163,34 @@ Konfigurace akčních tlačítek v patičce formuláře (atribut `buttons`).
 ]
 ```
 
+### Potvrzení Akce (Confirmation)
+
+Tlačítka mohou vyžadovat potvrzení před provedením akce. To se konfiguruje objektem `confirmation`.
+
+```json
+{
+  "action": "delete",
+  "label": "Smazat",
+  "variant": "danger",
+  "confirmation": {
+    "title": "Potvrdit akci",
+    "text": "Opravdu smazat záznam?",
+    "buttons": [
+      { "action": "no", "label": "Ne", "variant": "default" },
+      { "action": "yes", "label": "Ano", "variant": "danger", "confirm": true }
+    ]
+  }
+}
+```
+
+- **confirmation.title**: (string) Nadpis dialogu.
+- **confirmation.text**: (string) Text dialogu.
+- **confirmation.buttons**: (array) Tlačítka v dialogu. Tlačítko s `"confirm": true` provede původní akci.
+
+#### Ukázka s Potvrzením
+
+<Story of={TSFORMStories.WithConfirmation} />
+
 ## Události (Events)
 
 Komponenta vyhazuje následující CustomEvents:
@@ -236,3 +264,24 @@ Bublající událost z vnořené tabulky (typ pole `table`).
 ## Živá ukázka
 
 <Story of={TSFORMStories.Default} />
+
+## Validace a Chyby
+
+Chyby validace se předávají do atributu `errors` jako JSON objekt, kde klíčem je název pole a hodnotou chybová hláška.
+
+```json
+{
+  "email": "Zadejte platný email",
+  "password": "Heslo je příliš krátké"
+}
+```
+
+Pokud pole obsahuje chybu:
+1. Input zčervená (aplikuje se třída `.input-invalid`).
+2. Pod inputem se zobrazí chybová hláška.
+
+### Ukázka Validace
+
+V této ukázce je pole `username` validní, zatímco pole `email` obsahuje chybu.
+
+<Story of={TSFORMStories.ErrorExample} />

@@ -91,10 +91,14 @@ export class TSCombobox extends HTMLElement {
 
     handleFocus() {
         this.isOpen = true;
-        this.filteredOptions = [...this.options]; // Reset filter on focus? Or keep? Let's reset to show all.
-        // Actually, if there is a value, maybe we want to filter by it?
-        // Standard combobox behavior: show all options if user clicks arrow, or filter if typing.
-        // For simplicity, let's show all on focus if empty, or filter if value exists.
+
+        // Select all text on focus
+        const input = this.querySelector('sl-input');
+        if (input) {
+            // Use setTimeout to ensure selection happens after focus event processing
+            setTimeout(() => input.select(), 0);
+        }
+
         if (this._value) {
             const lowerValue = this._value.toLowerCase();
             this.filteredOptions = this.options.filter(opt => {
