@@ -1,4 +1,6 @@
 import './ts-form-field.js';
+import 'flatpickr/dist/flatpickr.css';
+import 'flatpickr/dist/themes/airbnb.css'; // Use a nice theme
 
 class TSForm extends HTMLElement {
     constructor() {
@@ -7,7 +9,29 @@ class TSForm extends HTMLElement {
         this.validationErrors = {};
         this.lastAction = null;
         this.buttons = {};
+        this.buttons = {};
+        this.buttons = {};
         this.isInitialized = false;
+
+        // Global fix for layout shift: Force scrollbar to be always visible
+        // This prevents the content from jumping when Shoelace locks the body scroll
+        if (!document.getElementById('ts-form-global-styles')) {
+            const style = document.createElement('style');
+            style.id = 'ts-form-global-styles';
+            style.textContent = `
+                html {
+                    scrollbar-gutter: stable;
+                }
+                body {
+                    scrollbar-gutter: stable;
+                }
+                body.sl-scroll-lock {
+                    padding-right: 0 !important;
+                    overflow: hidden !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
     }
 
     static get observedAttributes() {
@@ -30,22 +54,28 @@ class TSForm extends HTMLElement {
         this.render();
 
         // Wait for Shoelace components to be defined before showing content
-        Promise.all(
-            [
-                'sl-tab-group',
-                'sl-tab',
-                'sl-tab-panel',
-                'sl-button',
-                'sl-input',
-                'sl-select',
-                'sl-option',
-                'sl-switch',
-                'sl-checkbox',
-                'sl-textarea',
-                'sl-radio-group',
-                'sl-radio',
-                'sl-icon'
-            ].map(tag => customElements.whenDefined(tag)))
+        // Dynamically identify used custom elements
+        const usedTags = new Set();
+        const candidates = this.querySelectorAll('*');
+        candidates.forEach(el => {
+            const tag = el.tagName.toLowerCase();
+            if (tag.startsWith('sl-') || tag.startsWith('ts-')) {
+                usedTags.add(tag);
+            }
+        });
+
+        // Always wait for at least these common ones if they might appear dynamically
+        // But strictly speaking, we should only wait for what's in the DOM or what we expect.
+        // If we wait for something not in DOM and not loaded, we hang.
+        // So let's stick to what we found, plus maybe sl-icon if we use it internally without explicit tag in HTML (e.g. inside other components)
+        // But safer is to just wait for what we have found.
+
+        const promises = Array.from(usedTags).map(tag => customElements.whenDefined(tag));
+
+        // Add a timeout to prevent hanging indefinitely
+        const timeout = new Promise(resolve => setTimeout(resolve, 2000));
+
+        Promise.race([Promise.all(promises), timeout])
             .then(() => {
                 const container = this.querySelector('.ts-form-container');
                 const loader = this.querySelector('.loader');
@@ -204,7 +234,15 @@ class TSForm extends HTMLElement {
                 flex-direction: column;
                 box-sizing: border-box;
             }
-            .tab-content.full-height .form-row {
+            .tab-content {
+                padding: 1rem;
+                max-width: 1200px;
+                margin: 0 auto;
+                height: 100%;
+                overflow: auto;
+                box-sizing: border-box;
+                scrollbar-gutter: stable; /* Prevent layout shift when scrollbar appears */
+            }
                 height: 100%;
                 margin-bottom: 0;
                 gap: 0; /* Remove gap for single item */
@@ -224,14 +262,13 @@ class TSForm extends HTMLElement {
                 width: 100%;
             }
             .form-row {
-                display: flex;
+                display: grid;
                 gap: 1rem;
                 margin-bottom: 1rem;
             }
             .form-col {
-                flex: 1;
                 min-width: 0; /* Critical: allows flex item to shrink below content size */
-                overflow: hidden; /* Prevent overflow from expanding parent - critical for Safari */
+                overflow: visible; /* Changed from hidden to allow tooltips (slider) to show */
                 padding: 4px; /* Prevent focus ring clipping */
             }
             .error-message {
@@ -264,7 +301,7 @@ class TSForm extends HTMLElement {
             .input-invalid::part(form-control-label),
             .input-invalid::part(form-control-help-text),
             .input-invalid::part(label) {
-                color: var(--sl-color-danger-700);
+                color: var(--sl-color-danger-700) !important;
             }
 
             /* switch label when its container has .input-invalid */
@@ -280,6 +317,16 @@ class TSForm extends HTMLElement {
                 outline: none;
             }
 
+            /* ts-combobox error styling */
+            ts-combobox.input-invalid sl-input::part(form-control-label) {
+                color: var(--sl-color-danger-700) !important;
+            }
+
+            /* ts-file-upload error styling */
+            .input-invalid .file-upload-label {
+                color: var(--sl-color-danger-700) !important;
+            }
+
             sl-tab.invalid::part(base) {
                 color: var(--sl-color-danger-700);
             }
@@ -293,6 +340,106 @@ class TSForm extends HTMLElement {
                 z-index: 1;
                 padding-left: 0;
                 padding-right: 0;
+            }
+            .form-separator {
+                display: flex;
+                align-items: center;
+                width: 100%;
+                margin: 1.5rem 0 1rem 0;
+                color: var(--sl-color-neutral-500);
+                font-size: var(--sl-font-size-small);
+                font-weight: var(--sl-font-weight-bold);
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+            .form-separator::after {
+                content: '';
+                flex: 1;
+                height: 1px;
+                background: var(--sl-color-neutral-200);
+                margin-left: 1rem;
+            }
+            
+            /* Process Group Styles */
+            .process-group {
+                display: flex;
+                isolation: isolate;
+            }
+            
+            .process-group sl-button {
+                margin-left: -12px; /* Overlap */
+                z-index: 1;
+            }
+            
+            .process-group sl-button:hover,
+            .process-group sl-button:focus-within,
+            .process-group sl-button[data-variant="primary"],
+            .process-group sl-button[data-variant="success"],
+            .process-group sl-button[data-variant="warning"] {
+                z-index: 10;
+            }
+
+            .process-group sl-button::part(base) {
+                border-radius: 0;
+                border: none;
+                min-height: 40px;
+                
+                /* Shape: Cutout Left (Notch), Arrow Right */
+                /* Polygon: Top-Left, Top-Right(indent), Right-Mid(point), Bottom-Right(indent), Bottom-Left, Left-Mid(indent/notch) */
+                clip-path: polygon(
+                    0 0, 
+                    calc(100% - 12px) 0, 
+                    100% 50%, 
+                    calc(100% - 12px) 100%, 
+                    0 100%, 
+                    12px 50%
+                );
+                
+                padding-left: 25px;
+                padding-right: 25px;
+                background-color: var(--sl-color-neutral-200);
+                color: var(--sl-color-neutral-700);
+                transition: background-color 0.2s, color 0.2s;
+            }
+
+            /* Colors - using !important to ensure override of default button styles if needed */
+            .process-group sl-button[data-variant="primary"]::part(base) {
+                background-color: var(--sl-color-primary-600) !important;
+                color: var(--sl-color-neutral-0) !important;
+            }
+            
+            .process-group sl-button[data-variant="success"]::part(base) {
+                background-color: var(--sl-color-success-600) !important;
+                color: var(--sl-color-neutral-0) !important;
+            }
+            
+            .process-group sl-button[data-variant="warning"]::part(base) {
+                background-color: var(--sl-color-warning-600) !important;
+                color: var(--sl-color-neutral-0) !important;
+            }
+
+            /* First button: Also Notched Left (as requested) */
+            .process-group sl-button:first-child {
+                margin-left: 0;
+            }
+            
+            .process-group sl-button:first-child::part(base) {
+                /* Same notched shape as others */
+                clip-path: polygon(
+                    0 0, 
+                    calc(100% - 12px) 0, 
+                    100% 50%, 
+                    calc(100% - 12px) 100%, 
+                    0 100%, 
+                    12px 50%
+                );
+                padding-left: 25px; /* Consistent padding */
+                padding-right: 25px;
+            }
+
+            /* Flatpickr Overrides */
+            .flatpickr-calendar {
+                font-family: var(--sl-font-sans) !important;
             }
         `;
         this.appendChild(style);
@@ -443,6 +590,16 @@ class TSForm extends HTMLElement {
                                 const colDiv = document.createElement('div');
                                 colDiv.className = 'form-col';
 
+                                if (col.align) {
+                                    colDiv.style.display = 'flex';
+                                    colDiv.style.justifyContent = col.align === 'right' ? 'flex-end' : (col.align === 'center' ? 'center' : 'flex-start');
+                                }
+
+                                if (col.type === 'empty') {
+                                    rowDiv.appendChild(colDiv);
+                                    return;
+                                }
+
                                 const fieldConfig = fieldsConfig[col.field];
                                 if (fieldConfig) {
                                     const fieldElement = document.createElement('ts-form-field');
@@ -494,7 +651,15 @@ class TSForm extends HTMLElement {
 
                 form.appendChild(tabGroup);
             } else if (layoutConfig.rows) {
-                this.renderRows(layoutConfig.rows, fieldsConfig, form);
+                const contentWrapper = document.createElement('div');
+                contentWrapper.className = 'form-content-wrapper';
+                contentWrapper.style.padding = '1rem';
+                contentWrapper.style.overflow = 'auto';
+                contentWrapper.style.scrollbarGutter = 'stable'; /* Prevent layout shift */
+                contentWrapper.style.overflow = 'auto';
+                contentWrapper.style.scrollbarGutter = 'stable'; /* Prevent layout shift */
+                this.renderRows(layoutConfig.rows, fieldsConfig, errorsConfig, contentWrapper);
+                form.appendChild(contentWrapper);
             }
 
             const actions = document.createElement('div');
@@ -592,17 +757,30 @@ class TSForm extends HTMLElement {
         }
     }
 
-    renderRows(rows, fieldsConfig, parent) {
+    renderRows(rows, fieldsConfig, errorsConfig, parent) {
         rows.forEach(row => {
             const rowDiv = document.createElement('div');
             rowDiv.className = 'form-row';
             rowDiv.style.gridTemplateColumns = row.map(col => col.width || '1fr').join(' ');
 
             row.forEach(col => {
+                const colDiv = document.createElement('div');
+                colDiv.className = 'form-col';
+
+                if (col.align) {
+                    colDiv.style.display = 'flex';
+                    colDiv.style.justifyContent = col.align === 'right' ? 'flex-end' : (col.align === 'center' ? 'center' : 'flex-start');
+                }
+
+                if (col.type === 'empty') {
+                    rowDiv.appendChild(colDiv);
+                    return;
+                }
+
                 const fieldConfig = fieldsConfig[col.field];
                 if (fieldConfig) {
                     const fieldContainer = document.createElement('div');
-                    fieldContainer.style.padding = '0.5rem';
+                    // Padding removed to fix vertical gap issue
 
                     const fieldComponent = document.createElement('ts-form-field');
                     fieldComponent.setAttribute('field-name', col.field);
@@ -617,7 +795,7 @@ class TSForm extends HTMLElement {
                         }
                     }
 
-                    const error = this.validationErrors[col.field];
+                    const error = errorsConfig[col.field];
                     if (error) {
                         fieldComponent.setAttribute('error', error);
                     }

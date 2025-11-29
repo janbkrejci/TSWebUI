@@ -169,6 +169,18 @@ export class TSFileUpload extends HTMLElement {
         `;
         dropZone.addEventListener('click', () => input.click());
 
+        if (this.label) {
+            const labelEl = document.createElement('label');
+            labelEl.textContent = this.label;
+            labelEl.style.display = 'block';
+            labelEl.style.marginBottom = 'var(--sl-spacing-2x-small)';
+            labelEl.style.fontSize = 'var(--sl-input-label-font-size-medium)';
+            labelEl.style.fontWeight = 'var(--sl-font-weight-semibold)';
+            labelEl.style.color = 'var(--sl-input-label-color)';
+            labelEl.className = 'file-upload-label';
+            container.appendChild(labelEl);
+        }
+
         const fileListContainer = document.createElement('div');
         fileListContainer.className = 'file-list';
         this.fileListContainer = fileListContainer;

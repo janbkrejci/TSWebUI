@@ -159,14 +159,26 @@ export class TSRelationshipPicker extends HTMLElement {
                 font-size: var(--sl-font-size-medium);
             }
             .selected-items::after {
-                content: '';
-                margin-left: auto;
-                display: inline-block;
-                width: 1em;
-                height: 1em;
-                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23777'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
-                background-repeat: no-repeat;
-                background-position: center;
+                content: none;
+            }
+            .picker-icon {
+                font-size: var(--sl-font-size-medium);
+                color: var(--sl-color-neutral-500);
+            }
+            .picker-icon.clear-icon {
+                cursor: pointer;
+                color: var(--sl-color-neutral-400);
+                margin-right: 0.25rem;
+                transition: color 0.2s;
+            }
+            .picker-icon.clear-icon:hover {
+                color: var(--sl-color-danger-500);
+            }
+            .picker-controls {
+                display: flex;
+                align-items: center;
+                margin-left: auto; /* Push to right */
+                flex-shrink: 0;
             }
             .search-results {
                 margin-top: 1rem;
@@ -221,6 +233,7 @@ export class TSRelationshipPicker extends HTMLElement {
         selectedContainer.className = 'selected-items';
         selectedContainer.addEventListener('click', (e) => {
             if (e.target.closest('sl-tag')) return;
+            if (e.target.closest('.clear-icon')) return; // Ignore clear button click
             this.openDialog();
         });
 
@@ -236,52 +249,79 @@ export class TSRelationshipPicker extends HTMLElement {
     }
 
     renderSelectedItems() {
-        if (this.selectedItems.length === 0) {
-            this.selectedContainer.innerHTML = 'Žádné položky nevybrány';
-            this.selectedContainer.classList.add('empty');
-            this.selectedContainer.style.visibility = 'visible';
-            return;
-        }
-
-        // Hide container during rendering to prevent expansion
-        this.selectedContainer.style.visibility = 'hidden';
+        // Clear content but keep visibility logic if needed
         this.selectedContainer.innerHTML = '';
         this.selectedContainer.classList.remove('empty');
 
-        this.selectedItems.forEach(item => {
-            const tag = document.createElement('sl-tag');
-            tag.variant = 'primary';
-            tag.removable = true;
-            tag.size = 'medium';
+        // Wrapper for tags to separate them from controls
+        // Actually, we can just append tags and then the controls div which has margin-left: auto
 
-            // Use chipDisplayFields if available, otherwise fallback to displayFields
-            const fieldsToShow = (this.chipDisplayFields && this.chipDisplayFields.length > 0)
-                ? this.chipDisplayFields
-                : this.displayFields.slice(0, 1);
+        if (this.selectedItems.length === 0) {
+            const placeholder = document.createElement('span');
+            placeholder.textContent = 'Žádné položky nevybrány';
+            placeholder.style.color = 'var(--sl-input-placeholder-color)';
+            this.selectedContainer.appendChild(placeholder);
+            this.selectedContainer.classList.add('empty');
+        } else {
+            this.selectedItems.forEach(item => {
+                const tag = document.createElement('sl-tag');
+                tag.variant = 'primary';
+                tag.removable = true;
+                tag.size = 'medium';
 
-            const displayText = fieldsToShow.map(field => item[field]).join(' - ');
-            tag.textContent = displayText;
+                // Use chipDisplayFields if available, otherwise fallback to displayFields
+                const fieldsToShow = (this.chipDisplayFields && this.chipDisplayFields.length > 0)
+                    ? this.chipDisplayFields
+                    : this.displayFields.slice(0, 1);
 
-            tag.addEventListener('sl-remove', (e) => {
-                e.stopPropagation();
-                this.removeItem(item);
+                const displayText = fieldsToShow.map(field => item[field]).join(' - ');
+                tag.textContent = displayText;
+
+                tag.addEventListener('sl-remove', (e) => {
+                    e.stopPropagation();
+                    this.removeItem(item);
+                });
+
+                this.selectedContainer.appendChild(tag);
             });
+        }
 
-            this.selectedContainer.appendChild(tag);
-        });
+        // Controls Container (Clear + Chevron)
+        const controls = document.createElement('div');
+        controls.className = 'picker-controls';
 
-        // Immediately check for overflow and collapse if needed
-        // Wait for sl-tag to be defined, then wait for render
-        customElements.whenDefined('sl-tag').then(() => {
-            // Use double RAF to ensure tags are fully laid out
-            requestAnimationFrame(() => {
+        // Clear Button (only if items selected)
+        if (this.selectedItems.length > 0) {
+            const clearBtn = document.createElement('sl-icon');
+            clearBtn.name = 'x-circle-fill';
+            clearBtn.className = 'picker-icon clear-icon';
+            clearBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.selectedItems = [];
+                this.renderSelectedItems();
+                this.dispatchChange();
+            });
+            controls.appendChild(clearBtn);
+        }
+
+        // Chevron
+        const chevron = document.createElement('sl-icon');
+        chevron.name = 'chevron-down';
+        chevron.className = 'picker-icon';
+        controls.appendChild(chevron);
+
+        this.selectedContainer.appendChild(controls);
+
+        // Update visible chips logic if needed (only if items > 0)
+        if (this.selectedItems.length > 0) {
+            customElements.whenDefined('sl-tag').then(() => {
                 requestAnimationFrame(() => {
-                    this.updateVisibleChips();
-                    // Show container after processing
-                    this.selectedContainer.style.visibility = 'visible';
+                    requestAnimationFrame(() => {
+                        this.updateVisibleChips();
+                    });
                 });
             });
-        });
+        }
     }
 
     updateVisibleChips() {
@@ -300,12 +340,24 @@ export class TSRelationshipPicker extends HTMLElement {
         const containerStyle = window.getComputedStyle(this.selectedContainer);
         const paddingLeft = parseFloat(containerStyle.paddingLeft);
         const paddingRight = parseFloat(containerStyle.paddingRight);
-        // Use a safety margin of 2px to account for sub-pixel rendering issues
-        const availableWidth = this.selectedContainer.clientWidth - paddingLeft - paddingRight - 2;
 
         // Get gap from computed style or default to 8px
         const gapStr = containerStyle.gap || '8px';
         const gap = parseFloat(gapStr) || 8;
+
+        // Get controls width
+        const controls = this.selectedContainer.querySelector('.picker-controls');
+        let controlsWidth = 0;
+        if (controls) {
+            controlsWidth = controls.getBoundingClientRect().width;
+        }
+
+        // Calculate available width: Container - Padding - Controls - Gap (if controls exist) - Safety Margin
+        let availableWidth = this.selectedContainer.clientWidth - paddingLeft - paddingRight - 2;
+
+        if (controlsWidth > 0) {
+            availableWidth -= (controlsWidth + gap);
+        }
 
         // Calculate total width of all tags
         let totalWidth = 0;

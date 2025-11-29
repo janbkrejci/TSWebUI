@@ -1,5 +1,9 @@
 import './ts-file-upload.js';
+import './ts-file-upload.js';
 import './ts-relationship-picker.js';
+import './ts-combobox.js';
+import flatpickr from 'flatpickr';
+import { Czech } from 'flatpickr/dist/l10n/cs.js';
 
 export class TSFormField extends HTMLElement {
     constructor() {
@@ -126,7 +130,7 @@ export class TSFormField extends HTMLElement {
                     switchLabel.textContent = config.label;
                     switchLabel.style.fontSize = 'var(--sl-input-label-font-size-medium)';
                     switchLabel.style.fontWeight = 'var(--sl-font-weight-semibold)';
-                    switchLabel.style.color = 'var(--sl-input-label-color)';
+                    // switchLabel.style.color = 'var(--sl-input-label-color)'; // Removed to allow error color override
                     switchWrapper.appendChild(switchLabel);
                 }
 
@@ -145,7 +149,18 @@ export class TSFormField extends HTMLElement {
 
             case 'slider':
                 const sliderWrapper = document.createElement('div');
-                sliderWrapper.style.padding = '0.5rem 0.2rem'; // Add padding to prevent clipping and improve spacing
+                sliderWrapper.style.display = 'flex';
+                sliderWrapper.style.flexDirection = 'column';
+
+                if (!config.hideLabel) {
+                    const sliderLabel = document.createElement('label');
+                    sliderLabel.textContent = config.label;
+                    sliderLabel.style.fontSize = 'var(--sl-input-label-font-size-medium)';
+                    sliderLabel.style.fontWeight = 'var(--sl-font-weight-semibold)';
+                    // sliderLabel.style.color = 'var(--sl-input-label-color)'; // Removed to allow error color override
+                    sliderLabel.style.marginBottom = 'var(--sl-spacing-2x-small)';
+                    sliderWrapper.appendChild(sliderLabel);
+                }
 
                 field = document.createElement('sl-range');
                 if (config.min) field.min = config.min;
@@ -156,19 +171,18 @@ export class TSFormField extends HTMLElement {
                 sliderWrapper.appendChild(field);
                 return sliderWrapper;
             case 'combobox':
-                field = document.createElement('sl-input');
-                field.setAttribute('list', `datalist-${fieldName}`);
-                field.value = value || '';
-                const datalist = document.createElement('datalist');
-                datalist.id = `datalist-${fieldName}`;
+                field = document.createElement('ts-combobox');
+                field.setAttribute('label', config.label || '');
+                field.setAttribute('value', value || '');
                 if (config.options) {
-                    config.options.forEach(opt => {
-                        const option = document.createElement('option');
-                        option.value = opt.value;
-                        datalist.appendChild(option);
-                    });
+                    field.setAttribute('options', JSON.stringify(config.options));
                 }
-                field.appendChild(datalist);
+                if (config.placeholder) {
+                    field.setAttribute('placeholder', config.placeholder);
+                }
+                if (config.disabled) {
+                    field.setAttribute('disabled', '');
+                }
                 break;
             case 'file':
             case 'image':
@@ -202,15 +216,26 @@ export class TSFormField extends HTMLElement {
                 });
                 return field;
             case 'button-group':
-                const slButtonGroup = document.createElement('sl-button-group');
-                slButtonGroup.style.display = 'flex';
-                slButtonGroup.style.gap = '0.5rem';
+                let slButtonGroup;
+
+                if (config.variant === 'process') {
+                    slButtonGroup = document.createElement('div');
+                    slButtonGroup.className = 'process-group';
+                    slButtonGroup.style.display = 'flex';
+                    slButtonGroup.style.gap = '0'; // Process group handles gap internally
+                } else {
+                    slButtonGroup = document.createElement('sl-button-group');
+                    slButtonGroup.style.gap = '0.5rem'; // Default gap for standard button groups
+                }
+
                 if (config.options) {
                     config.options.forEach(btnStr => {
                         const [val, enabled = 'true', variant = 'default', label = ''] = btnStr.split('/');
                         const b = document.createElement('sl-button');
                         b.dataset.value = val;
-                        b.variant = (value === val) ? (variant || 'primary') : (variant || 'default');
+                        const btnVariant = (value === val) ? (variant || 'primary') : (variant || 'default');
+                        b.variant = btnVariant;
+                        b.setAttribute('data-variant', btnVariant); // For CSS styling in process group
                         b.textContent = label || val;
                         b.disabled = enabled === 'false';
                         b.addEventListener('click', () => {
@@ -238,7 +263,7 @@ export class TSFormField extends HTMLElement {
                     radioLabel.textContent = config.label;
                     radioLabel.style.fontSize = 'var(--sl-input-label-font-size-medium)';
                     radioLabel.style.fontWeight = 'var(--sl-font-weight-semibold)';
-                    radioLabel.style.color = 'var(--sl-input-label-color)';
+                    // radioLabel.style.color = 'var(--sl-input-label-color)'; // Removed to allow error color override
                     radioLabel.style.marginBottom = 'var(--sl-spacing-small)'; // Increased spacing
                     radioWrapper.appendChild(radioLabel);
                 }
@@ -263,13 +288,47 @@ export class TSFormField extends HTMLElement {
                 return radioWrapper;
             case 'date':
                 field = document.createElement('sl-input');
-                field.type = 'date';
+                field.type = 'text'; // Use text for flatpickr
                 field.value = value || '';
+                // Initialize flatpickr
+                setTimeout(() => {
+                    const inputElement = field.shadowRoot ? field.shadowRoot.querySelector('input') : field;
+                    if (inputElement) {
+                        flatpickr(inputElement, {
+                            locale: Czech,
+                            defaultDate: value,
+                            dateFormat: 'd. m. Y',
+                            allowInput: true,
+                            onChange: (selectedDates, dateStr) => {
+                                field.value = dateStr;
+                                field.dispatchEvent(new CustomEvent('sl-change', { bubbles: true }));
+                            }
+                        });
+                    }
+                }, 0);
                 break;
             case 'datetime':
                 field = document.createElement('sl-input');
-                field.type = 'datetime-local';
+                field.type = 'text'; // Use text for flatpickr
                 field.value = value || '';
+                // Initialize flatpickr
+                setTimeout(() => {
+                    const inputElement = field.shadowRoot ? field.shadowRoot.querySelector('input') : field;
+                    if (inputElement) {
+                        flatpickr(inputElement, {
+                            locale: Czech,
+                            defaultDate: value,
+                            enableTime: true,
+                            dateFormat: 'd. m. Y H:i',
+                            time_24hr: true,
+                            allowInput: true,
+                            onChange: (selectedDates, dateStr) => {
+                                field.value = dateStr;
+                                field.dispatchEvent(new CustomEvent('sl-change', { bubbles: true }));
+                            }
+                        });
+                    }
+                }, 0);
                 break;
             case 'select':
                 field = document.createElement('sl-select');
@@ -312,6 +371,12 @@ export class TSFormField extends HTMLElement {
                     field.setAttribute('value', JSON.stringify(value));
                 }
                 break;
+
+            case 'separator':
+                field = document.createElement('div');
+                field.className = 'form-separator';
+                field.textContent = config.label || '';
+                return field;
 
             case 'table':
                 field = document.createElement('ts-table');
@@ -447,6 +512,8 @@ export class TSFormField extends HTMLElement {
         } else if (field.tagName === 'TS-FILE-UPLOAD') {
             newValue = event.detail.files;
         } else if (field.tagName === 'TS-RELATIONSHIP-PICKER') {
+            newValue = event.detail.value;
+        } else if (field.tagName === 'TS-COMBOBOX') {
             newValue = event.detail.value;
         } else if (field.type === 'file') {
             newValue = field.files;

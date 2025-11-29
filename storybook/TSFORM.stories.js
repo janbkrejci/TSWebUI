@@ -9,9 +9,147 @@ export default {
     title: 'TSWebUI/TSFORM',
     parameters: {
         docs: {
+            description: {
+                component: `
+# TSForm Documentation
+
+Komponenta \`ts-form\` je univerzální formulářový generátor založený na JSON konfiguraci. Podporuje složité layouty, záložky (tabs), validace a širokou škálu vstupních prvků.
+
+## Layout Konfigurace
+
+Layout formuláře se definuje pomocí JSON objektu předaného do atributu \`layout\`.
+
+### Struktura
+Layout může být definován dvěma způsoby:
+1. **Se záložkami (Tabs):**
+   \`\`\`json
+   {
+     "tabs": [
+       {
+         "label": "Název záložky",
+         "rows": [ ... ]
+       },
+       ...
+     ]
+   }
+   \`\`\`
+2. **Bez záložek (Jednoduchý):**
+   \`\`\`json
+   {
+     "rows": [ ... ]
+   }
+   \`\`\`
+
+### Řádky a Sloupce (Grid)
+Vlastnost \`rows\` je pole polí, kde vnitřní pole reprezentuje řádek a jeho prvky jsou sloupce.
+\`\`\`json
+"rows": [
+  [ { "field": "firstName", "width": "1fr" }, { "field": "lastName", "width": "1fr" } ], // 2 sloupce
+  [ { "field": "bio", "width": "100%" } ] // 1 sloupec přes celou šířku
+]
+\`\`\`
+
+### Vlastnosti buňky layoutu
+- **field**: (string) Název pole, který musí odpovídat klíči v definici \`fields\`.
+- **width**: (string) Šířka sloupce. Lze použít CSS Grid jednotky (např. \`1fr\`, \`2fr\`, \`150px\`, \`auto\`).
+- **align**: (string) Horizontální zarovnání obsahu buňky (\`'left'\`, \`'center'\`, \`'right'\`).
+- **type**: (string) Speciální typ buňky, pokud se nejedná o pole.
+  - \`'empty'\`: Prázdná buňka pro odsazení.
+  - \`'separator'\`: Oddělovač (viz níže).
+
+### Oddělovače (Separators)
+Lze vložit vizuální oddělovač sekcí.
+\`\`\`json
+[ { "type": "separator", "label": "Osobní údaje" } ]
+\`\`\`
+
+## Konfigurace Polí (Fields)
+
+Definice polí se předává do atributu \`fields\` jako JSON objekt, kde klíč je název pole.
+
+### Společné parametry
+- **label**: (string) Popisek pole.
+- **type**: (string) Typ pole (viz níže).
+- **hidden**: (boolean) Skryté pole.
+- **disabled**: (boolean) Deaktivované pole.
+- **readonly**: (boolean) Pole pouze pro čtení.
+- **hint**: (string) Nápověda pod polem.
+- **width**: (string) Šířka samotného inputu (např. '100%').
+
+### Typy polí
+
+#### Textové vstupy
+- **text**: Klasický textový input.
+- **email**: Validace emailu.
+- **password**: Skryté znaky.
+- **url**: Validace URL.
+- **tel**: Telefonní číslo.
+- **textarea**: Víceřádkový text. Parametr \`rows\` (number).
+
+#### Číselné vstupy
+- **number**: Číslo. Parametry: \`min\`, \`max\`, \`step\`.
+
+#### Datum a Čas
+Používá knihovnu Flatpickr s českou lokalizací.
+- **date**: Výběr data.
+- **datetime**: Výběr data a času.
+
+#### Výběry (Selects)
+- **select**: Jednoduchý výběr.
+- **multiselect**: Výběr více hodnot.
+- **Parametr \`options\`**:
+  - Pole objektů: \`[{ "value": "cz", "label": "Česko" }, ...]\`
+  - Nebo pole řetězců ve formátu \`"value/Label"\`.
+
+#### Relationship Picker (M:N)
+Pokročilý výběr vazeb s vyhledáváním a čipy.
+- **type**: \`'relationship-picker'\`
+- **targetEntity**: (string) Název entity (pro dialog).
+- **mode**: \`'single'\` nebo \`'multiple'\`.
+- **displayFields**: (array) Pole zobrazovaná v tabulce výsledků.
+- **chipDisplayFields**: (array) Pole zobrazovaná na vybraných čipech.
+- **options**: (array) Data pro výběr (pole objektů).
+
+#### Přepínače a Checkboxy
+- **switch**: Přepínač (ON/OFF).
+- **checkbox**: Zaškrtávací políčko.
+
+#### Slider
+- **type**: \`'slider'\`
+- **min**, **max**, **step**: Rozsah a krok.
+- **hideLabel**: (boolean) Skryje číselnou hodnotu/label nad sliderem.
+
+#### Button Group
+Skupina tlačítek chovající se jako radio buttony.
+- **type**: \`'button-group'\`
+- **variant**:
+  - \`'default'\`: Standardní tlačítka.
+  - \`'process'\`: Tlačítka ve tvaru šipek (procesní flow).
+- **options**: Pole řetězců \`"value/enabled/variant/Label"\`.
+  - Příklad: \`["draft/true/neutral/Koncept", "published/true/success/Publikováno"]\`
+
+## Tlačítka Formuláře (Buttons)
+
+Konfigurace akčních tlačítek v patičce formuláře (atribut \`buttons\`).
+\`\`\`json
+[
+  {
+    "action": "submit",
+    "label": "Uložit",
+    "variant": "primary"
+  },
+  {
+    "action": "cancel",
+    "label": "Zrušit",
+    "variant": "neutral"
+  }
+]
+\`\`\`
+`
+            },
             story: {
                 inline: false,
-                iframeHeight: '600px'
+                iframeHeight: '800px'
             }
         }
     },
@@ -152,7 +290,61 @@ export const Default = {
 
 export const WithErrors = {
     args: {
-        ...defaultArgs,
+        layout: `{
+            "rows": [
+                [{"field": "name", "width": "1fr"}, {"field": "email", "width": "1fr"}],
+                [{"field": "password", "width": "1fr"}],
+                [{"field": "userType", "width": "1fr"}, {"field": "preferences", "width": "1fr"}],
+                [{"field": "combobox", "width": "1fr"}],
+                [{"field": "newsletter", "width": "1fr"}, {"field": "enableFeature", "width": "1fr"}],
+                [{"field": "volume", "width": "2fr"}],
+                [{"field": "invoiceStatus", "width": "1fr"}],
+                [{"field": "bio", "width": "2fr"}],
+                [{"field": "age", "width": "1fr"}, {"field": "website", "width": "1fr"}],
+                [{"field": "startDate", "width": "1fr"}, {"field": "meetingTime", "width": "1fr"}],
+                [{"field": "uploadFile", "width": "1fr"}, {"field": "uploadImage", "width": "1fr"}]
+            ]
+        }`,
+        fields: `{
+            "name": {"type": "text", "label": "Name", "required": true},
+            "email": {"type": "email", "label": "Email", "required": true},
+            "password": {"type": "password", "label": "Password"},
+            "userType": {
+                "type": "radio",
+                "label": "User Type",
+                "options": [
+                    {"value": "admin", "label": "Admin"},
+                    {"value": "user", "label": "User"}
+                ]
+            },
+            "preferences": {
+                "type": "select",
+                "label": "Preferences",
+                "options": [
+                    {"value": "option1", "label": "Option 1"},
+                    {"value": "option2", "label": "Option 2"}
+                ]
+            },
+            "combobox": {
+                "type": "combobox",
+                "label": "Combobox",
+                "options": [
+                    {"value": "item1", "label": "Item 1"},
+                    {"value": "item2", "label": "Item 2"}
+                ]
+            },
+            "newsletter": {"type": "checkbox", "label": "Subscribe to newsletter"},
+            "enableFeature": {"type": "switch", "label": "Enable Feature"},
+            "volume": {"type": "slider", "label": "Volume", "min": 0, "max": 100, "step": 1},
+            "invoiceStatus": {"type": "button-group", "label": "Invoice Status", "options": ["active/true/primary/Aktivní", "inactive/false/default/Neaktivní"]},
+            "bio": {"type": "textarea", "label": "Bio"},
+            "age": {"type": "number", "label": "Age"},
+            "website": {"type": "url", "label": "Website"},
+            "startDate": {"type": "date", "label": "Start Date"},
+            "meetingTime": {"type": "datetime", "label": "Meeting Time"},
+            "uploadFile": {"type": "file", "label": "Upload File"},
+            "uploadImage": {"type": "image", "label": "Upload Image"}
+        }`,
         errors: `{
             "name": "Name is required.",
             "password": "Password is required.",
@@ -164,10 +356,16 @@ export const WithErrors = {
             "enableFeature": "Feature must be enabled.",
             "volume": "Volume must be set.",
             "invoiceStatus": "Please select invoice status.",
-            "extraField": "Extra field is required.",
-            "bio": "Bio is required."
+            "bio": "Bio is required.",
+            "age": "Age must be valid.",
+            "website": "Invalid URL.",
+            "startDate": "Date is required.",
+            "meetingTime": "Time is required.",
+            "uploadFile": "File is required.",
+            "uploadImage": "Image is required."
         }`,
-        buttons: '[{"action":"cancel","variant":"text","label":"Cancel","position":"left"}]'
+        buttons: '[{"action":"cancel","variant":"text","label":"Cancel","position":"left"}]',
+        values: '{}'
     }
 }
 
@@ -252,6 +450,20 @@ export const Complex = {
                     label: 'Tabulka',
                     rows: [
                         [{ field: 'history' }]
+                    ]
+                }
+                ,
+                {
+                    label: 'Další prvky',
+                    rows: [
+                        [{ field: 'section1' }],
+                        [{ field: 'terms', width: '1fr' }, { field: 'satisfaction', width: '2fr' }],
+                        [{ field: 'country' }, { field: 'meetingTime' }, { field: 'startDate' }],
+                        [{ field: 'section2' }],
+                        [{ field: 'age', width: '150px' }, { field: 'website' }],
+                        [{ field: 'section3' }],
+                        [{ type: 'empty' }, { field: 'statusGroup', align: 'right' }],
+                        [{ field: 'actionButton' }]
                     ]
                 }
             ]
@@ -413,6 +625,45 @@ export const Complex = {
                     { id: 7, date: '2023-01-07', action: 'Logout', user: 'jnovak' }
                 ]
             }
+            ,
+
+            // Other Elements
+            section1: { type: 'separator', label: 'Základní nastavení' },
+            section2: { type: 'separator', label: 'Osobní údaje' },
+            section3: { type: 'separator', label: 'Akce' },
+            terms: { label: 'Souhlasím s podmínkami', type: 'checkbox' },
+            satisfaction: { label: 'Spokojenost', type: 'slider', min: 0, max: 100, step: 10 },
+            country: {
+                label: 'Země (Combobox)',
+                type: 'combobox',
+                options: [
+                    { value: 'cz', label: 'Česká republika' },
+                    { value: 'sk', label: 'Slovensko' },
+                    { value: 'de', label: 'Německo' },
+                    { value: 'pl', label: 'Polsko' },
+                    { value: 'at', label: 'Rakousko' }
+                ]
+            },
+            startDate: { label: 'Datum zahájení (Date only)', type: 'date' },
+            meetingTime: { label: 'Čas schůzky', type: 'datetime' },
+            age: { label: 'Věk', type: 'number', min: 0, max: 120 },
+            website: { label: 'Webová stránka', type: 'url' },
+            statusGroup: {
+                type: 'button-group',
+                variant: 'process',
+                label: 'Status',
+                options: [
+                    'draft/true/default/Koncept',
+                    'published/true/success/Publikováno',
+                    'archived/true/warning/Archivováno'
+                ]
+            },
+            actionButton: {
+                type: 'button',
+                label: 'Provést akci',
+                variant: 'primary',
+                action: 'custom_action'
+            }
         }),
         buttons: JSON.stringify([
             { action: 'cancel', label: 'Zrušit', variant: 'default' },
@@ -432,7 +683,50 @@ export const Complex = {
             theme: 'dark',
             notifications: ['email', 'push'],
             department: 2,
-            projects: [101, 103]
+            projects: [101, 103],
+            terms: true,
+            satisfaction: 80,
+            country: 'cz',
+            age: 30,
+            website: 'https://example.com',
+            statusGroup: 'published',
+            meetingTime: '2023-11-15 14:30',
+            startDate: '2023-01-01'
+        })
+    }
+}
+
+export const Simple = {
+    args: {
+        ...defaultArgs,
+        layout: JSON.stringify({
+            rows: [
+                [{ field: 'name' }, { field: 'surname' }],
+                [{ field: 'email' }, { field: 'phone' }],
+                [{ field: 'role' }, { field: 'active' }]
+            ]
+        }),
+        fields: JSON.stringify({
+            name: { label: 'Jméno', type: 'text', required: true },
+            surname: { label: 'Příjmení', type: 'text', required: true },
+            email: { label: 'E-mail', type: 'text', required: true },
+            phone: { label: 'Telefon', type: 'text' },
+            role: {
+                label: 'Role',
+                type: 'select',
+                options: [
+                    { value: 'admin', label: 'Administrátor' },
+                    { value: 'user', label: 'Uživatel' }
+                ]
+            },
+            active: { label: 'Aktivní', type: 'switch' }
+        }),
+        values: JSON.stringify({
+            name: 'Petr',
+            surname: 'Svoboda',
+            email: 'petr.svoboda@example.com',
+            role: 'user',
+            active: true
         })
     }
 }
