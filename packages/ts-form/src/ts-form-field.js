@@ -2,7 +2,9 @@ import './ts-file-upload.js';
 import './ts-file-upload.js';
 import './ts-relationship-picker.js';
 import './ts-combobox.js';
-// Flatpickr loaded via CDN
+import flatpickr from 'flatpickr';
+import { Czech } from 'flatpickr/dist/l10n/cs.js';
+import 'flatpickr/dist/flatpickr.css';
 
 
 export class TSFormField extends HTMLElement {
@@ -110,7 +112,7 @@ export class TSFormField extends HTMLElement {
                 // Add spacer to align with other inputs that have labels
                 const spacer = document.createElement('div');
                 spacer.style.height = 'calc(var(--sl-input-label-font-size-medium) + var(--sl-spacing-2x-small))';
-                spacer.style.marginBottom = 'var(--sl-spacing-2x-small)'; // Match label spacing
+                spacer.style.marginBottom = 'var(--sl-spacing-2x-small)';
                 checkboxWrapper.appendChild(spacer);
 
                 field = document.createElement('sl-checkbox');
@@ -302,7 +304,7 @@ export class TSFormField extends HTMLElement {
                     const inputElement = field.shadowRoot ? field.shadowRoot.querySelector('input') : field;
                     if (inputElement) {
                         flatpickr(inputElement, {
-                            locale: flatpickr.l10ns.cs,
+                            locale: Czech,
                             defaultDate: value,
                             dateFormat: 'd. m. Y',
                             allowInput: true,
@@ -324,7 +326,7 @@ export class TSFormField extends HTMLElement {
                     const inputElement = field.shadowRoot ? field.shadowRoot.querySelector('input') : field;
                     if (inputElement) {
                         flatpickr(inputElement, {
-                            locale: flatpickr.l10ns.cs,
+                            locale: Czech,
                             defaultDate: value,
                             enableTime: true,
                             dateFormat: 'd. m. Y H:i',
