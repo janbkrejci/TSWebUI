@@ -355,6 +355,7 @@ class TSForm extends HTMLElement {
                 font-weight: var(--sl-font-weight-bold);
                 text-transform: uppercase;
                 letter-spacing: 0.05em;
+                font-family: var(--sl-font-sans);
             }
             .form-separator::after {
                 content: '';
@@ -614,6 +615,15 @@ class TSForm extends HTMLElement {
                                     return;
                                 }
 
+                                if (col.type === 'separator') {
+                                    const fieldElement = document.createElement('ts-form-field');
+                                    fieldElement.setAttribute('config', JSON.stringify({ type: 'separator', label: col.label }));
+                                    fieldElement.setAttribute('field-name', `separator-${Math.random().toString(36).substr(2, 9)}`);
+                                    colDiv.appendChild(fieldElement);
+                                    rowDiv.appendChild(colDiv);
+                                    return;
+                                }
+
                                 const fieldConfig = fieldsConfig[col.field];
                                 if (fieldConfig) {
                                     const fieldElement = document.createElement('ts-form-field');
@@ -787,6 +797,15 @@ class TSForm extends HTMLElement {
                 }
 
                 if (col.type === 'empty') {
+                    rowDiv.appendChild(colDiv);
+                    return;
+                }
+
+                if (col.type === 'separator') {
+                    const fieldElement = document.createElement('ts-form-field');
+                    fieldElement.setAttribute('config', JSON.stringify({ type: 'separator', label: col.label }));
+                    fieldElement.setAttribute('field-name', `separator-${Math.random().toString(36).substr(2, 9)}`);
+                    colDiv.appendChild(fieldElement);
                     rowDiv.appendChild(colDiv);
                     return;
                 }

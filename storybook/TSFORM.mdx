@@ -1,9 +1,8 @@
-import { Meta, Story } from "@storybook/addon-docs/blocks";
-import * as TSFORMStories from './TSFORM.stories.js';
+import { Meta } from "@storybook/addon-docs/blocks";
 import { action } from 'storybook/actions';
 import { html } from 'lit-html';
 
-<Meta of={TSFORMStories} />
+<Meta title="TSWebUI/TSFORM" />
 
 # TSForm Documentation
 
@@ -187,9 +186,15 @@ Tlačítka mohou vyžadovat potvrzení před provedením akce. To se konfiguruje
 - **confirmation.text**: (string) Text dialogu.
 - **confirmation.buttons**: (array) Tlačítka v dialogu. Tlačítko s `"confirm": true` provede původní akci.
 
-#### Ukázka s Potvrzením
 
-<Story of={TSFORMStories.WithConfirmation} />
+
+## Metody
+
+### `showImportResults(fieldName, results)`
+Zobrazí dialog s výsledky importu nad konkrétním polem typu tabulka.
+
+- **fieldName**: (string) Název pole (klíč v `fields` konfiguraci).
+- **results**: (object) Objekt s výsledky importu (obsahuje počty added, updated, skipped, rejected).
 
 ## Události (Events)
 
@@ -261,9 +266,7 @@ Bublající událost z vnořené tabulky (typ pole `table`).
 </script>
 ```
 
-## Živá ukázka
 
-<Story of={TSFORMStories.Default} />
 
 ## Validace a Chyby
 
@@ -280,8 +283,4 @@ Pokud pole obsahuje chybu:
 1. Input zčervená (aplikuje se třída `.input-invalid`).
 2. Pod inputem se zobrazí chybová hláška.
 
-### Ukázka Validace
 
-V této ukázce je pole `username` validní, zatímco pole `email` obsahuje chybu.
-
-<Story of={TSFORMStories.ErrorExample} />
