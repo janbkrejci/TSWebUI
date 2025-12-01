@@ -606,6 +606,13 @@ export const AllElements = {
             }
         });
 
+        // Log all events to Storybook actions
+        for (const e of ['form-changed', 'form-submit', 'form-field-action']) {
+            form.addEventListener(e, (ev) => {
+                action(e)(ev.detail);
+            });
+        }
+
         // Ensure run() is called after the element is attached
         setTimeout(() => {
             customElements.whenDefined('ts-form').then(() => {
