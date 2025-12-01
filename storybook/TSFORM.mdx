@@ -73,10 +73,7 @@ Definice polí se předává do atributu `fields` jako JSON objekt, kde klíč j
 
 #### Textové vstupy
 - **text**: Klasický textový input.
-- **email**: Validace emailu.
 - **password**: Skryté znaky.
-- **url**: Validace URL.
-- **tel**: Telefonní číslo.
 - **textarea**: Víceřádkový text. Parametr `rows` (number).
 - **combobox**: Textový input s našeptávačem (datalist). Parametr `options`.
 
@@ -98,7 +95,7 @@ Používá knihovnu Flatpickr s českou lokalizací.
 
 #### Relationship Picker (M:N)
 Pokročilý výběr vazeb s vyhledáváním a čipy.
-- **type**: `'relationship'` (nebo `'relationship-picker'`)
+- **type**: `'relationship'`
 - **targetEntity**: (string) Název entity (pro dialog).
 - **mode**: `'single'` nebo `'multiple'`.
 - **displayFields**: (array) Pole zobrazovaná v tabulce výsledků.
@@ -151,16 +148,26 @@ Konfigurace akčních tlačítek v patičce formuláře (atribut `buttons`).
   {
     "action": "submit",
     "label": "Uložit",
-    "variant": "primary"
+    "variant": "primary",
+    "disabled": false
   },
   {
     "action": "cancel",
     "label": "Zrušit",
     "variant": "neutral",
-    "position": "left"
+    "position": "left",
+    "hidden": false
   }
 ]
 ```
+
+### Parametry tlačítka
+- **action**: (string) Identifikátor akce.
+- **label**: (string) Text tlačítka.
+- **variant**: (string) Vzhled tlačítka (`primary`, `success`, `neutral`, `warning`, `danger`, `text`, `default`).
+- **position**: (string) Pozice tlačítka v patičce (`left`, `center`, `right`). Výchozí je `right`.
+- **disabled**: (boolean) Pokud `true`, tlačítko je neaktivní (šedé).
+- **hidden**: (boolean) Pokud `true`, tlačítko není vidět.
 
 ### Potvrzení Akce (Confirmation)
 

@@ -580,48 +580,6 @@ export const Complex = {
 
 
 export const AllElements = {
-    render: (args) => {
-        const form = document.createElement('ts-form');
-        if (args.layout) form.setAttribute('layout', args.layout);
-        if (args.fields) form.setAttribute('fields', args.fields);
-        if (args.errors) form.setAttribute('errors', args.errors);
-        if (args.buttons) form.setAttribute('buttons', args.buttons);
-        if (args.values) form.setAttribute('values', args.values);
-
-        form.addEventListener('form-field-action', (e) => {
-            console.log('Form Field Action:', e.detail);
-            if (e.detail.action === 'do-import') {
-                // Simulate import processing
-                setTimeout(() => {
-                    const results = {
-                        added: Math.floor(Math.random() * 10),
-                        updated: Math.floor(Math.random() * 10),
-                        skipped: Math.floor(Math.random() * 5),
-                        rejected: Math.floor(Math.random() * 2),
-                        rejectedRows: []
-                    };
-                    console.log('Simulating import results:', results);
-                    form.showImportResults(e.detail.field, results);
-                }, 1000);
-            }
-        });
-
-        // Log all events to Storybook actions
-        for (const e of ['form-changed', 'form-submit', 'form-field-action']) {
-            form.addEventListener(e, (ev) => {
-                action(e)(ev.detail);
-            });
-        }
-
-        // Ensure run() is called after the element is attached
-        setTimeout(() => {
-            customElements.whenDefined('ts-form').then(() => {
-                form.run();
-            });
-        }, 0);
-
-        return form;
-    },
     args: {
         ...defaultArgs,
         layout: JSON.stringify({
@@ -691,7 +649,6 @@ export const AllElements = {
                 {
                     label: 'Table',
                     rows: [
-                        [{ type: 'separator', label: 'Data Table' }],
                         [{ field: 'table' }]
                     ]
                 }

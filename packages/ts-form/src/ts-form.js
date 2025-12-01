@@ -698,9 +698,14 @@ class TSForm extends HTMLElement {
             actions.appendChild(centerDiv);
             actions.appendChild(rightDiv);
 
+            let hasVisibleButtons = false;
+
             if (buttons) {
                 const buttonsConfig = JSON.parse(buttons);
                 buttonsConfig.forEach(btn => {
+                    if (!btn.hidden) {
+                        hasVisibleButtons = true;
+                    }
                     const button = document.createElement('sl-button');
                     button.variant = btn.variant || 'primary';
                     button.textContent = btn.label || btn.action;
@@ -746,6 +751,7 @@ class TSForm extends HTMLElement {
                     }
                 });
             } else {
+                hasVisibleButtons = true; // Default submit button is visible
                 const submitButton = document.createElement('sl-button');
                 submitButton.variant = 'primary';
                 submitButton.textContent = 'Submit';
@@ -763,6 +769,10 @@ class TSForm extends HTMLElement {
                 });
                 this.buttons['submit'] = submitButton;
                 rightDiv.appendChild(submitButton);
+            }
+
+            if (!hasVisibleButtons) {
+                actions.style.display = 'none';
             }
 
             form.addEventListener('submit', this.handleSubmit.bind(this));
