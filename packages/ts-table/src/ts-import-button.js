@@ -1,3 +1,5 @@
+import * as XLSX from 'xlsx';
+
 class TSImportButton extends HTMLElement {
     constructor() {
         super();
@@ -90,10 +92,10 @@ class TSImportButton extends HTMLElement {
         }, 0);
     }
 
- 
+
     showImportResults(results) {
         const { added, updated, rejected, skipped, rejectedRowsData } = results;
-        
+
         // Store rejected data for saving
         this.rejectedRowsData = rejectedRowsData || [];
 
@@ -133,17 +135,7 @@ class TSImportButton extends HTMLElement {
         return `${y}-${m}-${day} Zamítnuté řádky.xlsx`;
     }
 
-    async ensureSheetJS() {
-        if (window.XLSX) return window.XLSX;
-        await new Promise((resolve, reject) => {
-            const s = document.createElement('script');
-            s.src = 'https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js';
-            s.onload = resolve;
-            s.onerror = reject;
-            document.head.appendChild(s);
-        });
-        return window.XLSX;
-    }
+
 
     async saveRejectedRows() {
         try {
@@ -176,7 +168,7 @@ class TSImportButton extends HTMLElement {
 
         try {
             const { columnDefinitions } = this.dataProvider();
-            const XLSX = await this.ensureSheetJS();
+            // const XLSX = await this.ensureSheetJS(); // Removed dynamic import
             const data = await file.arrayBuffer();
             const wb = XLSX.read(data, { type: 'array' });
             const sheetName = wb.SheetNames[0];
@@ -199,12 +191,12 @@ class TSImportButton extends HTMLElement {
             // Validate columns: require all exportable columns to be present by header KEY
             const headersInFile = Object.keys(json[0] || {});
             const missing = [];
-            
+
             // Determine which columns to validate
             const columnsToValidate = this.columnsRequiredForImport && this.columnsRequiredForImport.length > 0
                 ? columnDefinitions.filter(col => this.columnsRequiredForImport.includes(col.key))
                 : columnDefinitions;
-            
+
             for (const col of columnsToValidate) {
                 if (!headersInFile.includes(col.key)) missing.push(col.key);
             }
@@ -231,8 +223,8 @@ class TSImportButton extends HTMLElement {
             });
 
             // Dispatch do-import event with parsed data for parent to handle
-            this.dispatchEvent(new CustomEvent('do-import', { 
-                detail: { 
+            this.dispatchEvent(new CustomEvent('do-import', {
+                detail: {
                     data: mapped
                 },
                 bubbles: true,

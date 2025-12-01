@@ -1,3 +1,5 @@
+import * as XLSX from 'xlsx';
+
 class TSExportButton extends HTMLElement {
     constructor() {
         super();
@@ -149,17 +151,7 @@ class TSExportButton extends HTMLElement {
         return { headers, data };
     }
 
-    async ensureSheetJS() {
-        if (window.XLSX) return window.XLSX;
-        await new Promise((resolve, reject) => {
-            const s = document.createElement('script');
-            s.src = 'https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js';
-            s.onload = resolve;
-            s.onerror = reject;
-            document.head.appendChild(s);
-        });
-        return window.XLSX;
-    }
+
 
     formatExportFilename() {
         const d = new Date();
@@ -175,7 +167,7 @@ class TSExportButton extends HTMLElement {
         const cols = this.getExportableColumns(colsOption);
         const { headers, data } = this.buildExportDataset(rows, cols);
 
-        const XLSX = await this.ensureSheetJS();
+        // const XLSX = await this.ensureSheetJS(); // Removed dynamic import
         const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Export');
@@ -224,13 +216,13 @@ class TSExportButton extends HTMLElement {
             const addCheckbox = (value, label, disabled = false, checked = false) => {
                 const container = document.createElement('div');
                 container.className = 'export-option-item';
-                
+
                 const checkbox = document.createElement('sl-checkbox');
                 checkbox.setAttribute('value', value);
                 checkbox.textContent = label;
                 if (disabled) checkbox.disabled = true;
                 if (checked) checkbox.checked = true;
-                
+
                 // Add change listener to update counts
                 checkbox.addEventListener('sl-change', () => {
                     // Use setTimeout to ensure DOM is updated
@@ -238,7 +230,7 @@ class TSExportButton extends HTMLElement {
                         this.updateRowCounts();
                     }, 0);
                 });
-                
+
                 container.appendChild(checkbox);
                 rowsGroup.appendChild(container);
             };
@@ -267,10 +259,10 @@ class TSExportButton extends HTMLElement {
             addRadio('all', 'Všechny sloupce');
             addRadio('visible', 'Jen viditelné sloupce');
             colsGroup.value = 'all'; // Preselect "all columns"
-            
+
             // Add change listener to update counts
             colsGroup.addEventListener('sl-change', updateCounts);
-            
+
             colsSection.style.display = '';
         } else {
             colsSection.style.display = 'none';
