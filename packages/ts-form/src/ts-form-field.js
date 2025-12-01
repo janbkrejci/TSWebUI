@@ -118,6 +118,7 @@ export class TSFormField extends HTMLElement {
                     field.textContent = config.label;
                 }
                 field.checked = value === true;
+                field.addEventListener('sl-change', (e) => this.handleFieldChange(e, fieldName));
                 checkboxWrapper.appendChild(field);
                 return checkboxWrapper;
             case 'switch':
@@ -143,6 +144,7 @@ export class TSFormField extends HTMLElement {
 
                 field = document.createElement('sl-switch');
                 field.checked = value === true;
+                field.addEventListener('sl-change', (e) => this.handleFieldChange(e, fieldName));
 
                 switchContainer.appendChild(field);
                 switchWrapper.appendChild(switchContainer);
@@ -168,6 +170,7 @@ export class TSFormField extends HTMLElement {
                 if (config.max) field.max = config.max;
                 if (config.step) field.step = config.step;
                 field.value = value || config.min || 0;
+                field.addEventListener('sl-change', (e) => this.handleFieldChange(e, fieldName));
 
                 sliderWrapper.appendChild(field);
                 return sliderWrapper;
@@ -284,6 +287,8 @@ export class TSFormField extends HTMLElement {
                 setTimeout(() => {
                     field.value = value || '';
                 }, 0);
+
+                field.addEventListener('sl-change', (e) => this.handleFieldChange(e, fieldName));
 
                 radioWrapper.appendChild(field);
                 return radioWrapper;
@@ -447,22 +452,12 @@ export class TSFormField extends HTMLElement {
 
                 // Propagate events
                 // Listen to all relevant table events and re-dispatch
-                const tableEvents = [
-                    'row-clicked',
-                    'selection-changed',
-                    'selection-action-activated',
-                    'create-new-record',
-                    'do-import',
-                    'export-data',
-                    'column-visibility-changed',
-                    'filters-changed',
-                    'pagination-changed'
-                ];
-
-                tableEvents.forEach(evtName => {
+                // Listen for specific table actions and dispatch as form-field-action
+                const actionEvents = ['create-new-record', 'selection-action-activated', 'do-import'];
+                actionEvents.forEach(evtName => {
                     field.addEventListener(evtName, (e) => {
                         e.stopPropagation();
-                        this.dispatchEvent(new CustomEvent('form-table-action', {
+                        this.dispatchEvent(new CustomEvent('form-field-action', {
                             detail: {
                                 field: fieldName,
                                 action: evtName,
