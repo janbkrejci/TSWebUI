@@ -56,6 +56,7 @@ class TSDataTable extends HTMLElement {
                 :host {
                     display: block;
                     width: 100%;
+                    height: 100%; /* Ensure host takes full height from parent wrapper */
                 }
                 
                 /* Utility classes */
@@ -70,6 +71,7 @@ class TSDataTable extends HTMLElement {
                 #table-container {
                     position: relative;
                     width: 100%;
+                    height: 100%; /* Ensure container takes full height */
                     user-select: none;
                     -webkit-user-select: none;
                     -moz-user-select: none;

@@ -184,7 +184,7 @@ class TSForm extends HTMLElement {
             .form-actions {
                 grid-row: 2;
                 display: flex;
-                justify-content: flex-end;
+                justify-content: space-between;
                 gap: 1rem;
                 background: var(--sl-color-neutral-0);
                 padding: 1rem;
@@ -226,24 +226,17 @@ class TSForm extends HTMLElement {
                 height: 100%;
                 overflow: auto;
                 box-sizing: border-box;
+                scrollbar-gutter: stable; /* Prevent layout shift when scrollbar appears */
             }
             .tab-content.full-height {
-                padding: 1rem;
+                padding: 0.5rem;
                 max-width: none;
                 overflow: hidden; /* Let table handle scrolling */
                 display: flex;
                 flex-direction: column;
                 box-sizing: border-box;
             }
-            .tab-content {
-                padding: 1rem;
-                max-width: 1200px;
-                margin: 0 auto;
-                height: 100%;
-                overflow: auto;
-                box-sizing: border-box;
-                scrollbar-gutter: stable; /* Prevent layout shift when scrollbar appears */
-            }
+            .tab-content.full-height .form-row {
                 height: 100%;
                 margin-bottom: 0;
                 gap: 0; /* Remove gap for single item */
