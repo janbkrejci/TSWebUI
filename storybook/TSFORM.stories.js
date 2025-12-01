@@ -225,7 +225,7 @@ const defaultArgs = {
             {
                 "label": "User Info",
                 "rows": [
-                    [{"field": "name", "width": "1fr"}, {"field": "email", "width": "1fr"}],
+                    [{"field": "name", "width": "1fr"}],
                     [{"field": "password", "width": "1fr"}],
                     [{"field": "userType", "width": "1fr"}, {"field": "preferences", "width": "1fr"}],
                     [{"field": "combobox", "width": "1fr"}],
@@ -242,7 +242,7 @@ const defaultArgs = {
     }`,
     fields: `{
         "name": {"type": "text", "label": "Name", "required": true},
-        "email": {"type": "email", "label": "Email", "required": true},
+
         "password": {"type": "password", "label": "Password"},
         "userType": {
             "type": "radio",
@@ -292,7 +292,7 @@ export const WithErrors = {
     args: {
         layout: `{
             "rows": [
-                [{"field": "name", "width": "1fr"}, {"field": "email", "width": "1fr"}],
+                [{"field": "name", "width": "1fr"}],
                 [{"field": "password", "width": "1fr"}],
                 [{"field": "userType", "width": "1fr"}, {"field": "preferences", "width": "1fr"}],
                 [{"field": "combobox", "width": "1fr"}],
@@ -300,7 +300,7 @@ export const WithErrors = {
                 [{"field": "volume", "width": "2fr"}],
                 [{"field": "invoiceStatus", "width": "1fr"}],
                 [{"field": "bio", "width": "2fr"}],
-                [{"field": "age", "width": "1fr"}, {"field": "website", "width": "1fr"}],
+                [{"field": "age", "width": "1fr"}],
                 [{"field": "startDate", "width": "1fr"}, {"field": "meetingTime", "width": "1fr"}],
                 [{"field": "department", "width": "1fr"}, {"field": "projects", "width": "1fr"}],
                 [{"field": "uploadFile", "width": "1fr"}, {"field": "uploadImage", "width": "1fr"}]
@@ -308,7 +308,7 @@ export const WithErrors = {
         }`,
         fields: `{
             "name": {"type": "text", "label": "Name", "required": true},
-            "email": {"type": "email", "label": "Email", "required": true},
+
             "password": {"type": "password", "label": "Password"},
             "userType": {
                 "type": "radio",
@@ -340,7 +340,7 @@ export const WithErrors = {
             "invoiceStatus": {"type": "button-group", "label": "Invoice Status", "options": ["active/true/primary/Aktivní", "inactive/false/default/Neaktivní"]},
             "bio": {"type": "textarea", "label": "Bio"},
             "age": {"type": "number", "label": "Age"},
-            "website": {"type": "url", "label": "Website"},
+
             "startDate": {"type": "date", "label": "Start Date"},
             "meetingTime": {"type": "datetime", "label": "Meeting Time"},
             "department": {
@@ -374,7 +374,7 @@ export const WithErrors = {
         errors: `{
             "name": "Name is required.",
             "password": "Password is required.",
-            "email": "Please enter a valid email address.",
+
             "userType": "Please select a user type.",
             "preferences": "Please select a preference.",
             "combobox": "Please select an option.",
@@ -384,7 +384,7 @@ export const WithErrors = {
             "invoiceStatus": "Please select invoice status.",
             "bio": "Bio is required.",
             "age": "Age must be valid.",
-            "website": "Invalid URL.",
+
             "startDate": "Date is required.",
             "meetingTime": "Time is required.",
             "department": "Department is required.",
@@ -447,7 +447,6 @@ export const Complex = {
                     label: 'Osobní údaje',
                     rows: [
                         [{ field: 'name' }, { field: 'surname' }],
-                        [{ field: 'email' }, { field: 'phone' }],
                         [{ field: 'birthdate' }]
                     ]
                 },
@@ -488,7 +487,7 @@ export const Complex = {
                         [{ field: 'terms', width: '1fr' }, { field: 'satisfaction', width: '2fr' }],
                         [{ field: 'country' }, { field: 'meetingTime' }, { field: 'startDate' }],
                         [{ field: 'section2' }],
-                        [{ field: 'age', width: '150px' }, { field: 'website' }],
+                        [{ field: 'age', width: '150px' }],
                         [{ field: 'section3' }],
                         [{ type: 'empty' }, { field: 'statusGroup', align: 'right' }],
                         [{ field: 'actionButton' }]
@@ -500,8 +499,7 @@ export const Complex = {
             // Basic Info
             name: { label: 'Jméno', type: 'text', required: true },
             surname: { label: 'Příjmení', type: 'text', required: true },
-            email: { label: 'E-mail', type: 'text', required: true },
-            phone: { label: 'Telefon', type: 'text' },
+
 
             // Account Info
             username: { label: 'Uživatelské jméno', type: 'text', required: true },
@@ -675,7 +673,7 @@ export const Complex = {
             startDate: { label: 'Datum zahájení (Date only)', type: 'date' },
             meetingTime: { label: 'Čas schůzky', type: 'datetime' },
             age: { label: 'Věk', type: 'number', min: 0, max: 120 },
-            website: { label: 'Webová stránka', type: 'url' },
+
             statusGroup: {
                 type: 'button-group',
                 variant: 'process',
@@ -700,8 +698,7 @@ export const Complex = {
         values: JSON.stringify({
             name: 'Jan',
             surname: 'Novák',
-            email: 'jan.novak@example.com',
-            phone: '+420 123 456 789',
+
             username: 'jnovak',
             password: 'password123',
             role: 'user',
@@ -716,7 +713,7 @@ export const Complex = {
             satisfaction: 80,
             country: 'cz',
             age: 30,
-            website: 'https://example.com',
+
             statusGroup: 'published',
             meetingTime: '2023-11-15 14:30',
             startDate: '2023-01-01'
@@ -724,40 +721,7 @@ export const Complex = {
     }
 }
 
-export const Simple = {
-    args: {
-        ...defaultArgs,
-        layout: JSON.stringify({
-            rows: [
-                [{ field: 'name' }, { field: 'surname' }],
-                [{ field: 'email' }, { field: 'phone' }],
-                [{ field: 'role' }, { field: 'active' }]
-            ]
-        }),
-        fields: JSON.stringify({
-            name: { label: 'Jméno', type: 'text', required: true },
-            surname: { label: 'Příjmení', type: 'text', required: true },
-            email: { label: 'E-mail', type: 'text', required: true },
-            phone: { label: 'Telefon', type: 'text' },
-            role: {
-                label: 'Role',
-                type: 'select',
-                options: [
-                    { value: 'admin', label: 'Administrátor' },
-                    { value: 'user', label: 'Uživatel' }
-                ]
-            },
-            active: { label: 'Aktivní', type: 'switch' }
-        }),
-        values: JSON.stringify({
-            name: 'Petr',
-            surname: 'Svoboda',
-            email: 'petr.svoboda@example.com',
-            role: 'user',
-            active: true
-        })
-    }
-}
+
 export const AllElements = {
     args: {
         ...defaultArgs,
@@ -768,14 +732,11 @@ export const AllElements = {
                     rows: [
                         [{ type: 'separator', label: 'Text Input' }],
                         [{ field: 'text' }],
-                        [{ type: 'separator', label: 'Email Input' }],
-                        [{ field: 'email' }],
+
                         [{ type: 'separator', label: 'Password Input' }],
                         [{ field: 'password' }],
-                        [{ type: 'separator', label: 'URL Input' }],
-                        [{ field: 'url' }],
-                        [{ type: 'separator', label: 'Phone Input' }],
-                        [{ field: 'tel' }],
+
+
                         [{ type: 'separator', label: 'Textarea' }],
                         [{ field: 'textarea' }]
                     ]
@@ -844,10 +805,7 @@ export const AllElements = {
         fields: JSON.stringify({
             // Text Inputs
             text: { type: 'text', label: 'Text Field' },
-            email: { type: 'email', label: 'Email Field' },
-            password: { type: 'password', label: 'Password Field' },
-            url: { type: 'url', label: 'URL Field' },
-            tel: { type: 'tel', label: 'Phone Field' },
+
             textarea: { type: 'textarea', label: 'Textarea Field', rows: 3 },
 
             // Numeric & Date
@@ -949,25 +907,4 @@ export const AllElements = {
     }
 }
 
-export const ErrorExample = {
-    args: {
-        ...defaultArgs,
-        layout: JSON.stringify({
-            rows: [
-                [{ field: 'username' }],
-                [{ field: 'email' }]
-            ]
-        }),
-        fields: JSON.stringify({
-            username: { type: 'text', label: 'Uživatelské jméno' },
-            email: { type: 'text', label: 'Email' }
-        }),
-        errors: JSON.stringify({
-            email: 'Toto pole je povinné a musí obsahovat platný email.'
-        }),
-        values: JSON.stringify({
-            username: 'jan.novak',
-            email: ''
-        })
-    }
-}
+
