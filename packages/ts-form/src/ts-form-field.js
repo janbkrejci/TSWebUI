@@ -291,7 +291,7 @@ export class TSFormField extends HTMLElement {
                     radioLabel.style.fontSize = 'var(--sl-input-label-font-size-medium)';
                     radioLabel.style.fontWeight = 'var(--sl-font-weight-semibold)';
                     // radioLabel.style.color = 'var(--sl-input-label-color)'; // Removed to allow error color override
-                    radioLabel.style.marginBottom = 'var(--sl-spacing-small)'; // Increased spacing
+                    // radioLabel.style.marginBottom = 'var(--sl-spacing-small)'; // Removed extra spacing, handled by wrapper gap
                     radioWrapper.appendChild(radioLabel);
                 }
 
