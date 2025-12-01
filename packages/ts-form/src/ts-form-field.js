@@ -72,6 +72,25 @@ export class TSFormField extends HTMLElement {
         const field = this.createField(fieldName, config, parsedValue);
         this.appendChild(field);
 
+        // Enforce spacing for prefix/suffix slots to handle global resets (like * { padding: 0 })
+        // This ensures consistent look in FORMTEST and Storybook
+        // Inject shared styles for spacing fixes if not already present
+        if (!document.getElementById('ts-form-field-styles')) {
+            const style = document.createElement('style');
+            style.id = 'ts-form-field-styles';
+            style.textContent = `
+                .force-prefix-spacing::part(prefix) {
+                    padding-inline-start: var(--sl-input-spacing-medium);
+                    color: var(--sl-input-icon-color);
+                }
+                .force-suffix-spacing::part(suffix) {
+                    padding-inline-end: var(--sl-input-spacing-medium);
+                    color: var(--sl-input-icon-color);
+                }
+            `;
+            this.appendChild(style);
+        }
+
         // Special handling for select to ensure value is picked up after connection
         if (config.type === 'select') {
             Promise.all([
@@ -398,6 +417,7 @@ export class TSFormField extends HTMLElement {
                 field = document.createElement('sl-input');
                 field.type = 'text'; // Use text for flatpickr
                 field.classList.add('text-right');
+                field.classList.add('force-prefix-spacing');
                 field.setAttribute('autocomplete', 'off');
 
                 // Add calendar icon
@@ -406,7 +426,6 @@ export class TSFormField extends HTMLElement {
                 dateIcon.slot = 'prefix';
                 dateIcon.style.cursor = 'pointer';
                 dateIcon.style.fontSize = 'var(--sl-font-size-large)';
-                dateIcon.style.paddingLeft = 'var(--sl-spacing-small)';
                 field.appendChild(dateIcon);
 
                 // Display formatted date initially if value is ISO
@@ -509,6 +528,7 @@ export class TSFormField extends HTMLElement {
                 field = document.createElement('sl-input');
                 field.type = 'text'; // Use text for flatpickr
                 field.classList.add('text-right');
+                field.classList.add('force-prefix-spacing');
                 field.setAttribute('autocomplete', 'off');
 
                 // Add calendar icon
@@ -517,7 +537,6 @@ export class TSFormField extends HTMLElement {
                 datetimeIcon.slot = 'prefix';
                 datetimeIcon.style.cursor = 'pointer';
                 datetimeIcon.style.fontSize = 'var(--sl-font-size-large)';
-                datetimeIcon.style.paddingLeft = 'var(--sl-spacing-small)';
                 field.appendChild(datetimeIcon);
 
                 field.value = value ? this.formatDateTime(value) : '';

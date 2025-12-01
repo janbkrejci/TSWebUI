@@ -179,6 +179,7 @@ export class TSRelationshipPicker extends HTMLElement {
                 align-items: center;
                 margin-left: auto; /* Push to right */
                 flex-shrink: 0;
+                padding-right: var(--sl-spacing-small);
             }
             .search-results {
                 margin-top: 1rem;

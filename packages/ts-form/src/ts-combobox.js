@@ -120,6 +120,7 @@ export class TSCombobox extends HTMLElement {
         container.style.width = '100%';
 
         const input = document.createElement('sl-input');
+        input.classList.add('combobox-input');
         if (label) input.label = label;
         input.value = this._value || '';
         input.disabled = disabled;
@@ -175,6 +176,10 @@ export class TSCombobox extends HTMLElement {
                 .ts-combobox-item:hover {
                     background-color: var(--sl-color-primary-50);
                     color: var(--sl-color-primary-700);
+                }
+                sl-input.combobox-input::part(suffix) {
+                    padding-inline-end: var(--sl-input-spacing-medium);
+                    color: var(--sl-input-icon-color);
                 }
             `;
             this.appendChild(style);
