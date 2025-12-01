@@ -129,12 +129,13 @@ class TSForm extends HTMLElement {
         // Create style
         const style = document.createElement('style');
         style.textContent = `
-            :host {
+            ts-form {
                 display: block;
                 width: 100%;
                 height: 100vh;
                 --label-spacing: var(--sl-spacing-2x-small);
                 position: relative; /* For loader positioning */
+                font-family: var(--sl-font-sans);
             }
             .ts-form-container {
                 opacity: 0;
