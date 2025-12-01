@@ -315,51 +315,308 @@ export class TSFormField extends HTMLElement {
 
                 radioWrapper.appendChild(field);
                 return radioWrapper;
+            case 'number':
+                field = document.createElement('sl-input');
+                field.type = 'text';
+                field.inputMode = 'decimal';
+                field.classList.add('text-right');
+                field.setAttribute('autocomplete', 'off');
+
+                // Input restriction: only numbers, minus, dot, comma, math operators
+                field.addEventListener('sl-input', () => {
+                    const val = field.value;
+                    const clean = val.replace(/[^0-9.,+\-*/^() ]/g, '');
+                    if (val !== clean) {
+                        field.value = clean;
+                    }
+                });
+
+                // Format initial value
+                if (value) {
+                    field.value = this.formatNumber(value, config.roundTo);
+                }
+
+                field.addEventListener('sl-focus', () => {
+                    field.value = field.value.replace(/\s/g, '');
+                    setTimeout(() => field.select(), 0);
+                });
+
+                field.addEventListener('sl-blur', () => {
+                    // Evaluate math expression if present
+                    let val = field.value;
+                    if (/[+\-*/^()]/.test(val)) {
+                        const evaluated = this.evaluateMathExpression(val);
+                        if (evaluated === null) {
+                            field.value = ''; // Clear if invalid
+                            return;
+                        }
+                        val = evaluated;
+                    }
+                    field.value = this.formatNumber(val, config.roundTo);
+                });
+
+                // Handle Enter key to trigger formatting/evaluation
+                field.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        // Trigger blur logic
+                        field.dispatchEvent(new Event('sl-blur'));
+                        // Also dispatch change if needed, but sl-input usually does this on Enter
+                    }
+                });
+
+                // Define submitValue getter for normalized number
+                Object.defineProperty(field, 'submitValue', {
+                    get: () => {
+                        if (!field.value) return null;
+
+                        // Try to evaluate as math expression first
+                        let val = field.value;
+                        if (/[+\-*/^()]/.test(val)) {
+                            const evaluated = this.evaluateMathExpression(val);
+                            if (evaluated !== null) {
+                                val = evaluated;
+                            }
+                        }
+
+                        const raw = val.toString().replace(/\s/g, '').replace(',', '.');
+                        if (raw === '') return null;
+                        let num = parseFloat(raw);
+                        if (isNaN(num)) return null;
+
+                        // Apply rounding if configured
+                        if (config.roundTo !== undefined && config.roundTo !== null && config.roundTo !== '') {
+                            num = this.roundNumber(num, config.roundTo);
+                        }
+                        return num;
+                    }
+                });
+                break;
+
+
+
             case 'date':
                 field = document.createElement('sl-input');
                 field.type = 'text'; // Use text for flatpickr
+                field.classList.add('text-right');
                 field.setAttribute('autocomplete', 'off');
+
+                // Add calendar icon
+                const dateIcon = document.createElement('sl-icon');
+                dateIcon.name = 'calendar3';
+                dateIcon.slot = 'prefix';
+                dateIcon.style.cursor = 'pointer';
+                dateIcon.style.fontSize = 'var(--sl-font-size-large)';
+                field.appendChild(dateIcon);
+
+                // Display formatted date initially if value is ISO
+                // But flatpickr handles this via defaultDate
                 field.value = value || '';
+
+                // Store ISO value for submission
+                field.isoValue = value || null;
+
+                field.addEventListener('sl-focus', () => {
+                    setTimeout(() => field.select(), 0);
+                });
+
                 // Initialize flatpickr
                 setTimeout(() => {
                     const inputElement = field.shadowRoot ? field.shadowRoot.querySelector('input') : field;
                     if (inputElement) {
-                        flatpickr(inputElement, {
+                        const fp = flatpickr(inputElement, {
                             locale: Czech,
                             defaultDate: value,
                             dateFormat: 'd. m. Y',
                             allowInput: true,
+                            clickOpens: false, // Disable auto-open on click/focus
                             onChange: (selectedDates, dateStr) => {
+                                // Update display value
                                 field.value = dateStr;
+                                // Update ISO value for submission
+                                if (selectedDates.length > 0) {
+                                    // Use local time to avoid timezone shifts when converting to ISO string for date-only
+                                    // Actually, for date-only, we want YYYY-MM-DD.
+                                    const d = selectedDates[0];
+                                    const year = d.getFullYear();
+                                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                                    const day = String(d.getDate()).padStart(2, '0');
+                                    field.isoValue = `${year}-${month}-${day}`;
+                                } else {
+                                    field.isoValue = null;
+                                }
                                 field.dispatchEvent(new CustomEvent('sl-change', { bubbles: true }));
+                            },
+                            parseDate: (dateStr, format) => {
+                                // Try smart parsing for ddmmyyyy
+                                const clean = dateStr.replace(/[^0-9]/g, '');
+                                if (clean.length === 8) {
+                                    const d = clean.substring(0, 2);
+                                    const m = clean.substring(2, 4);
+                                    const y = clean.substring(4, 8);
+                                    return new Date(`${y}-${m}-${d}`);
+                                }
+                                // Try smart parsing for ddmm (current year)
+                                if (clean.length === 4) {
+                                    const d = clean.substring(0, 2);
+                                    const m = clean.substring(2, 4);
+                                    const currentYear = new Date().getFullYear();
+                                    return new Date(`${currentYear}-${m}-${d}`);
+                                }
+
+                                // Try parsing d.m.yyyy or similar with separators
+                                const parts = dateStr.match(/^(\d{1,2})[.\s/-]+(\d{1,2})[.\s/-]+(\d{4})$/);
+                                if (parts) {
+                                    return new Date(`${parts[3]}-${parts[2]}-${parts[1]}`);
+                                }
+
+                                // Try parsing d.m or d.m. (without year) -> use current year
+                                const shortParts = dateStr.match(/^(\d{1,2})[.\s/-]+(\d{1,2})[.\s/-]*$/);
+                                if (shortParts) {
+                                    const currentYear = new Date().getFullYear();
+                                    return new Date(`${currentYear}-${shortParts[2]}-${shortParts[1]}`);
+                                }
+
+                                return flatpickr.parseDate(dateStr, format);
+                            }
+                        });
+
+                        // Open calendar on icon click
+                        dateIcon.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            fp.open();
+                        });
+
+                        // Handle Enter key to trigger parsing
+                        field.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') {
+                                // Force flatpickr to parse the current value
+                                // We can do this by setting the date to the current input value
+                                fp.setDate(field.value, true, fp.config.dateFormat);
+                                // Focus should stay in field
                             }
                         });
                     }
                 }, 0);
+
+                // Define submitValue getter
+                Object.defineProperty(field, 'submitValue', {
+                    get: () => field.isoValue
+                });
                 break;
+
             case 'datetime':
                 field = document.createElement('sl-input');
                 field.type = 'text'; // Use text for flatpickr
+                field.classList.add('text-right');
                 field.setAttribute('autocomplete', 'off');
+
+                // Add calendar icon
+                const datetimeIcon = document.createElement('sl-icon');
+                datetimeIcon.name = 'calendar3';
+                datetimeIcon.slot = 'prefix';
+                datetimeIcon.style.cursor = 'pointer';
+                datetimeIcon.style.fontSize = 'var(--sl-font-size-large)';
+                field.appendChild(datetimeIcon);
+
                 field.value = value || '';
+
+                // Store ISO value for submission
+                field.isoValue = value || null;
+
+                field.addEventListener('sl-focus', () => {
+                    setTimeout(() => field.select(), 0);
+                });
+
                 // Initialize flatpickr
                 setTimeout(() => {
                     const inputElement = field.shadowRoot ? field.shadowRoot.querySelector('input') : field;
                     if (inputElement) {
-                        flatpickr(inputElement, {
+                        const fp = flatpickr(inputElement, {
                             locale: Czech,
                             defaultDate: value,
                             enableTime: true,
                             dateFormat: 'd. m. Y H:i',
                             time_24hr: true,
                             allowInput: true,
+                            clickOpens: false, // Disable auto-open on click/focus
                             onChange: (selectedDates, dateStr) => {
                                 field.value = dateStr;
+                                if (selectedDates.length > 0) {
+                                    // For datetime, we can use toISOString() but it converts to UTC.
+                                    // Usually forms expect local time ISO or UTC.
+                                    // Let's stick to local time ISO-like format YYYY-MM-DDTHH:mm:ss
+                                    const d = selectedDates[0];
+                                    const year = d.getFullYear();
+                                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                                    const day = String(d.getDate()).padStart(2, '0');
+                                    const hours = String(d.getHours()).padStart(2, '0');
+                                    const minutes = String(d.getMinutes()).padStart(2, '0');
+                                    const seconds = String(d.getSeconds()).padStart(2, '0');
+                                    field.isoValue = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+                                } else {
+                                    field.isoValue = null;
+                                }
                                 field.dispatchEvent(new CustomEvent('sl-change', { bubbles: true }));
+                            },
+                            parseDate: (dateStr, format) => {
+                                // Try smart parsing for ddmmyyyyhhmm
+                                const clean = dateStr.replace(/[^0-9]/g, '');
+                                if (clean.length >= 8) {
+                                    const d = clean.substring(0, 2);
+                                    const m = clean.substring(2, 4);
+                                    const y = clean.substring(4, 8);
+                                    let h = '00';
+                                    let min = '00';
+                                    if (clean.length >= 10) h = clean.substring(8, 10);
+                                    if (clean.length >= 12) min = clean.substring(10, 12);
+                                    return new Date(`${y}-${m}-${d}T${h}:${min}:00`);
+                                }
+
+                                // Try parsing d.m.yyyy H:i or similar
+                                const parts = dateStr.match(/^(\d{1,2})[.\s/-]+(\d{1,2})[.\s/-]+(\d{4})(?:\s+(\d{1,2})[:.](\d{1,2}))?$/);
+                                if (parts) {
+                                    const d = parts[1];
+                                    const m = parts[2];
+                                    const y = parts[3];
+                                    const h = parts[4] || '00';
+                                    const min = parts[5] || '00';
+                                    return new Date(`${y}-${m}-${d}T${h}:${min}:00`);
+                                }
+
+                                // Try parsing d.m or d.m. (without year) -> use current year
+                                const shortParts = dateStr.match(/^(\d{1,2})[.\s/-]+(\d{1,2})[.\s/-]*$/);
+                                if (shortParts) {
+                                    const currentYear = new Date().getFullYear();
+                                    return new Date(`${currentYear}-${shortParts[2]}-${shortParts[1]}T00:00:00`);
+                                }
+
+                                return flatpickr.parseDate(dateStr, format);
+                            }
+                        });
+
+                        // Open calendar on icon click
+                        datetimeIcon.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            fp.open();
+                        });
+
+                        // Handle Enter key to trigger parsing
+                        field.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') {
+                                // Force flatpickr to parse the current value
+                                fp.setDate(field.value, true, fp.config.dateFormat);
+                                // Focus should stay in field
                             }
                         });
                     }
                 }, 0);
+
+                // Define submitValue getter
+                Object.defineProperty(field, 'submitValue', {
+                    get: () => field.isoValue
+                });
                 break;
             case 'select':
                 field = document.createElement('sl-select');
@@ -529,7 +786,9 @@ export class TSFormField extends HTMLElement {
         const field = event.target;
         let newValue;
 
-        if (field.tagName === 'SL-CHECKBOX' || field.tagName === 'SL-SWITCH') {
+        if (field.submitValue !== undefined) {
+            newValue = field.submitValue;
+        } else if (field.tagName === 'SL-CHECKBOX' || field.tagName === 'SL-SWITCH') {
             newValue = field.checked;
         } else if (field.tagName === 'TS-FILE-UPLOAD') {
             newValue = event.detail.files;
@@ -560,6 +819,53 @@ export class TSFormField extends HTMLElement {
         } else {
             console.warn('Inner ts-table not found or does not support showImportResults');
         }
+    }
+
+    evaluateMathExpression(expression) {
+        try {
+            // Replace comma with dot
+            let expr = expression.replace(/,/g, '.');
+            // Replace ^ with **
+            expr = expr.replace(/\^/g, '**');
+            // Validate characters again to be safe
+            if (/[^0-9.+\-*/^() ]/.test(expr)) return null;
+
+            // Use Function constructor for evaluation (safer than eval, but still allows arbitrary code if not sanitized)
+            // The regex check above ensures only math chars are present.
+            const result = new Function('return ' + expr)();
+            if (!isFinite(result) || isNaN(result)) return null;
+            return result;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    roundNumber(num, roundTo) {
+        if (roundTo === undefined || roundTo === null || roundTo === '') return num;
+        const factor = 1 / parseFloat(roundTo);
+        return Math.round(num * factor) / factor;
+    }
+
+    formatNumber(value, roundTo) {
+        if (value === undefined || value === null || value === '') return '';
+        // Remove existing spaces to parse
+        let num = parseFloat(value.toString().replace(/\s/g, '').replace(',', '.'));
+        if (isNaN(num)) return value;
+
+        if (roundTo !== undefined && roundTo !== null && roundTo !== '') {
+            num = this.roundNumber(num, roundTo);
+        }
+
+        // Format with spaces (cs-CZ locale uses spaces for thousands)
+        // Ensure we display correct number of decimal places if rounding to decimal
+        let options = {};
+        if (roundTo && roundTo < 1) {
+            // e.g. 0.01 -> 2 decimals
+            const decimals = -Math.floor(Math.log10(parseFloat(roundTo)));
+            options = { minimumFractionDigits: decimals, maximumFractionDigits: decimals };
+        }
+
+        return num.toLocaleString('cs-CZ', options);
     }
 }
 

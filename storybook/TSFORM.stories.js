@@ -361,6 +361,15 @@ export const Complex = {
             // Account Info
             username: { label: 'Uživatelské jméno', type: 'text', required: true },
             password: { label: 'Heslo', type: 'password', required: true },
+            number: {
+                label: 'Number Input',
+                type: 'number'
+            },
+            currency: {
+                label: 'Currency (Round 0.01)',
+                type: 'number',
+                roundTo: 0.01
+            },
             role: {
                 label: 'Role',
                 type: 'select',
@@ -599,6 +608,8 @@ export const AllElements = {
                     rows: [
                         [{ type: 'separator', label: 'Number Input' }],
                         [{ field: 'number' }],
+                        [{ type: 'separator', label: 'Currency (Round 0.01)' }],
+                        [{ field: 'currency' }],
                         [{ type: 'separator', label: 'Slider' }],
                         [{ field: 'slider' }],
                         [{ type: 'separator', label: 'Date Picker' }],
@@ -662,6 +673,7 @@ export const AllElements = {
 
             // Numeric & Date
             number: { type: 'number', label: 'Number Field', min: 0, max: 100 },
+            currency: { type: 'number', label: 'Currency Field', roundTo: 0.01 },
             slider: { type: 'slider', label: 'Slider Field', min: 0, max: 100, step: 10 },
             date: { type: 'date', label: 'Date Field' },
             datetime: { type: 'datetime', label: 'Datetime Field' },

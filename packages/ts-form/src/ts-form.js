@@ -298,6 +298,10 @@ class TSForm extends HTMLElement {
                 color: var(--sl-color-danger-700) !important;
             }
 
+            .text-right::part(input) {
+                text-align: right;
+            }
+
             /* switch label when its container has .input-invalid */
             .input-invalid label {
                 color: var(--sl-color-danger-700);
