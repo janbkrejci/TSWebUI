@@ -2,8 +2,8 @@ import './ts-file-upload.js';
 import './ts-file-upload.js';
 import './ts-relationship-picker.js';
 import './ts-combobox.js';
-import flatpickr from 'flatpickr';
-import { Czech } from 'flatpickr/dist/l10n/cs.js';
+// Flatpickr loaded via CDN
+
 
 export class TSFormField extends HTMLElement {
     constructor() {
@@ -99,6 +99,7 @@ export class TSFormField extends HTMLElement {
                 field = document.createElement('sl-input');
                 field.type = 'password';
                 field.passwordToggle = true;
+                field.setAttribute('autocomplete', 'current-password');
                 field.value = value || '';
                 break;
             case 'checkbox':
@@ -289,13 +290,14 @@ export class TSFormField extends HTMLElement {
             case 'date':
                 field = document.createElement('sl-input');
                 field.type = 'text'; // Use text for flatpickr
+                field.setAttribute('autocomplete', 'off');
                 field.value = value || '';
                 // Initialize flatpickr
                 setTimeout(() => {
                     const inputElement = field.shadowRoot ? field.shadowRoot.querySelector('input') : field;
                     if (inputElement) {
                         flatpickr(inputElement, {
-                            locale: Czech,
+                            locale: flatpickr.l10ns.cs,
                             defaultDate: value,
                             dateFormat: 'd. m. Y',
                             allowInput: true,
@@ -310,13 +312,14 @@ export class TSFormField extends HTMLElement {
             case 'datetime':
                 field = document.createElement('sl-input');
                 field.type = 'text'; // Use text for flatpickr
+                field.setAttribute('autocomplete', 'off');
                 field.value = value || '';
                 // Initialize flatpickr
                 setTimeout(() => {
                     const inputElement = field.shadowRoot ? field.shadowRoot.querySelector('input') : field;
                     if (inputElement) {
                         flatpickr(inputElement, {
-                            locale: Czech,
+                            locale: flatpickr.l10ns.cs,
                             defaultDate: value,
                             enableTime: true,
                             dateFormat: 'd. m. Y H:i',
@@ -482,6 +485,7 @@ export class TSFormField extends HTMLElement {
             default:
                 field = document.createElement('sl-input');
                 field.type = config.type || 'text';
+                field.setAttribute('autocomplete', 'off');
                 field.value = value || '';
         }
 

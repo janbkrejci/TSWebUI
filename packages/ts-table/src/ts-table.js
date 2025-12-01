@@ -11,7 +11,6 @@ import './ts-column-selector.js';
 class TSTable extends HTMLElement {
     constructor() {
         super();
-        console.log('TSTable constructor called');
 
         // Internal data
         this.tableData = [];
@@ -642,7 +641,6 @@ class TSTable extends HTMLElement {
     // Public API methods
     setData(data) {
         this.tableData = data;
-        console.log('TSTable setData called', data?.length, this.datatable);
         if (this.datatable) {
             this.datatable.setData(data);
         }
@@ -650,7 +648,6 @@ class TSTable extends HTMLElement {
 
     setColumnDefinitions(definitions) {
         this.columnDefinitions = definitions;
-        console.log('TSTable setColumnDefinitions called', definitions?.length, this.datatable);
         if (this.datatable) {
             this.datatable.setColumnDefinitions(definitions);
         }
@@ -964,8 +961,9 @@ class TSTable extends HTMLElement {
 
 customElements.define('ts-table', TSTable);
 
-// Export all web components for external use
 export { TSTable };
+
+// Export all web components for external use
 // export { TSTablePager } from './ts-table-pager.js';
 // export { TSToolbar } from './ts-toolbar.js';
 // export { TSDataTable } from './ts-datatable.js';

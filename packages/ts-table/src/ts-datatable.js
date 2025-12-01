@@ -751,7 +751,7 @@ class TSDataTable extends HTMLElement {
         this.updatePaginationUI();
     }
 
-    // Helper methods (to be implemented)
+    // Helper methods
     getVisibleColumns() {
         return this.columnDefinitions
             .filter(col => col.visible)
@@ -2204,20 +2204,20 @@ class TSDataTable extends HTMLElement {
     }
 
     // Import methods
-    addImportedRow(rowData) {
-        // Find max ID
-        const maxId = this.tableData.length > 0
-            ? Math.max(...this.tableData.map(r => Number(r.id) || 0))
-            : 0;
+    // addImportedRow(rowData) {
+    //     // Find max ID
+    //     const maxId = this.tableData.length > 0
+    //         ? Math.max(...this.tableData.map(r => Number(r.id) || 0))
+    //         : 0;
 
-        const newRow = {
-            ...rowData,
-            id: String(maxId + 1)
-        };
+    //     const newRow = {
+    //         ...rowData,
+    //         id: String(maxId + 1)
+    //     };
 
-        this.tableData.push(newRow);
-        this.applyFilters();
-    }
+    //     this.tableData.push(newRow);
+    //     this.applyFilters();
+    // }
 
     // updateExistingRow(rowId, rowData) {
     //     const index = this.tableData.findIndex(r => String(r.id) === String(rowId));

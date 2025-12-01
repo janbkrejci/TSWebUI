@@ -1,6 +1,6 @@
 import './ts-form-field.js';
-import 'flatpickr/dist/flatpickr.css';
-import 'flatpickr/dist/themes/airbnb.css'; // Use a nice theme
+// CSS imported in HTML via CDN
+
 
 class TSForm extends HTMLElement {
     constructor() {

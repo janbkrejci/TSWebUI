@@ -47,7 +47,7 @@
         src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/shoelace-autoloader.js"></script>
 
     <!-- TS-Table Bundle - load as module -->
-    <script type="module" src="packages/ts-table/dist/ts-table-bundle.js"></script>
+    <script type="module" src="dist/ts-table-bundle.js"></script>
 </head>
 
 <body>
@@ -610,8 +610,8 @@
             });
 
             table.addEventListener('do-import', (event) => {
-                const { data } = event.detail;
-                console.log('Import received:', data.length);
+                const importData = event.detail.data;
+                console.log('Import received:', importData.length);
 
                 // Process import data - demo logic with random rejection
                 let added = 0, updated = 0, rejected = 0, skipped = 0;
@@ -619,7 +619,7 @@
                 const rejectedRowsData = [];
                 const processedRows = [];
 
-                importData.forEach(({ __index, data }) => {
+                importData.forEach((data, __index) => {
                     // Randomly reject ~20% of rows for testing purposes
                     const shouldRejectRandomly = Math.random() < 0.2;
 
@@ -631,9 +631,9 @@
                     }
 
                     // Check if row with same ID exists (for update vs add logic)
-                    const existingRow = table.getAllRows().find(r => r.id === data.id);
+                    const existingRow = table.getAllRows().find(r => r.id === data?.id);
 
-                    if (!data.id) {
+                    if (!data?.id) {
                         rejected++;
                         rejectedRows.push(__index);
                         rejectedRowsData.push(data);
