@@ -1,8 +1,7 @@
-
-
 export class TSFileUpload extends HTMLElement {
     constructor() {
         super();
+        this.attachShadow({ mode: 'open' });
         this.files = [];
         this.multiple = false;
         this.accept = '*';
@@ -10,7 +9,7 @@ export class TSFileUpload extends HTMLElement {
     }
 
     static get observedAttributes() {
-        return ['multiple', 'accept', 'label', 'value'];
+        return ['multiple', 'accept', 'label', 'value', 'error'];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -22,7 +21,11 @@ export class TSFileUpload extends HTMLElement {
             this.label = newValue;
         } else if (name === 'value') {
             // Handle initial value if needed (e.g. existing files)
+        } else if (name === 'error') {
+            this.error = newValue;
+            this.updateError();
         }
+
         if (this.hasRendered) {
             if (name === 'multiple') {
                 this.updateUploadText();
@@ -34,9 +37,22 @@ export class TSFileUpload extends HTMLElement {
         }
     }
 
+    updateError() {
+        if (!this.errorContainer) return;
+        this.errorContainer.textContent = this.error || '';
+        this.errorContainer.style.display = this.error ? 'block' : 'none';
+
+        if (this.error) {
+            this.classList.add('input-invalid');
+        } else {
+            this.classList.remove('input-invalid');
+        }
+    }
+
     connectedCallback() {
         this.render();
         this.setupEventListeners();
+        this.updateError();
     }
 
     setupEventListeners() {
@@ -90,7 +106,7 @@ export class TSFileUpload extends HTMLElement {
         if (this.hasRendered) return;
         this.hasRendered = true;
 
-        this.innerHTML = '';
+        this.shadowRoot.innerHTML = '';
         const style = document.createElement('style');
         style.textContent = `
             :host {
@@ -114,8 +130,29 @@ export class TSFileUpload extends HTMLElement {
                 border-color: var(--sl-color-primary-600);
                 background: var(--sl-color-primary-100);
             }
-            .file-list {
+            :host(.input-invalid) .drop-zone {
+                border-color: var(--sl-color-danger-500);
+            }
+            .file-upload-label {
+                display: block;
+                margin-bottom: var(--sl-spacing-2x-small);
+                font-size: var(--sl-input-label-font-size-medium);
+                font-weight: var(--sl-font-weight-semibold);
+                color: var(--sl-input-label-color);
+            }
+            :host(.input-invalid) .file-upload-label {
+                color: var(--sl-color-danger-700);
+            }
+            .error-message {
+                color: var(--sl-color-danger-500);
+                font-size: var(--sl-font-size-small);
+                margin-top: var(--sl-spacing-2x-small);
+                display: none;
+            }
+            .file-list:not(:empty) {
                 margin-top: 1rem;
+            }
+            .file-list {
                 display: flex;
                 flex-direction: column;
                 gap: 0.5rem;
@@ -149,7 +186,7 @@ export class TSFileUpload extends HTMLElement {
                 display: none;
             }
         `;
-        this.appendChild(style);
+        this.shadowRoot.appendChild(style);
 
         const container = document.createElement('div');
 
@@ -180,14 +217,14 @@ export class TSFileUpload extends HTMLElement {
         if (this.label) {
             const labelEl = document.createElement('label');
             labelEl.textContent = this.label;
-            labelEl.style.display = 'block';
-            labelEl.style.marginBottom = 'var(--sl-spacing-2x-small)';
-            labelEl.style.fontSize = 'var(--sl-input-label-font-size-medium)';
-            labelEl.style.fontWeight = 'var(--sl-font-weight-semibold)';
-            labelEl.style.color = 'var(--sl-input-label-color)';
             labelEl.className = 'file-upload-label';
+            labelEl.setAttribute('part', 'label');
             container.appendChild(labelEl);
         }
+
+        const errorContainer = document.createElement('div');
+        errorContainer.className = 'error-message';
+        this.errorContainer = errorContainer;
 
         const fileListContainer = document.createElement('div');
         fileListContainer.className = 'file-list';
@@ -195,8 +232,12 @@ export class TSFileUpload extends HTMLElement {
 
         container.appendChild(input);
         container.appendChild(dropZone);
+        container.appendChild(errorContainer); // Insert error between dropZone and fileList
         container.appendChild(fileListContainer);
-        this.appendChild(container);
+        this.shadowRoot.appendChild(container);
+
+        this.updateError();
+        this.renderFileList(); // Ensure any existing files are rendered
     }
 
     renderFileList() {
@@ -240,13 +281,13 @@ export class TSFileUpload extends HTMLElement {
     }
 
     updateUploadText() {
-        const textEl = this.querySelector('.upload-text');
+        const textEl = this.shadowRoot.querySelector('.upload-text');
         if (textEl) {
             textEl.textContent = this.multiple
                 ? 'Přetáhněte soubory sem nebo klikněte pro nahrání'
                 : 'Přetáhněte soubor sem nebo klikněte pro nahrání';
         }
-        const input = this.querySelector('input[type="file"]');
+        const input = this.shadowRoot.querySelector('input[type="file"]');
         if (input) {
             input.multiple = this.multiple;
         }

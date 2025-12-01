@@ -91,10 +91,23 @@ export class TSFormField extends HTMLElement {
 
         if (error) {
             field.classList.add('input-invalid');
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-message';
-            errorDiv.textContent = error;
-            this.appendChild(errorDiv);
+
+            // For file upload, we pass the error to the component to render it internally
+            // This allows the error to be displayed between the drop zone and the file list
+            if (config.type === 'file' || config.type === 'image') {
+                field.setAttribute('error', error);
+            } else {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = error;
+                this.appendChild(errorDiv);
+            }
+        } else {
+            // Clear error if it was previously set (for file upload)
+            if (config.type === 'file' || config.type === 'image') {
+                field.removeAttribute('error');
+            }
+            field.classList.remove('input-invalid');
         }
     }
 
