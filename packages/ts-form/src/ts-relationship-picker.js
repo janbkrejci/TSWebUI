@@ -522,6 +522,10 @@ export class TSRelationshipPicker extends HTMLElement {
             dialog.open = true;
         });
 
+        dialog.addEventListener('sl-after-show', () => {
+            searchInput.focus();
+        });
+
         dialog.addEventListener('sl-after-hide', () => dialog.remove());
     }
 
