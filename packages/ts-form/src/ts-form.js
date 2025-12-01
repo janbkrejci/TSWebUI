@@ -859,14 +859,9 @@ class TSForm extends HTMLElement {
 
     handleSubmit(event) {
         event.preventDefault();
-        this.dispatchEvent(new CustomEvent('form-submit', {
-            detail: {
-                formData: this.getSubmissionData(),
-                action: this.lastAction
-            },
-            bubbles: true,
-            composed: true
-        }));
+        // Implicit submission (Enter key) is disabled as per user request
+        // We only prevent the default form submission (page reload)
+        // The form-submit event is only dispatched by button clicks
     }
 
     disableButton(action) {
