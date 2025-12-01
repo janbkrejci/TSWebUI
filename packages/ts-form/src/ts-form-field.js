@@ -406,11 +406,11 @@ export class TSFormField extends HTMLElement {
                 dateIcon.slot = 'prefix';
                 dateIcon.style.cursor = 'pointer';
                 dateIcon.style.fontSize = 'var(--sl-font-size-large)';
+                dateIcon.style.paddingLeft = 'var(--sl-spacing-small)';
                 field.appendChild(dateIcon);
 
                 // Display formatted date initially if value is ISO
-                // But flatpickr handles this via defaultDate
-                field.value = value || '';
+                field.value = value ? this.formatDate(value) : '';
 
                 // Store ISO value for submission
                 field.isoValue = value || null;
@@ -517,9 +517,10 @@ export class TSFormField extends HTMLElement {
                 datetimeIcon.slot = 'prefix';
                 datetimeIcon.style.cursor = 'pointer';
                 datetimeIcon.style.fontSize = 'var(--sl-font-size-large)';
+                datetimeIcon.style.paddingLeft = 'var(--sl-spacing-small)';
                 field.appendChild(datetimeIcon);
 
-                field.value = value || '';
+                field.value = value ? this.formatDateTime(value) : '';
 
                 // Store ISO value for submission
                 field.isoValue = value || null;
@@ -866,6 +867,36 @@ export class TSFormField extends HTMLElement {
         }
 
         return num.toLocaleString('cs-CZ', options);
+    }
+
+    formatDate(isoDate) {
+        if (!isoDate) return '';
+        try {
+            const date = new Date(isoDate);
+            if (isNaN(date.getTime())) return isoDate;
+            const d = date.getDate();
+            const m = date.getMonth() + 1;
+            const y = date.getFullYear();
+            return `${d}. ${m}. ${y}`;
+        } catch (e) {
+            return isoDate;
+        }
+    }
+
+    formatDateTime(isoDate) {
+        if (!isoDate) return '';
+        try {
+            const date = new Date(isoDate);
+            if (isNaN(date.getTime())) return isoDate;
+            const d = date.getDate();
+            const m = date.getMonth() + 1;
+            const y = date.getFullYear();
+            const h = String(date.getHours()).padStart(2, '0');
+            const min = String(date.getMinutes()).padStart(2, '0');
+            return `${d}. ${m}. ${y} ${h}:${min}`;
+        } catch (e) {
+            return isoDate;
+        }
     }
 }
 
