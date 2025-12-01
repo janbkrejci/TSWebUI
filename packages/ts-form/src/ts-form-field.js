@@ -4,7 +4,15 @@ import './ts-relationship-picker.js';
 import './ts-combobox.js';
 import flatpickr from 'flatpickr';
 import { Czech } from 'flatpickr/dist/l10n/cs.js';
-import 'flatpickr/dist/flatpickr.css';
+import flatpickrStyles from 'flatpickr/dist/flatpickr.css?inline';
+
+// Inject Flatpickr styles
+if (!document.getElementById('ts-form-flatpickr-styles')) {
+    const style = document.createElement('style');
+    style.id = 'ts-form-flatpickr-styles';
+    style.textContent = flatpickrStyles;
+    document.head.appendChild(style);
+}
 
 
 export class TSFormField extends HTMLElement {

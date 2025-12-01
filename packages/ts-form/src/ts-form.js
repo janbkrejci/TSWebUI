@@ -15,23 +15,23 @@ class TSForm extends HTMLElement {
 
         // Global fix for layout shift: Force scrollbar to be always visible
         // This prevents the content from jumping when Shoelace locks the body scroll
-        if (!document.getElementById('ts-form-global-styles')) {
-            const style = document.createElement('style');
-            style.id = 'ts-form-global-styles';
-            style.textContent = `
-                html {
-                    scrollbar-gutter: stable;
-                }
-                body {
-                    scrollbar-gutter: stable;
-                }
-                body.sl-scroll-lock {
-                    padding-right: 0 !important;
-                    overflow: hidden !important;
-                }
-            `;
-            document.head.appendChild(style);
-        }
+        // if (!document.getElementById('ts-form-global-styles')) {
+        //     const style = document.createElement('style');
+        //     style.id = 'ts-form-global-styles';
+        //     style.textContent = `
+        //         html {
+        //             scrollbar-gutter: stable;
+        //         }
+        //         body {
+        //             scrollbar-gutter: stable;
+        //         }
+        //         body.sl-scroll-lock {
+        //             padding-right: 0 !important;
+        //             overflow: hidden !important;
+        //         }
+        //     `;
+        //     document.head.appendChild(style);
+        // }
     }
 
     static get observedAttributes() {

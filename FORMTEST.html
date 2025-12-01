@@ -45,14 +45,15 @@
         }
     </style>
 
-    <!-- Import Map -->
-    <script type="importmap">
+
+    <!-- Import Map for ts-table resolution -->
+    <!-- <script type="importmap">
         {
             "imports": {
-                "lit-html": "https://cdn.jsdelivr.net/npm/lit-html@3.1.2/+esm"
+                "ts-table": "./dist/ts-table-bundle.js"
             }
         }
-    </script>
+    </script> -->
 
     <!-- Shoelace CSS and Components -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css" />
@@ -60,16 +61,10 @@
     <script type="module"
         src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/shoelace-autoloader.js"></script>
 
-    <!-- Flatpickr -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/cs.js"></script>
-
     <!-- TS-Form -->
-    <script type="module" src="packages/ts-form/src/ts-form.js"></script>
+    <script type="module" src="dist/ts-form-bundle.js"></script>
     <!-- TS-Table -->
-    <script type="module" src="packages/ts-table/src/ts-table.js"></script>
+    <script type="module" src="dist/ts-table-bundle.js"></script>
 </head>
 
 <body style="margin: 0; padding: 0; height: 100vh; overflow: hidden;">
@@ -232,6 +227,44 @@
                     { id: 6, date: '2023-01-06', action: 'Export Data', user: 'jnovak' },
                     { id: 7, date: '2023-01-07', action: 'Logout', user: 'jnovak' }
                 ]
+            },
+
+            // Other Elements
+            section1: { type: 'separator', label: 'Základní nastavení' },
+            section2: { type: 'separator', label: 'Osobní údaje' },
+            section3: { type: 'separator', label: 'Akce' },
+            terms: { label: 'Souhlasím s podmínkami', type: 'checkbox' },
+            satisfaction: { label: 'Spokojenost', type: 'slider', min: 0, max: 100, step: 10 },
+            country: {
+                label: 'Země (Combobox)',
+                type: 'combobox',
+                options: [
+                    { value: 'cz', label: 'Česká republika' },
+                    { value: 'sk', label: 'Slovensko' },
+                    { value: 'de', label: 'Německo' },
+                    { value: 'pl', label: 'Polsko' },
+                    { value: 'at', label: 'Rakousko' }
+                ]
+            },
+            startDate: { label: 'Datum zahájení (Date only)', type: 'date' },
+            meetingTime: { label: 'Čas schůzky', type: 'datetime' },
+            age: { label: 'Věk', type: 'number', min: 0, max: 120 },
+
+            statusGroup: {
+                type: 'button-group',
+                variant: 'process',
+                label: 'Status',
+                options: [
+                    'draft/true/default/Koncept',
+                    'published/true/success/Publikováno',
+                    'archived/true/warning/Archivováno'
+                ]
+            },
+            actionButton: {
+                type: 'button',
+                label: 'Provést akci',
+                variant: 'primary',
+                action: 'custom_action'
             }
         };
 
@@ -240,24 +273,29 @@
                 {
                     label: 'Osobní údaje',
                     rows: [
+                        [{ field: 'section2' }],
                         [{ field: 'name' }, { field: 'surname' }],
                         [{ field: 'email' }, { field: 'phone' }],
-                        [{ field: 'birthdate' }]
+                        [{ field: 'birthdate' }, { field: 'age' }],
+                        [{ field: 'country' }]
                     ]
                 },
                 {
                     label: 'Účet',
                     rows: [
+                        [{ field: 'section1' }],
                         [{ field: 'username' }, { field: 'password' }],
                         [{ field: 'role' }, { field: 'active' }],
-                        [{ field: 'department' }]
+                        [{ field: 'department' }],
+                        [{ field: 'terms' }]
                     ]
                 },
                 {
                     label: 'Detaily',
                     rows: [
                         [{ field: 'bio' }],
-                        [{ field: 'avatar' }, { field: 'resume' }]
+                        [{ field: 'avatar' }, { field: 'resume' }],
+                        [{ field: 'satisfaction' }]
                     ]
                 },
                 {
@@ -265,7 +303,16 @@
                     rows: [
                         [{ field: 'notifications' }],
                         [{ field: 'theme' }],
-                        [{ field: 'projects' }]
+                        [{ field: 'projects' }],
+                        [{ field: 'startDate' }, { field: 'meetingTime' }]
+                    ]
+                },
+                {
+                    label: 'Akce',
+                    rows: [
+                        [{ field: 'section3' }],
+                        [{ field: 'statusGroup' }],
+                        [{ field: 'actionButton' }]
                     ]
                 },
                 {
