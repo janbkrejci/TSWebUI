@@ -493,6 +493,16 @@ class TSForm extends HTMLElement {
         });
     }
 
+    showImportResults(fieldName, results) {
+        // Find the field element
+        const field = this.querySelector(`ts-form-field[field-name="${fieldName}"]`);
+        if (field && typeof field.showImportResults === 'function') {
+            field.showImportResults(results);
+        } else {
+            console.warn(`Field ${fieldName} not found or does not support showImportResults`);
+        }
+    }
+
     render() {
         const layout = this.getAttribute('layout');
         const fields = this.getAttribute('fields');

@@ -529,6 +529,15 @@ export class TSFormField extends HTMLElement {
             composed: true
         }));
     }
+
+    showImportResults(results) {
+        const table = this.querySelector('ts-table');
+        if (table && typeof table.showImportResults === 'function') {
+            table.showImportResults(results);
+        } else {
+            console.warn('Inner ts-table not found or does not support showImportResults');
+        }
+    }
 }
 
 customElements.define('ts-form-field', TSFormField);
