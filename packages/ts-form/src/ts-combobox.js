@@ -8,7 +8,19 @@ export class TSCombobox extends HTMLElement {
     }
 
     static get observedAttributes() {
-        return ['label', 'value', 'options', 'disabled', 'placeholder', 'required', 'error'];
+        return ['label', 'value', 'options', 'disabled', 'placeholder', 'required', 'error', 'allow-custom'];
+    }
+
+    get allowCustom() {
+        return this.hasAttribute('allow-custom');
+    }
+
+    set allowCustom(val) {
+        if (val) {
+            this.setAttribute('allow-custom', '');
+        } else {
+            this.removeAttribute('allow-custom');
+        }
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -51,6 +63,50 @@ export class TSCombobox extends HTMLElement {
             this.isOpen = false;
             this.renderDropdown(); // Only re-render dropdown state
             this.updateIconState();
+            this.validateInput();
+        }
+    }
+
+    validateInput() {
+        const input = this.querySelector('sl-input');
+        if (!input) return;
+
+        const text = input.value.trim();
+        if (!text) {
+            this.handleSelect(''); // Clear
+            return;
+        }
+
+        // Find option matching label (case-insensitive)
+        const option = this.options.find(opt => {
+            const label = opt.label || opt.value || opt;
+            return String(label).toLowerCase() === text.toLowerCase();
+        });
+
+        if (option) {
+            // Found strict match (or case-insensitive match)
+            const val = option.value || option;
+            if (this._value !== val) {
+                this.handleSelect(val);
+            } else {
+                // Just normalize display if needed
+                input.value = this.getDisplayValue(val);
+            }
+        } else {
+            // No match
+            if (this.allowCustom) {
+                if (this._value !== text) {
+                    this._value = text;
+                    this.dispatchEvent(new CustomEvent('sl-change', {
+                        detail: { value: text },
+                        bubbles: true,
+                        composed: true
+                    }));
+                }
+            } else {
+                // Invalid, clear
+                this.handleSelect('');
+            }
         }
     }
 
@@ -169,6 +225,18 @@ export class TSCombobox extends HTMLElement {
 
         input.addEventListener('sl-input', this.handleInput.bind(this));
         input.addEventListener('sl-focus', this.handleFocus.bind(this));
+        // Also validate on blur (tabbing away)
+        input.addEventListener('sl-blur', () => {
+            // Small timeout to allow click events on dropdown items to fire first
+            setTimeout(() => {
+                if (this.isOpen) {
+                    this.isOpen = false;
+                    this.renderDropdown();
+                    this.updateIconState();
+                }
+                this.validateInput();
+            }, 150);
+        });
 
         container.appendChild(input);
 
