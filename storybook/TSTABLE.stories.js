@@ -1,6 +1,5 @@
 import { action } from 'storybook/actions';
 import template from './TSTABLE.html?raw';
-import './TSTABLE.css';
 import '../packages/ts-table/src/ts-table.js';
 
 

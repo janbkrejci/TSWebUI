@@ -80,12 +80,15 @@ export class TSFormField extends HTMLElement {
             style.id = 'ts-form-field-styles';
             style.textContent = `
                 .force-prefix-spacing::part(prefix) {
-                    padding-inline-start: var(--sl-input-spacing-medium);
-                    color: var(--sl-input-icon-color);
+                    padding-inline-start: var(--sl-input-spacing-medium, 0.75rem);
+                    color: var(--sl-input-icon-color, currentColor);
                 }
                 .force-suffix-spacing::part(suffix) {
-                    padding-inline-end: var(--sl-input-spacing-medium);
-                    color: var(--sl-input-icon-color);
+                    padding-inline-end: var(--sl-input-spacing-medium, 0.75rem);
+                    color: var(--sl-input-icon-color, currentColor);
+                }
+                sl-icon[slot="prefix"] {
+                    margin: 0 !important;
                 }
             `;
             this.appendChild(style);

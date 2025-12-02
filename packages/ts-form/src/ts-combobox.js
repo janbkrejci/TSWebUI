@@ -130,6 +130,7 @@ export class TSCombobox extends HTMLElement {
         input.setAttribute('autocomplete', 'off');
 
         const icon = document.createElement('sl-icon');
+        icon.classList.add('combobox-icon');
         icon.slot = 'suffix';
         icon.name = 'chevron-down';
         input.appendChild(icon);
@@ -178,8 +179,11 @@ export class TSCombobox extends HTMLElement {
                     color: var(--sl-color-primary-700);
                 }
                 sl-input.combobox-input::part(suffix) {
-                    padding-inline-end: var(--sl-input-spacing-medium);
-                    color: var(--sl-input-icon-color);
+                    padding-inline-end: var(--sl-input-spacing-medium, 0.75rem);
+                    color: var(--sl-input-icon-color, currentColor);
+                }
+                .combobox-icon {
+                    margin: 0 !important;
                 }
             `;
             this.appendChild(style);
