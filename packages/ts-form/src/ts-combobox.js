@@ -28,6 +28,15 @@ export class TSCombobox extends HTMLElement {
         }
     }
 
+    getDisplayValue(value) {
+        if (!value) return '';
+        const option = this.options.find(opt => (opt.value || opt) === value);
+        if (option) {
+            return option.label || option.value || option;
+        }
+        return value;
+    }
+
     connectedCallback() {
         this.render();
         document.addEventListener('click', this.handleDocumentClick.bind(this));
@@ -41,6 +50,25 @@ export class TSCombobox extends HTMLElement {
         if (!this.contains(e.target)) {
             this.isOpen = false;
             this.renderDropdown(); // Only re-render dropdown state
+            this.updateIconState();
+        }
+    }
+
+    toggleDropdown(e) {
+        e.stopPropagation();
+        this.isOpen = !this.isOpen;
+        if (this.isOpen) {
+            this.handleFocus();
+        } else {
+            this.renderDropdown();
+        }
+        this.updateIconState();
+    }
+
+    updateIconState() {
+        const icon = this.querySelector('.combobox-icon');
+        if (icon) {
+            icon.classList.toggle('open', this.isOpen);
         }
     }
 
@@ -48,6 +76,7 @@ export class TSCombobox extends HTMLElement {
         const value = e.target.value;
         this._value = value;
         this.isOpen = true;
+        this.updateIconState();
 
         if (!value) {
             this.filteredOptions = [...this.options];
@@ -71,6 +100,7 @@ export class TSCombobox extends HTMLElement {
     handleSelect(value) {
         this._value = value;
         this.isOpen = false;
+        this.updateIconState();
 
         this.dispatchEvent(new CustomEvent('sl-change', {
             detail: { value: this._value },
@@ -81,13 +111,14 @@ export class TSCombobox extends HTMLElement {
         // Update input value
         const input = this.querySelector('sl-input');
         if (input) {
-            input.value = value;
+            input.value = this.getDisplayValue(value);
         }
         this.renderDropdown();
     }
 
     handleFocus() {
         this.isOpen = true;
+        this.updateIconState();
 
         // Select all text on focus
         const input = this.querySelector('sl-input');
@@ -95,8 +126,8 @@ export class TSCombobox extends HTMLElement {
             setTimeout(() => input.select(), 0);
         }
 
-        if (this._value) {
-            const lowerValue = this._value.toLowerCase();
+        if (input && input.value) {
+            const lowerValue = input.value.toLowerCase();
             this.filteredOptions = this.options.filter(opt => {
                 const label = opt.label || opt.value || opt;
                 return String(label).toLowerCase().includes(lowerValue);
@@ -122,7 +153,7 @@ export class TSCombobox extends HTMLElement {
         const input = document.createElement('sl-input');
         input.classList.add('combobox-input');
         if (label) input.label = label;
-        input.value = this._value || '';
+        input.value = this.getDisplayValue(this._value);
         input.disabled = disabled;
         input.placeholder = placeholder;
         input.required = required;
@@ -133,6 +164,7 @@ export class TSCombobox extends HTMLElement {
         icon.classList.add('combobox-icon');
         icon.slot = 'suffix';
         icon.name = 'chevron-down';
+        icon.addEventListener('click', this.toggleDropdown.bind(this));
         input.appendChild(icon);
 
         input.addEventListener('sl-input', this.handleInput.bind(this));
@@ -184,6 +216,19 @@ export class TSCombobox extends HTMLElement {
                 }
                 .combobox-icon {
                     margin: 0 !important;
+                    transition: transform 0.2s ease;
+                    cursor: pointer;
+                }
+                .combobox-icon.open {
+                    transform: rotate(180deg);
+                }
+                .ts-combobox-empty {
+                    padding: var(--sl-spacing-small) var(--sl-spacing-medium);
+                    color: var(--sl-color-neutral-500);
+                    font-family: var(--sl-font-sans);
+                    font-size: var(--sl-font-size-medium);
+                    font-style: italic;
+                    cursor: default;
                 }
             `;
             this.appendChild(style);
@@ -211,6 +256,14 @@ export class TSCombobox extends HTMLElement {
 
                 dropdown.appendChild(item);
             });
+        } else if (this.isOpen) {
+            // Show "Nic nenalezeno..." if open but no options match
+            dropdown.style.display = 'block';
+            dropdown.innerHTML = '';
+            const empty = document.createElement('div');
+            empty.className = 'ts-combobox-empty';
+            empty.textContent = 'Nic nenalezeno...';
+            dropdown.appendChild(empty);
         } else {
             dropdown.style.display = 'none';
         }
