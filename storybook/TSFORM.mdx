@@ -8,6 +8,33 @@ import { html } from 'lit-html';
 
 Komponenta `ts-form` je univerzální formulářový generátor založený na JSON konfiguraci. Podporuje složité layouty, záložky (tabs), validace a širokou škálu vstupních prvků.
 
+Komponenta `ts-form` je univerzální formulářový generátor založený na JSON konfiguraci. Podporuje složité layouty, záložky (tabs), validace a širokou škálu vstupních prvků.
+
+### Rychlý Příklad
+
+```html
+<ts-form
+  layout='{
+    "rows": [
+      [{"field": "name", "width": "1fr"}, {"field": "email", "width": "1fr"}],
+      [{"field": "country", "width": "1fr"}]
+    ]
+  }'
+  fields='{
+    "name": {"type": "text", "label": "Jméno", "required": true},
+    "email": {"type": "email", "label": "E-mail", "required": true},
+    "country": {
+        "type": "combobox", 
+        "label": "Země", 
+        "options": [{"value": "cz", "label": "Česko"}, {"value": "sk", "label": "Slovensko"}]
+    }
+  }'
+  buttons='[
+    {"action": "save", "label": "Uložit", "variant": "primary"}
+  ]'
+></ts-form>
+```
+
 ## Layout Konfigurace
 
 Layout formuláře se definuje pomocí JSON objektu předaného do atributu `layout`.
@@ -76,6 +103,19 @@ Definice polí se předává do atributu `fields` jako JSON objekt, kde klíč j
 - **password**: Skryté znaky.
 - **textarea**: Víceřádkový text. Parametr `rows` (number).
 - **combobox**: Textový input s našeptávačem (datalist). Parametr `options`.
+  - **`allowCustom`** (boolean):
+    - `false` (default, Strict Mode): Povolí pouze hodnoty ze seznamu `options`.
+      - Při opuštění pole (blur) se nevalidní hodnota **vrátí na předchozí validní hodnotu** (revert).
+      - Klávesa **Escape** vrátí hodnotu na předchozí validní stav a zavře dropdown.
+      - Událost `sl-change` se vyvolá pouze při výběru validní možnosti.
+    - `true` (Custom Mode): Povolí zadat libovolný text.
+      - Neznámá hodnota je akceptována jako nová hodnota.
+      - Událost `sl-change` se vyvolá při výběru možnosti nebo zadání vlastního textu (po blur/enter).
+  - **`allowEmpty`** (boolean):
+    - `true` (default): Hodnota může být prázdná (uživatel ji může smazat).
+    - `false`: Pokud uživatel smaže hodnotu a opustí pole:
+      - Pokud existovala předchozí validní hodnota, pole se na ni vrátí (revert).
+      - Pokud neexistovala, pole se vyčistí (protože nelze vynutit hodnotu).
 
 #### Číselné vstupy
 - **number**: Číslo. Parametry: `min`, `max`, `step`.

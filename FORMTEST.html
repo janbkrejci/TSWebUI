@@ -246,6 +246,36 @@
                     { value: 'at', label: 'Rakousko' }
                 ]
             },
+            comboboxStrict: {
+                label: 'Země (Strict - No Custom - allow empty)',
+                type: 'combobox',
+                allowCustom: false,
+                allowEmpty: true,
+                options: [
+                    { value: 'cz', label: 'Česká republika' },
+                    { value: 'sk', label: 'Slovensko' },
+                    { value: 'de', label: 'Německo' }
+                ]
+            },
+            comboboxCustom: {
+                label: 'Země (Allow Custom)',
+                type: 'combobox',
+                allowCustom: true,
+                options: [
+                    { value: 'cz', label: 'Česká republika' },
+                    { value: 'sk', label: 'Slovensko' },
+                    { value: 'de', label: 'Německo' }
+                ]
+            },
+            comboboxNoEmpty: {
+                label: 'Země (No Empty - Revert on Clear)',
+                type: 'combobox',
+                allowEmpty: false,
+                options: [
+                    { value: 'cz', label: 'Česká republika' },
+                    { value: 'sk', label: 'Slovensko' }
+                ]
+            },
             startDate: { label: 'Datum zahájení (Date only)', type: 'date' },
             meetingTime: { label: 'Čas schůzky', type: 'datetime' },
             age: { label: 'Věk', type: 'number', min: 0, max: 120 },
@@ -277,7 +307,9 @@
                         [{ field: 'name' }, { field: 'surname' }],
                         [{ field: 'email' }, { field: 'phone' }],
                         [{ field: 'birthdate' }, { field: 'age' }],
-                        [{ field: 'country' }]
+                        [{ field: 'country' }],
+                        [{ field: 'comboboxStrict' }, { field: 'comboboxCustom' }],
+                        [{ field: 'comboboxNoEmpty' }]
                     ]
                 },
                 {

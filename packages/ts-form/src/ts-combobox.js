@@ -8,7 +8,7 @@ export class TSCombobox extends HTMLElement {
     }
 
     static get observedAttributes() {
-        return ['label', 'value', 'options', 'disabled', 'placeholder', 'required', 'error', 'allow-custom'];
+        return ['label', 'value', 'options', 'disabled', 'placeholder', 'required', 'error', 'allow-custom', 'allow-empty'];
     }
 
     get allowCustom() {
@@ -20,6 +20,18 @@ export class TSCombobox extends HTMLElement {
             this.setAttribute('allow-custom', '');
         } else {
             this.removeAttribute('allow-custom');
+        }
+    }
+
+    get allowEmpty() {
+        return this.hasAttribute('allow-empty');
+    }
+
+    set allowEmpty(val) {
+        if (val) {
+            this.setAttribute('allow-empty', '');
+        } else {
+            this.removeAttribute('allow-empty');
         }
     }
 
@@ -73,7 +85,20 @@ export class TSCombobox extends HTMLElement {
 
         const text = input.value.trim();
         if (!text) {
-            this.handleSelect(''); // Clear
+            if (this.allowEmpty) {
+                this.handleSelect(''); // Clear allowed
+            } else {
+                // Not allowed to be empty, revert if possible
+                if (this._value) {
+                    input.value = this.getDisplayValue(this._value);
+                } else {
+                    // No previous value, but empty not allowed.
+                    // If strict mode, maybe clear? Or keep empty?
+                    // Usually "not allow empty" means "required", but here it means "don't allow clearing a valid value".
+                    // If there was no value, we can't force one.
+                    this.handleSelect('');
+                }
+            }
             return;
         }
 
@@ -104,21 +129,30 @@ export class TSCombobox extends HTMLElement {
                     }));
                 }
             } else {
-                // Invalid, clear
-                this.handleSelect('');
+                // Strict mode: Revert to previous valid value if exists
+                if (this._value) {
+                    input.value = this.getDisplayValue(this._value);
+                    // No change event emitted as value is restored
+                } else {
+                    // No previous value, clear
+                    this.handleSelect('');
+                }
             }
         }
     }
 
     toggleDropdown(e) {
+        e.preventDefault(); // Prevent focus loss/blur logic interference
         e.stopPropagation();
-        this.isOpen = !this.isOpen;
+
         if (this.isOpen) {
-            this.handleFocus();
-        } else {
+            this.isOpen = false;
             this.renderDropdown();
+            this.updateIconState();
+        } else {
+            this.isOpen = true;
+            this.handleFocus(); // This will select text and render dropdown
         }
-        this.updateIconState();
     }
 
     updateIconState() {
@@ -130,7 +164,9 @@ export class TSCombobox extends HTMLElement {
 
     handleInput(e) {
         const value = e.target.value;
-        this._value = value;
+        // Do NOT update this._value here (wait for commit/blur)
+        // Do NOT emit sl-change here (wait for commit/blur)
+
         this.isOpen = true;
         this.updateIconState();
 
@@ -144,25 +180,22 @@ export class TSCombobox extends HTMLElement {
             });
         }
 
-        this.dispatchEvent(new CustomEvent('sl-change', {
-            detail: { value: this._value },
-            bubbles: true,
-            composed: true
-        }));
-
         this.renderDropdown();
     }
 
     handleSelect(value) {
+        const oldValue = this._value;
         this._value = value;
         this.isOpen = false;
         this.updateIconState();
 
-        this.dispatchEvent(new CustomEvent('sl-change', {
-            detail: { value: this._value },
-            bubbles: true,
-            composed: true
-        }));
+        if (oldValue !== value) {
+            this.dispatchEvent(new CustomEvent('sl-change', {
+                detail: { value: this._value },
+                bubbles: true,
+                composed: true
+            }));
+        }
 
         // Update input value
         const input = this.querySelector('sl-input');
@@ -220,11 +253,29 @@ export class TSCombobox extends HTMLElement {
         icon.classList.add('combobox-icon');
         icon.slot = 'suffix';
         icon.name = 'chevron-down';
+        icon.name = 'chevron-down';
+        // Use mousedown to prevent focus change before click
+        icon.addEventListener('mousedown', (e) => e.preventDefault());
         icon.addEventListener('click', this.toggleDropdown.bind(this));
+        input.appendChild(icon);
         input.appendChild(icon);
 
         input.addEventListener('sl-input', this.handleInput.bind(this));
         input.addEventListener('sl-focus', this.handleFocus.bind(this));
+
+        // Handle Escape to revert
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                // Revert to previous valid value
+                input.value = this.getDisplayValue(this._value);
+                this.isOpen = false;
+                this.renderDropdown();
+                this.updateIconState();
+                input.blur();
+            }
+        });
         // Also validate on blur (tabbing away)
         input.addEventListener('sl-blur', () => {
             // Small timeout to allow click events on dropdown items to fire first
@@ -236,6 +287,11 @@ export class TSCombobox extends HTMLElement {
                 }
                 this.validateInput();
             }, 150);
+        });
+
+        // Suppress internal sl-change events
+        input.addEventListener('sl-change', (e) => {
+            e.stopPropagation();
         });
 
         container.appendChild(input);

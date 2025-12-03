@@ -13,6 +13,7 @@ export default {
         const theme = args.dark ? 'dark' : 'light';
         let htmlContent = template.replace(/\{\{theme\}\}/g, theme);
 
+        const uniqueId = `form-${Math.random().toString(36).substr(2, 9)}`;
         const formRegex = /<ts-form([^>]*)>/;
         const match = htmlContent.match(formRegex);
 
@@ -24,11 +25,13 @@ export default {
                 `buttons='${args.buttons}'`,
                 `values='${args.values}'`,
             ].join(' ');
-            htmlContent = htmlContent.replace(formRegex, `<ts-form id="form" ${attributes}>`);
+            // Replace existing id="form" if present, or just add the new id
+            // The template has <ts-form id="form">, so we replace the whole tag
+            htmlContent = htmlContent.replace(formRegex, `<ts-form id="${uniqueId}" ${attributes}>`);
         }
 
         setTimeout(() => {
-            const el = document.getElementById('form');
+            const el = document.getElementById(uniqueId);
             if (el) {
                 customElements.whenDefined('ts-form').then(() => {
                     el.run();
@@ -626,6 +629,7 @@ export const AllElements = {
                         [{ field: 'multiselect' }],
                         [{ type: 'separator', label: 'Combobox' }],
                         [{ field: 'combobox' }],
+                        [{ field: 'comboboxStrict' }, { field: 'comboboxCustom' }],
                         [{ type: 'separator', label: 'Relationship Picker (Single)' }],
                         [{ field: 'relationshipSingle' }],
                         [{ type: 'separator', label: 'Relationship Picker (Multiple)' }],
@@ -691,7 +695,20 @@ export const AllElements = {
             },
             combobox: {
                 type: 'combobox',
-                label: 'Combobox Field',
+                label: 'Combobox Field (Allows Empty)',
+                allowEmpty: true,
+                options: [{ value: '1', label: 'Option 1' }, { value: '2', label: 'Option 2' }]
+            },
+            comboboxStrict: {
+                type: 'combobox',
+                label: 'Strict Combobox (No Custom)',
+                allowCustom: false,
+                options: [{ value: '1', label: 'Option 1' }, { value: '2', label: 'Option 2' }]
+            },
+            comboboxCustom: {
+                type: 'combobox',
+                label: 'Custom Combobox (Allow Custom)',
+                allowCustom: true,
                 options: [{ value: '1', label: 'Option 1' }, { value: '2', label: 'Option 2' }]
             },
             relationshipSingle: {
@@ -769,5 +786,7 @@ export const AllElements = {
         values: '{}'
     }
 }
+
+
 
 

@@ -232,6 +232,12 @@ export class TSFormField extends HTMLElement {
                 if (config.disabled) {
                     field.setAttribute('disabled', '');
                 }
+                if (config.allowCustom) {
+                    field.setAttribute('allow-custom', '');
+                }
+                if (config.allowEmpty) {
+                    field.setAttribute('allow-empty', '');
+                }
                 break;
             case 'file':
             case 'image':
