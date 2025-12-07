@@ -42,6 +42,7 @@ class TSWindow extends HTMLElement {
           border: 1px solid #ccc;
           display: flex;
           flex-direction: column;
+          font-family: 'sl-sans', sans-serif;
           opacity: 0; /* Skryté při startu */
           transition: width 0.1s, height 0.1s, top 0.1s, left 0.1s, opacity 0.2s;
         }
