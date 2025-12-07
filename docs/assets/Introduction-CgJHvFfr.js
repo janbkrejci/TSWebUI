@@ -1,4 +1,4 @@
-import{j as n,M as r}from"./blocks-Crt37cOS.js";import{useMDXComponents as i}from"./index-DepY-vrS.js";import"./preload-helper-PPVm8Dsz.js";import"./iframe-BF1SanS0.js";function t(o){const e={h1:"h1",h2:"h2",li:"li",p:"p",strong:"strong",ul:"ul",...i(),...o.components};return n.jsxs(n.Fragment,{children:[n.jsx(r,{title:"TSWebUI/Introduction"}),`
+import{j as n,M as r}from"./blocks-CmAgLvIZ.js";import{useMDXComponents as i}from"./index-NoiZmwkq.js";import"./preload-helper-PPVm8Dsz.js";import"./iframe-Yq2S16XC.js";function t(o){const e={h1:"h1",h2:"h2",li:"li",p:"p",strong:"strong",ul:"ul",...i(),...o.components};return n.jsxs(n.Fragment,{children:[n.jsx(r,{title:"TSWebUI/Introduction"}),`
 `,n.jsx(e.h1,{id:"knihovna-tswebui",children:"Knihovna TSWebUI"}),`
 `,n.jsxs(e.p,{children:["Vítejte v ",n.jsx(e.strong,{children:"TSWebUI"}),", knihovně webových komponent navržených pro tvorbu moderních, čistých a efektivních webových aplikací."]}),`
 `,n.jsx(e.h2,{id:"o-knihovně",children:"O knihovně"}),`
@@ -12,8 +12,8 @@ import{j as n,M as r}from"./blocks-Crt37cOS.js";import{useMDXComponents as i}fro
 `]}),`
 `,n.jsx(e.h2,{id:"demo",children:"Demo"}),`
 `,n.jsx(e.p,{children:"Můžete se podívat na jednoduché stránky s příáklady použití zde:"}),`
-`,n.jsx("a",{target:"_blank",href:"/WINDOWTEST.html",children:"TSWindow"}),`
-`,n.jsx("a",{target:"_blank",href:"/TABLETEST.html",children:"TSTable"}),`
-`,n.jsx("a",{target:"_blank",href:"/FORMTEST.html",children:"TSForm"}),`
+`,n.jsx("a",{target:"_blank",href:"./WINDOWTEST.html",children:"TSWindow"}),`
+`,n.jsx("a",{target:"_blank",href:"./TABLETEST.html",children:"TSTable"}),`
+`,n.jsx("a",{target:"_blank",href:"./FORMTEST.html",children:"TSForm"}),`
 `,n.jsx(e.h2,{id:"licence",children:"Licence"}),`
 `,n.jsxs(e.p,{children:["Tento projekt je pod licencí ",n.jsx(e.strong,{children:"UNLICENSED"}),". Můžete jej volně používat pro jakýkoli účel."]})]})}function a(o={}){const{wrapper:e}={...i(),...o.components};return e?n.jsx(e,{...o,children:n.jsx(t,{...o})}):t(o)}export{a as default};
