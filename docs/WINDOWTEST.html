@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TS-Window Test</title>
+
+  <script>
+    // Apply theme based on system preference
+    function applyTheme() {
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('sl-theme-dark', isDark);
+      document.documentElement.classList.toggle('sl-theme-light', !isDark);
+    }
+    applyTheme();
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+  </script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: var(--sl-font-sans);
+    }
+
+    body {
+      background: var(--sl-color-neutral-50);
+      color: var(--sl-color-neutral-900);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+  </style>
+
+  <!-- Shoelace CSS and Components -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/light.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/dark.css" />
+  <script type="module"
+    src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/shoelace-autoloader.js"></script>
+
+  <script src="./packages/ts-window/src/ts-window.js" type="module"></script>
+</head>
+
+<body>
+  <button id="new-window-btn" style="position:fixed;top:12px;left:12px;z-index:0;">Nové okno</button>
+  <ts-window label="První okno">
+    <div style="width: 800px;height: 500px;background-color: antiquewhite;">TEST</div>
+  </ts-window>
+  <ts-window label="Druhé oknooooooooooooooooooooooo"></ts-window>
+  <ts-window label="Třetí okno">
+    <div <h3>Test Controls (First Window)</h3>
+      <button id="test-min">Minimize</button>
+      <button id="test-max">Maximize</button>
+      <button id="test-restore">Restore</button>
+      <button id="test-front">Bring to Front</button>
+      <button id="test-back">Send to Back</button>
+      <button id="test-move">Move to 50,50</button>
+      <button id="test-resize">Resize to 600x400</button>
+      <button id="test-close">Close</button>
+    </div>
+  </ts-window>
+
+  <!-- Jednoduché okno -->
+  <ts-window label="Moje Okno">
+    <p style="width: 200px; height: 100px; padding: 1rem;">Zde je nějaký obsah okna.</p>
+  </ts-window>
+
+  <!-- Okno s nastavenou pozicí a velikostí -->
+  <ts-window label="Aplikace" top="50" left="50" width="600" height="400">
+    <div style="background: antiquewhite;padding: 20px; width: 340px; height: 150px; box-sizing: border-box;">
+      <h2>Nadpis</h2>
+      <button>Klikni mě</button>
+    </div>
+  </ts-window>
+
+  <script>
+    const win = document.querySelector('ts-window');
+
+    document.getElementById('test-min').onclick = () => win.minimize();
+    document.getElementById('test-max').onclick = () => win.maximize();
+    document.getElementById('test-restore').onclick = () => win.restore();
+    document.getElementById('test-front').onclick = () => win.bringToFront();
+    document.getElementById('test-back').onclick = () => win.sendToBack();
+
+    document.getElementById('test-move').onclick = () => {
+      win.setAttribute('top', '50');
+      win.setAttribute('left', '50');
+    };
+
+    document.getElementById('test-resize').onclick = () => {
+      win.setAttribute('width', '600');
+      win.setAttribute('height', '400');
+    };
+
+    document.getElementById('test-close').onclick = () => {
+      win.close();
+    };
+
+    document.getElementById('new-window-btn').onclick = function () {
+      const win = document.createElement('ts-window');
+      win.setAttribute('label', 'Nové okno');
+      document.body.appendChild(win);
+      // Explicitně přizpůsobíme velikost obsahu (bez animace), abychom měli správné rozměry pro centrování
+      win.fitToContent(false);
+      win.centerOnScreen();
+      win.bringToFront();
+    };          </script>
+</body>
+
+</html>

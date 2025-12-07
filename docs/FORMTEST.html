@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TS-Form Test</title>
+    <script>
+        // Apply theme based on system preference
+        function applyTheme() {
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('sl-theme-dark', isDark);
+            document.documentElement.classList.toggle('sl-theme-light', !isDark);
+        }
+        applyTheme();
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: var(--sl-font-sans);
+        }
+
+        body {
+            padding: 2rem;
+            background: var(--sl-color-neutral-50);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--sl-color-neutral-0);
+            padding: 2rem;
+            border-radius: var(--sl-border-radius-medium);
+            box-shadow: var(--sl-shadow-medium);
+        }
+    </style>
+
+
+    <!-- Import Map for ts-table resolution -->
+    <!-- <script type="importmap">
+        {
+            "imports": {
+                "ts-table": "./dist/ts-table-bundle.js"
+            }
+        }
+    </script> -->
+
+    <!-- Shoelace CSS and Components -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/light.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/dark.css" />
+    <script type="module"
+        src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/shoelace-autoloader.js"></script>
+
+    <!-- TS-Form -->
+    <script type="module" src="dist/ts-form-bundle.js"></script>
+    <!-- TS-Table -->
+    <script type="module" src="dist/ts-table-bundle.js"></script>
+</head>
+
+<body style="margin: 0; padding: 0; height: 100vh; overflow: hidden;">
+    <ts-form id="form"></ts-form>
+
+    <script>
+        const fields = {
+            // Basic Info
+            name: { label: 'Jméno', type: 'text', required: true },
+            surname: { label: 'Příjmení', type: 'text', required: true },
+            email: { label: 'E-mail', type: 'text', required: true },
+            phone: { label: 'Telefon', type: 'text' },
+
+            // Account Info
+            username: { label: 'Uživatelské jméno', type: 'text', required: true },
+            password: { label: 'Heslo', type: 'password', required: true },
+            role: {
+                label: 'Role',
+                type: 'select',
+                options: [
+                    { value: 'admin', label: 'Administrátor' },
+                    { value: 'manager', label: 'Manažer' },
+                    { value: 'user', label: 'Uživatel' },
+                    { value: 'guest', label: 'Host' }
+                ]
+            },
+            active: { label: 'Aktivní účet', type: 'switch', labelPosition: 'right' },
+
+            // Details
+            birthdate: { label: 'Datum narození', type: 'date' },
+            bio: { label: 'Životopis', type: 'textarea', hideLabel: true, placeholder: 'Životopis (bez labelu)' },
+            avatar: { label: 'Profilový obrázek', type: 'image' },
+            resume: { label: 'Životopis (PDF)', type: 'file', multiple: true },
+
+            // Preferences
+            notifications: {
+                label: 'Notifikace',
+                type: 'select',
+                multiple: true,
+                options: [
+                    { value: 'email', label: 'E-mail' },
+                    { value: 'sms', label: 'SMS' },
+                    { value: 'push', label: 'Push notifikace' },
+                    { value: 'slack', label: 'Slack' }
+                ]
+            },
+            theme: {
+                label: 'Preferovaný vzhled',
+                type: 'radio',
+                options: [
+                    { value: 'light', label: 'Světlý' },
+                    { value: 'dark', label: 'Tmavý' },
+                    { value: 'auto', label: 'Automaticky' }
+                ]
+            },
+
+            // Relationships
+            department: {
+                label: 'Oddělení (N:1)',
+                type: 'relationship',
+                targetEntity: 'department',
+                mode: 'single',
+                displayFields: ['name'],
+                valueField: 'id',
+                options: [
+                    { id: 1, name: 'IT', code: 'DEP-01' },
+                    { id: 2, name: 'HR', code: 'DEP-02' },
+                    { id: 3, name: 'Sales', code: 'DEP-03' },
+                    { id: 4, name: 'Marketing', code: 'DEP-04' }
+                ]
+            },
+            projects: {
+                label: 'Projekty (M:N)',
+                type: 'relationship',
+                targetEntity: 'project',
+                mode: 'multiple',
+                displayFields: ['code', 'name'],
+                chipDisplayFields: ['name'],
+                valueField: 'id',
+                options: [
+                    { id: 101, name: 'Website Redesign', code: 'PRJ-WEB' },
+                    { id: 102, name: 'Mobile App', code: 'PRJ-APP' },
+                    { id: 103, name: 'Cloud Migration', code: 'PRJ-CLOUD' },
+                    { id: 104, name: 'Security Audit', code: 'PRJ-SEC' },
+                    { id: 105, name: 'AI Integration', code: 'PRJ-AI' },
+                    { id: 106, name: 'Database Optimization', code: 'PRJ-DB' },
+                    { id: 107, name: 'API Restructuring', code: 'PRJ-API' },
+                    { id: 108, name: 'Frontend Refactor', code: 'PRJ-FE' },
+                    { id: 109, name: 'Backend Refactor', code: 'PRJ-BE' },
+                    { id: 110, name: 'DevOps Pipeline', code: 'PRJ-OPS' },
+                    { id: 111, name: 'User Testing', code: 'PRJ-UX' },
+                    { id: 112, name: 'Market Research', code: 'PRJ-MKT' },
+                    { id: 113, name: 'Legal Compliance', code: 'PRJ-LEG' },
+                    { id: 114, name: 'GDPR Audit', code: 'PRJ-GDPR' },
+                    { id: 115, name: 'Network Upgrade', code: 'PRJ-NET' },
+                    { id: 116, name: 'Server Migration', code: 'PRJ-SRV' },
+                    { id: 117, name: 'Client Onboarding', code: 'PRJ-CLI' },
+                    { id: 118, name: 'Internal Training', code: 'PRJ-TRN' },
+                    { id: 119, name: 'Documentation', code: 'PRJ-DOC' },
+                    { id: 120, name: 'Legacy Retirement', code: 'PRJ-OLD' }
+                ]
+            },
+
+            // History Table
+            history: {
+                label: 'Historie aktivit',
+                type: 'table',
+                // Table feature flags
+                showCreateButton: true,
+                showImportButton: true,
+                showExportButton: true,
+                showColumnSelector: true,
+                enableSorting: true,
+                enableFiltering: true,
+                enableColumnResizing: true,
+                enableColumnReordering: true,
+                enableSelection: true,
+                enableRowMenu: true,
+                enableClickableRows: true,
+                enableClickableColumns: true,
+                enablePagination: true,
+                itemsPerPage: 5,
+                itemsPerPageOptions: [5, 10, 20],
+                singleItemActions: 'view_details/Zobrazit detaily,edit/Upravit,delete/Smazat',
+                multipleItemsActions: 'delete_selected/Smazat vybrané,export_selected/Exportovat vybrané',
+
+                columns: [
+                    {
+                        field: 'date',
+                        header: 'Datum',
+                        type: 'date',
+                        sortable: true,
+                        filterable: true,
+                        canBeCopied: true,
+                        isClickable: true,
+                        align: 'right'
+                    },
+                    {
+                        field: 'action',
+                        header: 'Akce',
+                        type: 'text',
+                        sortable: true,
+                        filterable: true,
+                        isClickable: true
+                    },
+                    {
+                        field: 'user',
+                        header: 'Uživatel',
+                        type: 'text',
+                        sortable: true,
+                        filterable: true
+                    }
+                ],
+                data: [
+                    { id: 1, date: '2023-01-01', action: 'Login', user: 'jnovak' },
+                    { id: 2, date: '2023-01-02', action: 'Update Profile', user: 'jnovak' },
+                    { id: 3, date: '2023-01-03', action: 'Logout', user: 'jnovak' },
+                    { id: 4, date: '2023-01-04', action: 'Login', user: 'jnovak' },
+                    { id: 5, date: '2023-01-05', action: 'View Report', user: 'jnovak' },
+                    { id: 6, date: '2023-01-06', action: 'Export Data', user: 'jnovak' },
+                    { id: 7, date: '2023-01-07', action: 'Logout', user: 'jnovak' }
+                ]
+            },
+
+            // Other Elements
+            section1: { type: 'separator', label: 'Základní nastavení' },
+            section2: { type: 'separator', label: 'Osobní údaje' },
+            section3: { type: 'separator', label: 'Akce' },
+            terms: { label: 'Souhlasím s podmínkami', type: 'checkbox' },
+            satisfaction: { label: 'Spokojenost', type: 'slider', min: 0, max: 100, step: 10 },
+            country: {
+                label: 'Země (Combobox)',
+                type: 'combobox',
+                options: [
+                    { value: 'cz', label: 'Česká republika' },
+                    { value: 'sk', label: 'Slovensko' },
+                    { value: 'de', label: 'Německo' },
+                    { value: 'pl', label: 'Polsko' },
+                    { value: 'at', label: 'Rakousko' }
+                ]
+            },
+            comboboxStrict: {
+                label: 'Země (Strict - No Custom - allow empty)',
+                type: 'combobox',
+                allowCustom: false,
+                allowEmpty: true,
+                options: [
+                    { value: 'cz', label: 'Česká republika' },
+                    { value: 'sk', label: 'Slovensko' },
+                    { value: 'de', label: 'Německo' }
+                ]
+            },
+            comboboxCustom: {
+                label: 'Země (Allow Custom)',
+                type: 'combobox',
+                allowCustom: true,
+                options: [
+                    { value: 'cz', label: 'Česká republika' },
+                    { value: 'sk', label: 'Slovensko' },
+                    { value: 'de', label: 'Německo' }
+                ]
+            },
+            comboboxNoEmpty: {
+                label: 'Země (No Empty - Revert on Clear)',
+                type: 'combobox',
+                allowEmpty: false,
+                options: [
+                    { value: 'cz', label: 'Česká republika' },
+                    { value: 'sk', label: 'Slovensko' }
+                ]
+            },
+            startDate: { label: 'Datum zahájení (Date only)', type: 'date' },
+            meetingTime: { label: 'Čas schůzky', type: 'datetime' },
+            age: { label: 'Věk', type: 'number', min: 0, max: 120 },
+
+            statusGroup: {
+                type: 'button-group',
+                variant: 'process',
+                label: 'Status',
+                options: [
+                    'draft/true/default/Koncept',
+                    'published/true/success/Publikováno',
+                    'archived/true/warning/Archivováno'
+                ]
+            },
+            actionButton: {
+                type: 'button',
+                label: 'Provést akci',
+                variant: 'primary',
+                action: 'custom_action'
+            }
+        };
+
+        const layout = {
+            tabs: [
+                {
+                    label: 'Osobní údaje',
+                    rows: [
+                        [{ field: 'section2' }],
+                        [{ field: 'name' }, { field: 'surname' }],
+                        [{ field: 'email' }, { field: 'phone' }],
+                        [{ field: 'birthdate' }, { field: 'age' }],
+                        [{ field: 'country' }],
+                        [{ field: 'comboboxStrict' }, { field: 'comboboxCustom' }],
+                        [{ field: 'comboboxNoEmpty' }]
+                    ]
+                },
+                {
+                    label: 'Účet',
+                    rows: [
+                        [{ field: 'section1' }],
+                        [{ field: 'username' }, { field: 'password' }],
+                        [{ field: 'role' }, { field: 'active' }],
+                        [{ field: 'department' }],
+                        [{ field: 'terms' }]
+                    ]
+                },
+                {
+                    label: 'Detaily',
+                    rows: [
+                        [{ field: 'bio' }],
+                        [{ field: 'avatar' }, { field: 'resume' }],
+                        [{ field: 'satisfaction' }]
+                    ]
+                },
+                {
+                    label: 'Nastavení',
+                    rows: [
+                        [{ field: 'notifications' }],
+                        [{ field: 'theme' }],
+                        [{ field: 'projects' }],
+                        [{ field: 'startDate' }, { field: 'meetingTime' }]
+                    ]
+                },
+                {
+                    label: 'Akce',
+                    rows: [
+                        [{ field: 'section3' }],
+                        [{ field: 'statusGroup' }],
+                        [{ field: 'actionButton' }]
+                    ]
+                },
+                {
+                    label: 'Tabulka',
+                    rows: [
+                        [{ field: 'history' }]
+                    ]
+                }
+            ]
+        };
+
+        const buttons = [
+            { action: 'cancel', label: 'Zrušit', variant: 'default', position: 'left' },
+            { action: 'save', label: 'Uložit', variant: 'primary' }
+        ];
+
+        const form = document.getElementById('form');
+        form.setAttribute('fields', JSON.stringify(fields));
+        form.setAttribute('layout', JSON.stringify(layout));
+        form.setAttribute('buttons', JSON.stringify(buttons));
+
+        // Initial values
+        const initialValues = {
+            name: 'Jan',
+            surname: 'Novák',
+            email: 'jan.novak@example.com',
+            phone: '+420 123 456 789',
+            username: 'jnovak',
+            password: 'password123',
+            role: 'user',
+            active: false,
+            birthdate: '1990-05-15',
+            bio: 'Zkušený vývojář se zaměřením na webové technologie.',
+            theme: 'dark',
+            notifications: ['email', 'push'],
+            department: 2,
+            projects: [101, 103]
+        };
+        form.setAttribute('values', JSON.stringify(initialValues));
+
+        // Initialize form
+        customElements.whenDefined('ts-form').then(() => {
+            form.run();
+        });
+
+        form.addEventListener('form-submit', (e) => {
+            console.log('Form submitted:', e.detail);
+            if (e.detail.action === 'save') {
+                // Prepare data for alert, handling File objects
+                const data = { ...e.detail.formData };
+                for (const key in data) {
+                    if (Array.isArray(data[key]) && data[key][0] instanceof File) {
+                        data[key] = data[key].map(f => `File: ${f.name} (${f.size} bytes)`);
+                    } else if (data[key] instanceof FileList) {
+                        data[key] = Array.from(data[key]).map(f => `File: ${f.name} (${f.size} bytes)`);
+                    }
+                }
+                console.log('Uloženo!', data);
+            }
+        });
+
+        form.addEventListener('form-changed', (e) => {
+            console.log('Form changed:', e.detail);
+        });
+
+        form.addEventListener('form-table-action', (e) => {
+            console.log('Table action:', e.detail);
+        });
+    </script>
+</body>
+
+</html>
