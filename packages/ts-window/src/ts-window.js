@@ -127,6 +127,24 @@ class TSWindow extends HTMLElement {
         .resize-handle.ne { top: -8px; right: -8px; width: 16px; height: 16px; cursor: ne-resize; }
         .resize-handle.sw { bottom: -8px; left: -8px; width: 16px; height: 16px; cursor: sw-resize; }
         .resize-handle.se { bottom: -8px; right: -8px; width: 16px; height: 16px; cursor: se-resize; }
+        .resize-handle.se { bottom: -8px; right: -8px; width: 16px; height: 16px; cursor: se-resize; }
+
+        /* Dark Mode Support */
+        :host-context(.sl-theme-dark) .window {
+          box-shadow: none;
+          background: #2e2e2e;
+          border-color: #444;
+          color: #fff;
+        }
+        :host-context(.sl-theme-dark) .titlebar {
+          background: linear-gradient(to bottom, #444, #333);
+          color: #eee;
+          border-bottom: 1px solid #222;
+        }
+        :host-context(.sl-theme-dark) .content {
+          background: #2e2e2e;
+          color: #eee;
+        }
       </style>
       <div class="window">
         <div class="titlebar">

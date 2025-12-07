@@ -3,8 +3,10 @@ import '../packages/ts-window/src/ts-window.js';
 export default {
   title: 'TSWebUI/TSWindow',
   render: (args) => {
+    const themeClass = args.dark ? 'sl-theme-dark' : 'sl-theme-light';
+    const bgStyle = args.dark ? 'background-color: #2e2e2e; color: white;' : 'background-color: white; color: black;';
     return `
-      <div style="height: 600px; position: relative; border: 1px dashed #ccc; overflow: hidden;">
+      <div class="${themeClass}" style="height: 600px; position: relative; border: 1px dashed #ccc; overflow: hidden; ${bgStyle}">
         <ts-window 
           id="demo-window" 
           label="${args.label}"
@@ -23,6 +25,7 @@ export default {
     `;
   },
   args: {
+    dark: false,
     label: 'Test Window',
     content: 'This is a test window content.',
     width: 400,
@@ -31,6 +34,7 @@ export default {
     left: 50,
   },
   argTypes: {
+    dark: { control: 'boolean', description: 'Dark theme mode' },
     label: { control: 'text' },
     content: { control: 'text' },
     width: { control: 'number' },
