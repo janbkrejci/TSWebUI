@@ -47,8 +47,11 @@ export default {
 export const Default = {};
 
 export const Minimized = {
-  render: (args) => `
-     <div style="height: 600px; position: relative; border: 1px dashed #ccc; overflow: hidden;">
+  render: (args) => {
+    const themeClass = args.dark ? 'sl-theme-dark' : 'sl-theme-light';
+    const bgStyle = args.dark ? 'background-color: #2e2e2e; color: white;' : 'background-color: white; color: black;';
+    return `
+     <div class="${themeClass}" style="height: 600px; position: relative; border: 1px dashed #ccc; overflow: hidden; ${bgStyle}">
         <ts-window 
           id="demo-window-min" 
           label="${args.label}" 
@@ -68,12 +71,16 @@ export const Minimized = {
             }, 100);
         </script>
      </div>
-    `
+    `;
+  }
 };
 
 export const MultipleWindows = {
-  render: () => `
-    <div style="height: 600px; position: relative; border: 1px dashed #ccc; overflow: hidden;">
+  render: (args) => {
+    const themeClass = args.dark ? 'sl-theme-dark' : 'sl-theme-light';
+    const bgStyle = args.dark ? 'background-color: #2e2e2e; color: white;' : 'background-color: white; color: black;';
+    return `
+    <div class="${themeClass}" style="height: 600px; position: relative; border: 1px dashed #ccc; overflow: hidden; ${bgStyle}">
       <ts-window label="Window 1" top="20" left="20" width="300" height="200">
         <div style="padding: 10px;">Window 1 content</div>
       </ts-window>
@@ -81,5 +88,6 @@ export const MultipleWindows = {
          <div style="padding: 10px;">Window 2 content</div>
       </ts-window>
     </div>
-  `
+  `;
+  }
 };
