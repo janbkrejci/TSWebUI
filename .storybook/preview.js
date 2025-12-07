@@ -3,13 +3,13 @@ const preview = {
   parameters: {
     controls: {
       matchers: {
-       color: /(background|color)$/i,
-       date: /Date$/i,
+        color: /(background|color)$/i,
+        date: /Date$/i,
       },
     },
     options: {
       storySort: {
-        order: ['Welcome to TSWebUI', 'Pages', ['Home', 'Login', 'Admin'], 'Components', '*', 'WIP'],
+        order: ['TSWebUI', ['Introduction', 'TSWindow', 'TSTable', 'TSForm']],
       },
     },
   },
