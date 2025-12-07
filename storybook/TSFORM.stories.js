@@ -2,10 +2,9 @@ import { action } from 'storybook/actions';
 import template from './TSFORM.html?raw';
 import '../packages/ts-form/src/ts-form.js';
 import '../packages/ts-table/src/ts-table.js';
-import { html } from 'lit-html';
 
 export default {
-    title: 'TSWebUI/TSFORM',
+    title: 'TSWebUI/TSForm',
     parameters: {
         layout: 'fullscreen'
     },
