@@ -4,9 +4,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>TS-Window Test</title>
+
+  <script>
+    // Apply theme based on system preference
+    function applyTheme() {
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('sl-theme-dark', isDark);
+      document.documentElement.classList.toggle('sl-theme-light', !isDark);
+    }
+    applyTheme();
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+  </script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: var(--sl-font-sans);
+    }
+
+    body {
+      background: var(--sl-color-neutral-50);
+      color: var(--sl-color-neutral-900);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+  </style>
+
+  <!-- Shoelace CSS and Components -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/light.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/dark.css" />
+  <script type="module"
+    src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/shoelace-autoloader.js"></script>
+
   <script src="./packages/ts-window/src/ts-window.js" type="module"></script>
-  <!-- <link rel="stylesheet" href="./styles.css"> -->
 </head>
 
 <body>
