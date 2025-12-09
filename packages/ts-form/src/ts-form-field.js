@@ -573,6 +573,13 @@ export class TSFormField extends HTMLElement {
                                 field.dispatchEvent(new CustomEvent('sl-change', { bubbles: true }));
                             },
                             parseDate: (dateStr, format) => {
+                                if (!dateStr) return null;
+
+                                // Standard ISO handling
+                                if (typeof dateStr === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+                                    return new Date(dateStr);
+                                }
+
                                 // Try smart parsing for ddmmyyyy
                                 const clean = dateStr.replace(/[^0-9]/g, '');
                                 if (clean.length === 8) {
@@ -908,11 +915,15 @@ export class TSFormField extends HTMLElement {
                 });
 
                 // Initialize table after a brief delay to ensure it's connected and ready
-                setTimeout(() => {
-                    if (typeof field.run === 'function') {
-                        field.run();
-                    }
-                }, 0);
+                // Use customElements.whenDefined to ensure upgrade happens before run() called
+                customElements.whenDefined('ts-table').then(() => {
+                    // Still need a small tick for DOM connection if it wasn't connected yet when defined
+                    setTimeout(() => {
+                        if (typeof field.run === 'function') {
+                            field.run();
+                        }
+                    }, 0);
+                });
                 break;
 
             default:
