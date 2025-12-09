@@ -465,6 +465,12 @@ class TSForm extends HTMLElement {
         this.addEventListener('field-change', (e) => {
             e.stopPropagation();
             const { field, value } = e.detail;
+
+            // Deduplicate change events
+            // For objects, this simple check might not be enough, but for primitives it works well.
+            // Since this fixes the double-event issue on Enter (strings), it's sufficient.
+            if (this.formData[field] === value) return;
+
             this.formData[field] = value;
 
             this.dispatchEvent(new CustomEvent('form-changed', {
@@ -480,6 +486,54 @@ class TSForm extends HTMLElement {
 
         this.addEventListener('form-field-action', (e) => {
             // Re-dispatch or handle specific field actions
+        });
+
+        this.addEventListener('form-key-action', (e) => {
+            e.stopPropagation();
+            const { action, field } = e.detail;
+
+            if (!action) return;
+
+            // Handle 'focus:FIELD_NAME'
+            if (action.startsWith('focus:')) {
+                const targetFieldName = action.split(':')[1];
+                const targetField = this.querySelector(`ts-form-field[field-name="${targetFieldName}"]`);
+                if (targetField && typeof targetField.setFocus === 'function') {
+                    // Slight delay to ensure previous event is finished (e.g. keyup)
+                    requestAnimationFrame(() => targetField.setFocus());
+                } else {
+                    console.warn(`Target field for focus not found: ${targetFieldName}`);
+                }
+            }
+            // Handle 'click:ACTION_NAME' or 'submit'
+            else if (action.startsWith('click:') || action === 'submit') {
+                const actionName = action === 'submit' ? 'submit' : action.split(':')[1];
+
+                let btn = this.buttons[actionName];
+
+                // If action is 'submit' and no specific button named 'submit' exists, try to find a primary button
+                if (!btn && actionName === 'submit') {
+                    const buttons = Object.values(this.buttons);
+                    btn = buttons.find(b => b.variant === 'primary' && !b.disabled && b.style.display !== 'none');
+                }
+
+                if (btn && !btn.disabled && btn.style.display !== 'none') {
+                    btn.click();
+                } else {
+                    console.warn(`Button for action '${actionName}' not found or disabled`);
+                }
+            }
+            // Handle 'next' (optional) - focus next field in DOM
+            else if (action === 'next') {
+                const allFields = Array.from(this.querySelectorAll('ts-form-field'));
+                const currentIndex = allFields.findIndex(f => f.getAttribute('field-name') === field);
+                if (currentIndex >= 0 && currentIndex < allFields.length - 1) {
+                    const nextField = allFields[currentIndex + 1];
+                    if (nextField && typeof nextField.setFocus === 'function') {
+                        nextField.setFocus();
+                    }
+                }
+            }
         });
 
         this.addEventListener('form-table-action', (e) => {

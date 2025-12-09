@@ -229,6 +229,96 @@ export class TSFormField extends HTMLElement {
             }
             field.classList.remove('input-invalid');
         }
+
+        // Autofocus handling
+        if (config.autofocus) {
+            // Use requestAnimationFrame to ensure element is in DOM and upgraded
+            requestAnimationFrame(() => {
+                // Determine target element similarly to setFocus
+                this.setFocus();
+            });
+        }
+        if (field) {
+            // Attach generic key handler for navigation
+            field.addEventListener('keydown', (e) => this.handleKeyDown(e, config, fieldName));
+        }
+    }
+
+    setFocus() {
+        let target = this.firstElementChild;
+        // Handle wrappers (e.g. checkbox, switch, radio are wrapped in div)
+        if (target && target.tagName === 'DIV') {
+            const input = target.querySelector('sl-input, sl-checkbox, sl-switch, sl-range, sl-radio-group, sl-select, textarea, input, ts-combobox, ts-relationship-picker, sl-button, sl-button-group');
+            if (input) target = input;
+        }
+
+        if (target) {
+            if (typeof target.setFocus === 'function') {
+                target.setFocus();
+            } else if (typeof target.focus === 'function') {
+                target.focus();
+            }
+        }
+    }
+
+    handleKeyDown(e, config, fieldName) {
+        // Enter Key
+        if (e.key === 'Enter') {
+            if (config.enterAction) {
+                // Prevent default behavior (e.g. textarea newline, or standard form submit if inside generic form)
+                // Exception: if it's a textarea and we want newline, we shouldn't set enterAction.
+                // If enterAction IS set, we assume user wants the action instead of newline.
+                e.preventDefault();
+                e.stopPropagation(); // Stop bubbling to prevent double handling
+
+                // Force update value before action
+                // The native 'change' might not have fired yet because we prevented default
+                this.handleFieldChange(e, fieldName);
+
+                this.dispatchEvent(new CustomEvent('form-key-action', {
+                    detail: {
+                        key: 'Enter',
+                        action: config.enterAction,
+                        field: fieldName
+                    },
+                    bubbles: true,
+                    composed: true
+                }));
+            }
+        }
+        // Escape Key
+        else if (e.key === 'Escape') {
+            if (config.escapeAction) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (config.escapeAction === 'clear') {
+                    // Handle clearing locally
+                    // We need to set value on the specific component
+                    const field = e.target; // The component that triggered keydown
+                    if ('value' in field) {
+                        if (config.type === 'select' && field.multiple) {
+                            field.value = [];
+                        } else {
+                            field.value = '';
+                        }
+                        // Dispatch change
+                        this.handleFieldChange({ target: field }, fieldName);
+                    }
+                } else {
+                    // Dispatch global action
+                    this.dispatchEvent(new CustomEvent('form-key-action', {
+                        detail: {
+                            key: 'Escape',
+                            action: config.escapeAction,
+                            field: fieldName
+                        },
+                        bubbles: true,
+                        composed: true
+                    }));
+                }
+            }
+        }
     }
 
     createField(fieldName, config, value) {

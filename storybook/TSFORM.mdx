@@ -93,6 +93,9 @@ Definice polí se předává do atributu `fields` jako JSON objekt, kde klíč j
 - **readonly**: (boolean) Pole pouze pro čtení.
 - **hint**: (string) Nápověda pod polem.
 - **width**: (string) Šířka samotného inputu (např. '100%').
+- **autofocus**: (boolean) Automaticky zaměří pole po načtení formuláře.
+- **enterAction**: (string) Akce při stisku Enter (např. `'submit'`, `'click:myButton'`, `'focus:nextField'`).
+- **escapeAction**: (string) Akce při stisku Escape (např. `'clear'`, `'click:cancel'`).
 
 ### Typy polí
 
@@ -343,3 +346,33 @@ Pokud pole obsahuje chybu:
 2. Pod inputem se zobrazí chybová hláška.
 
 
+
+## Ovládání Klávesnicí
+
+Formulář podporuje pokročilé ovládání klávesnicí konfigurovatelné pro každé pole.
+
+### Konfigurovatelné Akce (`enterAction`, `escapeAction`)
+
+Akce lze definovat jako řetězce v následujících formátech:
+- `'submit'`: Odešle formulář (klikne na tlačítko typu submit nebo primary).
+- `'click:BUTTON_ACTION'`: Klikne na tlačítko s danou `action` (např. `'click:save'`).
+- `'focus:FIELD_NAME'`: Přesune focus na jiné pole (např. `'focus:password'`).
+- `'clear'`: Vymaže hodnotu pole (pouze pro `escapeAction`).
+- `'next'`: (Experimentální) Přesune focus na další pole.
+
+### Příklad Konfigurace
+```json
+"username": {
+  "type": "text",
+  "label": "Uživatel",
+  "autofocus": true,
+  "enterAction": "focus:password",
+  "escapeAction": "click:cancel"
+},
+"password": {
+  "type": "password",
+  "label": "Heslo",
+  "enterAction": "submit",
+  "escapeAction": "click:cancel"
+}
+```

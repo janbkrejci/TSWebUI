@@ -813,3 +813,62 @@ export const AllElements = {
 
 
 
+export const LoginForm = {
+    args: {
+        ...defaultArgs,
+        layout: JSON.stringify({
+            rows: [
+                [{ field: 'loginInfo', width: '1fr' }],
+                [{ field: 'username', width: '1fr' }],
+                [{ field: 'password', width: '1fr' }]
+            ]
+        }),
+        fields: JSON.stringify({
+            loginInfo: { type: 'infobox', variant: 'neutral', icon: 'box-arrow-in-right', content: 'Zadejte uživatelské jméno a heslo' },
+            username: {
+                type: 'text',
+                label: 'Uživatel',
+                required: true,
+                autofocus: true,
+                enterAction: 'focus:password',
+                escapeAction: 'click:cancel'
+            },
+            password: {
+                type: 'password',
+                label: 'Heslo',
+                required: true,
+                enterAction: 'submit',
+                escapeAction: 'click:cancel'
+            }
+        }),
+        buttons: JSON.stringify([
+            { action: 'cancel', label: 'Zrušit', variant: 'text', position: 'left' },
+            { action: 'login', label: 'Přihlásit se', variant: 'primary', position: 'right' }
+        ]),
+        values: '{}'
+    }
+};
+
+export const ConfirmationDialog = {
+    args: {
+        ...defaultArgs,
+        layout: JSON.stringify({
+            rows: [
+                [{ field: 'warningMessage', width: '1fr' }]
+            ]
+        }),
+        fields: JSON.stringify({
+            warningMessage: {
+                type: 'infobox',
+                variant: 'warning',
+                icon: 'exclamation-triangle',
+                content: '<strong>Opravdu chcete zaúčtovat nesmysly?</strong>'
+            }
+        }),
+        buttons: JSON.stringify([
+            { action: 'no', label: 'NE', variant: 'default', position: 'right' },
+            { action: 'yes', label: 'ANO', variant: 'primary', position: 'right' }
+        ]),
+        values: '{}'
+    }
+};
