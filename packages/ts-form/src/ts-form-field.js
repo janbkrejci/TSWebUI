@@ -5,6 +5,7 @@ import './ts-combobox.js';
 import flatpickr from 'flatpickr';
 import { Czech } from 'flatpickr/dist/l10n/cs.js';
 import flatpickrStyles from 'flatpickr/dist/flatpickr.css?inline';
+import { marked } from 'marked';
 
 // Inject Flatpickr styles
 if (!document.getElementById('ts-form-flatpickr-styles')) {
@@ -91,6 +92,103 @@ export class TSFormField extends HTMLElement {
                     margin: 0 !important;
                 }
             `;
+            this.appendChild(style);
+        }
+
+        // Inject Markdown styles
+        if (!document.getElementById('ts-form-markdown-styles')) {
+            const style = document.createElement('style');
+            style.id = 'ts-form-markdown-styles';
+            style.textContent = `
+                .markdown-content {
+                    font-family: var(--sl-font-sans);
+                    font-size: var(--sl-font-size-medium);
+                    line-height: var(--sl-line-height-normal);
+                    color: var(--sl-color-neutral-900);
+                }
+                .markdown-content h1, .markdown-content h2, .markdown-content h3, 
+                .markdown-content h4, .markdown-content h5, .markdown-content h6 {
+                    margin-top: 1em;
+                    margin-bottom: 0.5em;
+                    font-weight: var(--sl-font-weight-bold);
+                    line-height: var(--sl-line-height-dense);
+                    color: var(--sl-color-neutral-1000);
+                }
+                .markdown-content h1 { font-size: var(--sl-font-size-2x-large); }
+                .markdown-content h2 { font-size: var(--sl-font-size-x-large); }
+                .markdown-content h3 { font-size: var(--sl-font-size-large); }
+                .markdown-content p {
+                    margin-bottom: 1em;
+                }
+                .markdown-content ul, .markdown-content ol {
+                    margin-bottom: 1em;
+                    padding-left: 1.5em;
+                }
+                .markdown-content li {
+                    margin-bottom: 0.25em;
+                }
+                .markdown-content table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 1em;
+                }
+                .markdown-content th, .markdown-content td {
+                    padding: var(--sl-spacing-small);
+                    border: 1px solid var(--sl-color-neutral-300);
+                    text-align: left;
+                }
+                .markdown-content th {
+                    background-color: var(--sl-color-neutral-100);
+                    font-weight: var(--sl-font-weight-semibold);
+                }
+                .markdown-content code {
+                    font-family: var(--sl-font-mono);
+                    background-color: var(--sl-color-neutral-100);
+                    padding: 0.2em 0.4em;
+                    border-radius: var(--sl-border-radius-small);
+                    font-size: 0.9em;
+                }
+                .markdown-content pre {
+                    background-color: var(--sl-color-neutral-100);
+                    padding: var(--sl-spacing-medium);
+                    border-radius: var(--sl-border-radius-medium);
+                    overflow-x: auto;
+                    margin-bottom: 1em;
+                }
+                .markdown-content pre code {
+                    padding: 0;
+                    background-color: transparent;
+                }
+                .markdown-content blockquote {
+                    margin: 1em 0;
+                    padding-left: 1em;
+                    border-left: 4px solid var(--sl-color-primary-500);
+                    color: var(--sl-color-neutral-600);
+                }
+                .markdown-content a {
+                    color: var(--sl-color-primary-600);
+                    text-decoration: none;
+                }
+                .markdown-content a:hover {
+                    text-decoration: underline;
+                }
+                .markdown-content > *:first-child {
+                    margin-top: -0.25em !important;
+                }
+            `;
+            // Append to head to apply globally (since no Shadow DOM) so it's only added once per page load
+            // But wait, existing code appends to `this`. If multiple fields are present, `this` is local.
+            // If we append to `this` (the element), styles are scoped only if Shadow DOM is used? 
+            // NO, <style> inside a light DOM element applies globally but is just located there.
+            // To ensure it applies to all instances and persists, appending to document.head is safer if we check ID.
+            // The existing code appends to `this` (line 95). If I append to `this`, it will be added for every field instance if I don't check carefully, 
+            // but the check `!document.getElementById` suggests global intent.
+            // However, `getElementById` checks the whole document. If I append to `this`, it is in the document.
+            // So appending to `this` is fine IF the ID check works.
+            // BUT, if I append to `this`, and `this` is removed, the style might be removed if it's a child? 
+            // Usually global styles are better in HEAD.
+            // I will append to `this` to follow the pattern of the existing file_upload styles (if any) or the snippet I saw.
+            // Actually the snippet showed: `this.appendChild(style);`. I will follow that pattern.
             this.appendChild(style);
         }
 
@@ -695,6 +793,37 @@ export class TSFormField extends HTMLElement {
                 field.textContent = config.label || '';
                 return field;
 
+
+
+            case 'infobox':
+                field = document.createElement('sl-alert');
+                field.variant = config.variant || 'primary';
+                field.open = true;
+                if (config.closable) {
+                    field.closable = true;
+                }
+
+                let alertUtf8Content = '';
+                if (config.icon) {
+                    alertUtf8Content += `<sl-icon slot="icon" name="${config.icon}"></sl-icon>`;
+                }
+                // Render HTML content
+                if (value) {
+                    alertUtf8Content += value;
+                } else if (config.content) {
+                    alertUtf8Content += config.content;
+                }
+                field.innerHTML = alertUtf8Content;
+                return field;
+
+            case 'markdown':
+                field = document.createElement('div');
+                field.className = 'markdown-content';
+                const mdContent = value || config.content || '';
+                // Configure marked to handle tables if needed, usually default
+                field.innerHTML = marked.parse(mdContent);
+                return field;
+
             case 'table':
                 field = document.createElement('ts-table');
 
@@ -795,8 +924,9 @@ export class TSFormField extends HTMLElement {
 
         field.name = fieldName;
 
+
         if (!config.hideLabel) {
-            if (config.type !== 'checkbox' && config.type !== 'radio' && config.type !== 'file' && config.type !== 'image') {
+            if (config.type !== 'checkbox' && config.type !== 'radio' && config.type !== 'file' && config.type !== 'image' && config.type !== 'infobox' && config.type !== 'markdown') {
                 field.label = config.label;
             }
         }

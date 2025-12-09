@@ -12,6 +12,9 @@ const config = {
   "framework": {
     "name": "@storybook/html-vite",
     "options": {}
-  }
+  },
+  "staticDirs": [
+    { from: '../dist', to: '/dist' }
+  ]
 };
 export default config;

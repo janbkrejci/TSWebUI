@@ -161,6 +161,20 @@ Pokročilý výběr vazeb s vyhledáváním a čipy.
 - **variant**: `'primary'`, `'default'`, `'neutral'`, `'danger'`, atd.
 - **action**: (string) Identifikátor akce pro event `form-field-action`.
 
+#### Informační boxy (Infobox)
+Zobrazí `sl-alert` pro statické informace.
+- **type**: `'infobox'`
+- **variant**: `'primary'`, `'success'`, `'neutral'`, `'warning'`, `'danger'`.
+- **icon**: (string) Název ikony (Shoelace icon name).
+- **content**: (html string) Obsah boxu. Může obsahovat HTML.
+- **value**: (string) Alternativně lze obsah předat přes hodnotu pole.
+
+#### Markdown Obsah
+Zobrazí renderovaný markdown.
+- **type**: `'markdown'`
+- **content**: (string) Markdown řetězec.
+- **value**: (string) Alternativně lze obsah předat přes hodnotu pole.
+
 #### Tabulka (Embedded Table)
 Vloží plnohodnotnou `ts-table` do formuláře.
 - **type**: `'table'`

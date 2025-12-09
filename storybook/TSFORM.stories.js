@@ -664,6 +664,19 @@ export const AllElements = {
                     rows: [
                         [{ field: 'table' }]
                     ]
+                },
+                {
+                    label: 'Statické',
+                    rows: [
+                        [{ type: 'separator', label: 'Infoboxes' }],
+                        [{ field: 'infoPrimary' }],
+                        [{ field: 'infoSuccess' }],
+                        [{ field: 'infoWarning' }],
+                        [{ field: 'infoDanger' }],
+                        [{ field: 'infoNeutral' }],
+                        [{ type: 'separator', label: 'Markdown' }],
+                        [{ field: 'markdownExample' }]
+                    ]
                 }
             ]
         }),
@@ -780,6 +793,17 @@ export const AllElements = {
                     { id: 2, name: 'Item 2', status: 'Inactive' },
                     { id: 3, name: 'Item 3', status: 'Active' }
                 ]
+            },
+
+            // Statické Elements
+            infoPrimary: { type: 'infobox', variant: 'primary', icon: 'info-circle', content: '<strong>Primary Info</strong><br>This is a primary alert with <em>HTML</em> content.' },
+            infoSuccess: { type: 'infobox', variant: 'success', icon: 'check-circle', content: 'Success alert.' },
+            infoWarning: { type: 'infobox', variant: 'warning', icon: 'exclamation-triangle', content: 'Warning alert.' },
+            infoDanger: { type: 'infobox', variant: 'danger', icon: 'exclamation-octagon', content: 'Danger alert.' },
+            infoNeutral: { type: 'infobox', variant: 'neutral', icon: 'gear', content: 'Neutral alert.' },
+            markdownExample: {
+                type: 'markdown',
+                content: '# Markdown Header\n\nThis is a paragraph with **bold** and *italic* text.\n\n- List item 1\n- List item 2\n\n| Col 1 | Col 2 |\n|---|---|\n| Val 1 | Val 2 |'
             }
         }),
         values: '{}'
