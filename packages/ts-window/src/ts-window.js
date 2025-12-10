@@ -382,21 +382,19 @@ class TSWindow extends HTMLElement {
 
     // Dočasně vypneme transition, pokud nechceme animovat (např. při startu)
     if (!animate) {
-      this.windowEl.classList.add('resizing');
+      this.windowEl.classList.add('resizing'); // vypne transition
     }
 
-    // Reset styles to auto to measure content
     this.windowEl.style.width = 'auto';
     this.windowEl.style.height = 'auto';
 
-    // Use getBoundingClientRect for sub-pixel precision
-    const rect = this.windowEl.getBoundingClientRect();
-    // Add a small buffer to prevent rounding errors causing scrollbars
-    // +2px handles sub-pixel rendering issues where content might be 300.4px but container becomes 300px
-    let newW = Math.ceil(rect.width) + 2;
-    let newH = Math.ceil(rect.height) + 2;
+    let newW = this.windowEl.offsetWidth;
+    let newH = this.windowEl.offsetHeight;
 
-    // Restore original styles (important for updatePosition to apply new values correctly)
+    // VŽDY vrátíme zpět původní hodnoty (resp. odstraníme 'auto'), 
+    // aby updatePosition() na konci měla čistý stůl a aplikovala pixely.
+    // Pokud tam necháme 'auto', tak nastavení style.width='200px' (pokud se nezměnilo od minula) 
+    // nemusí 'auto' přepsat, pokud prohlížeč optimalizuje, nebo může dojít k jiným konfliktům.
     this.windowEl.style.width = originalWidth;
     this.windowEl.style.height = originalHeight;
 
@@ -404,32 +402,19 @@ class TSWindow extends HTMLElement {
     const borderX = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
     const borderY = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
 
-    // Subtract borders because we are setting box-sizing: content-box effectively (or updating state which drives style)
-    // Wait, the .window style doesn't specify box-sizing, so it defaults to content-box? 
-    // Line 24: * { box-sizing: border-box; } in WINDOWTEST.html, but ts-window uses Shadow DOM.
-    // Shadow DOM style (line 27-48) doesn't set box-sizing globally, but often frameworks do.
-    // If box-sizing is content-box (default), width excludes border.
-    // If box-sizing is border-box, width includes border.
-    // Let's assume standard handling or check styles. 
-    // `html, body { box-sizing: border-box; }` is in WINDOWTEST.html main DOM.
-    // In Shadow DOM: `.titlebar` has `box-sizing: border-box;`.
-    // `.window` does NOT have box-sizing set in the provided CSS block (lines 26-170).
-    // So `.window` is `content-box` (default).
-    // So `getBoundingClientRect().width` includes border.
-    // Setting `style.width` sets content width.
-    // So effectively newW (border-box) - borderX = content width.
-    // Correct.
-
     newW -= borderX;
     newH -= borderY;
 
     const minW = TSWindow.MIN_WIDTH, minH = TSWindow.MIN_HEIGHT;
     const maxW = window.innerWidth, maxH = window.innerHeight;
 
-    // Force reflow
+    // Pokud animujeme, vynutíme reflow
     if (animate) {
       this.windowEl.offsetHeight;
     } else {
+      // I když neanimujeme, musíme vynutit reflow PŘED odebráním třídy resizing.
+      // Jinak by prohlížeč mohl sloučit změnu stylu a odebrání třídy do jednoho vykreslení,
+      // čímž by se transition opět zapnul a změna by se animovala.
       this.windowEl.offsetHeight;
       this.windowEl.classList.remove('resizing');
     }
@@ -443,6 +428,7 @@ class TSWindow extends HTMLElement {
     this.setAttribute('width', finalW);
     this.setAttribute('height', finalH);
 
+    // Explicitně zavoláme updatePosition, abychom měli jistotu, že se vizuální styl aplikuje okamžitě
     this.updatePosition();
   }
 
