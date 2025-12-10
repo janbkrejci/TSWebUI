@@ -46,6 +46,7 @@
     src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/shoelace-autoloader.js"></script>
 
   <script src="./dist/ts-window-bundle.js" type="module"></script>
+  <script src="./dist/ts-form-bundle.js" type="module"></script>
 </head>
 
 <body>
@@ -105,12 +106,105 @@
 
     document.getElementById('new-window-btn').onclick = function () {
       const win = document.createElement('ts-window');
-      win.setAttribute('label', 'Nové okno');
+      win.setAttribute('label', 'Příhlášení');
+      win.setAttribute('width', '400'); // Set explicit width to ensure consistency
+      win.setAttribute('height', '300'); // Set reasonable default height
       document.body.appendChild(win);
-      // Explicitně přizpůsobíme velikost obsahu (bez animace), abychom měli správné rozměry pro centrování
-      win.fitToContent(false);
-      win.centerOnScreen();
-      win.bringToFront();
+
+      const form = document.createElement('ts-form');
+      // Fix 1: Prevent 100vh expansion
+      form.style.height = 'auto';
+      // Note: ts-form typically expects to fill a container, but ts-window handles content scroll.
+      // If ts-form has 100vh style in shadow DOM, we might need to override it if exposed,
+      // or rely on container constraints.
+      // The ts-form implementation has `ts-form { height: 100vh; }` in its shadow DOM style.
+      // We cannot easily override shadow DOM styles from outside unless we use a theme variable or ::part if available.
+      // However, looking at ts-form.js: `ts-form { ... height: 100vh; ... }` is defined in a style block appended to the element itself (not shadow root for the main style, but ensureStructure adds specific styles).
+      // Wait, ts-form extends HTMLElement and does `this.ensureStructure()` which appends `style` to `this`.
+      // It does NOT use shadow DOM for the main structure styles in `ensureStructure`.
+      // It does: `this.appendChild(style)`.
+      // So these styles are in the light DOM but scoped via selectors? No, `ts-form { ... }` matches the element.
+      // But since it's inside a style tag *inside* the element, it acts like a scoped style if it was shadow DOM, but it's not?
+      // Actually `ts-form` does NOT use `attachShadow`. It just appends children.
+      // So the style block `ts-form { ... }` is global if not scoped!
+      // Wait, `ts-window` uses shadow DOM. `ts-form` according to lines 5-462 does NOT handle shadow DOM in `constructor` or `connectedCallback` except `ensureStructure` creating elements.
+      // Line 132: `ts-form { ... height: 100vh; ... }` inside a style tag appended to `this`.
+      // If the custom element does NOT have a shadow root, this `<style>` element applies styles GLOBALLY to the document (or nearest shadow root if inside one).
+      // Since `ts-window` has a shadow root (`this.attachShadow({ mode: 'open' })`), and we are appending `ts-form` to `win` (which puts it in light DOM of `ts-window`? No, `win.appendChild(form)` puts it in light DOM/content slot of `ts-window`).
+      // So `ts-form` is in the light DOM of the page.
+      // So `ts-form { height: 100vh; }` in that style tag applies to ALL `ts-form` elements on the page (and effectively sets them all to 100vh).
+      // To fix this particular instance, we can override it with inline style closer to the element, i.e., `style="height: auto"`.
+      // AND we need to make sure `fitToContent` works.
+
+      // Let's try forcing height: auto via inline style, which has higher specificity than the tag selector in the style block.
+      form.style.height = 'auto';
+      form.style.display = 'block'; // Ensure block display
+
+      const fields = {
+        loginInfo: { type: 'infobox', variant: 'neutral', icon: 'box-arrow-in-right', content: 'Zadejte uživatelské jméno a heslo' },
+        username: {
+          type: 'text',
+          label: 'Uživatel',
+          required: true,
+          autofocus: true,
+          enterAction: 'focus:password',
+          escapeAction: 'click:cancel'
+        },
+        password: {
+          type: 'password',
+          label: 'Heslo',
+          required: true,
+          enterAction: 'submit',
+          escapeAction: 'click:cancel'
+        }
+      };
+      const layout = {
+        rows: [
+          [{ field: 'loginInfo', width: '1fr' }],
+          [{ field: 'username', width: '1fr' }], // Ensure full width
+          [{ field: 'password', width: '1fr' }]  // Ensure full width
+        ]
+      };
+      const buttons = [
+        { action: 'cancel', label: 'Zrušit', variant: 'text', position: 'left' },
+        { action: 'login', label: 'Přihlásit se', variant: 'primary', position: 'right' }
+      ];
+
+      form.setAttribute('fields', JSON.stringify(fields));
+      form.setAttribute('layout', JSON.stringify(layout));
+      form.setAttribute('buttons', JSON.stringify(buttons));
+
+      win.appendChild(form);
+
+      // Initialize form
+      customElements.whenDefined('ts-form').then(() => {
+        form.run();
+        // Adjust window size after form renders
+        setTimeout(() => {
+          // We do NOT want fitToContent here if we want a standard dialog size or if fitToContent is buggy.
+          // However, if we want "minimal necessary space" per user request: "místo aby se omezil na minimální potřebný prostor"
+          // We SHOULD use fitToContent but ensure ts-form doesn't inflate it.
+          // With height: auto on form, fitToContent should work better.
+          // Also, we need to ensure the form container doesn't have opacity 0 initially if fitToContent relies on dimensions.
+          // ts-form fades in.
+
+          win.fitToContent(false);
+          win.centerOnScreen();
+          win.bringToFront();
+        }, 100);
+      });
+
+      form.addEventListener('form-submit', (e) => {
+        console.log('Login attempt:', e.detail);
+        alert('Login submitted: ' + JSON.stringify(e.detail.formData));
+        win.close();
+      });
+
+      form.addEventListener('button-click', (e) => {
+        if (e.detail.action === 'cancel') {
+          win.close();
+        }
+      });
     };          </script>
 </body>
 
