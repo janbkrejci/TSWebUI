@@ -92,6 +92,44 @@ export class TSFileUpload extends HTMLElement {
         this.dispatchChange();
     }
 
+    downloadFile(index) {
+        const file = this.files[index];
+        const a = document.createElement('a');
+
+        if (file instanceof File) {
+            a.href = URL.createObjectURL(file);
+        } else if (file.data) {
+            // Assume base64 data URI
+            a.href = file.data;
+        } else {
+            return;
+        }
+
+        a.download = file.name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        if (file instanceof File) {
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        }
+    }
+
+    set value(val) {
+        if (!val) {
+            this.files = [];
+        } else if (Array.isArray(val)) {
+            this.files = val;
+        } else {
+            this.files = [val];
+        }
+        this.renderFileList();
+    }
+
+    get value() {
+        return this.files;
+    }
+
     dispatchChange() {
         this.dispatchEvent(new CustomEvent('sl-change', {
             detail: {
@@ -266,6 +304,19 @@ export class TSFileUpload extends HTMLElement {
             info.appendChild(name);
             info.appendChild(size);
 
+            const actionsDiv = document.createElement('div');
+            actionsDiv.style.display = 'flex';
+            actionsDiv.style.gap = '0.25rem';
+
+            const downloadBtn = document.createElement('sl-icon-button');
+            downloadBtn.name = 'cloud-download';
+            downloadBtn.label = 'Stáhnout';
+            downloadBtn.dataset.index = index; // verified attribute
+            downloadBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.downloadFile(index);
+            });
+
             const removeBtn = document.createElement('sl-icon-button');
             removeBtn.name = 'x';
             removeBtn.label = 'Odstranit';
@@ -274,8 +325,11 @@ export class TSFileUpload extends HTMLElement {
                 this.removeFile(index);
             });
 
+            actionsDiv.appendChild(downloadBtn);
+            actionsDiv.appendChild(removeBtn);
+
             item.appendChild(info);
-            item.appendChild(removeBtn);
+            item.appendChild(actionsDiv);
             this.fileListContainer.appendChild(item);
         });
     }

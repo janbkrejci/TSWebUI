@@ -441,7 +441,12 @@ export class TSFormField extends HTMLElement {
                 } else if (config.accept) {
                     field.setAttribute('accept', config.accept);
                 }
-                // File input cannot set value programmatically for security reasons
+                if (value) {
+                    // value is passed as property, not attribute, for complex objects
+                    setTimeout(() => {
+                        field.value = value;
+                    }, 0);
+                }
                 break;
             case 'button':
                 field = document.createElement('sl-button');

@@ -776,6 +776,14 @@ class TSForm extends HTMLElement {
                     }
                     button.addEventListener('click', () => {
                         this.lastAction = btn.action;
+                        if (btn.action === 'export-data') {
+                            this.exportFormData();
+                            return;
+                        }
+                        if (btn.action === 'import-data') {
+                            this.importFormData();
+                            return;
+                        }
                         if (btn.confirmation) {
                             this.showConfirmationDialog(btn.confirmation, () => {
                                 this.dispatchEvent(new CustomEvent('form-submit', {
@@ -916,6 +924,79 @@ class TSForm extends HTMLElement {
         }
 
         return submissionData;
+    }
+
+    fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    async exportFormData() {
+        const process = async (obj) => {
+            if (Array.isArray(obj)) {
+                return Promise.all(obj.map(item => process(item)));
+            } else if (obj instanceof File) {
+                const base64 = await this.fileToBase64(obj);
+                return {
+                    name: obj.name,
+                    type: obj.type,
+                    size: obj.size,
+                    lastModified: obj.lastModified,
+                    data: base64,
+                    _is_file: true
+                };
+            } else if (obj && typeof obj === 'object') {
+                const newObj = {};
+                for (const key of Object.keys(obj)) {
+                    newObj[key] = await process(obj[key]);
+                }
+                return newObj;
+            }
+            return obj;
+        };
+
+        try {
+            const exportData = await process(this.formData);
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `form-data-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error('Export failed', e);
+            alert('Export failed: ' + e.message);
+        }
+    }
+
+    importFormData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (re) => {
+                try {
+                    const data = JSON.parse(re.target.result);
+                    this.formData = data;
+                    this.requestRender();
+                } catch (err) {
+                    console.error('Import failed', err);
+                    alert('Import failed: Invalid JSON');
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
     }
 
     handleSubmit(event) {

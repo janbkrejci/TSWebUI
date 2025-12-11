@@ -157,6 +157,8 @@ Pokročilý výběr vazeb s vyhledáváním a čipy.
 - **image**: Nahrávání obrázků (automaticky `accept="image/*"`).
 - **multiple**: (boolean) Povolit více souborů.
 - **accept**: (string) MIME typy (např. `.pdf,.doc`).
+- **Download**: U nahraných souborů se automaticky zobrazuje ikona pro stažení obsahu.
+
 
 #### Samostatná Tlačítka (v gridu)
 - **type**: `'button'`
@@ -223,6 +225,20 @@ Konfigurace akčních tlačítek v patičce formuláře (atribut `buttons`).
 - **position**: (string) Pozice tlačítka v patičce (`left`, `center`, `right`). Výchozí je `right`.
 - **disabled**: (boolean) Pokud `true`, tlačítko je neaktivní (šedé).
 - **hidden**: (boolean) Pokud `true`, tlačítko není vidět.
+
+### Import a Export Dat
+Formulář podporuje vestavěné akce pro uložení a načtení dat ve formátu JSON (včetně souborů jako Base64).
+- **`export-data`**: Uloží kompletní stav formuláře do souboru `form-data-YYYY-MM-DD.json`.
+- **`import-data`**: Otevře dialog pro výběr JSON souboru a načte data do formuláře.
+
+Příklad použití:
+```json
+[
+  { "action": "export-data", "label": "Exportovat", "variant": "primary" },
+  { "action": "import-data", "label": "Importovat", "variant": "default" }
+]
+```
+
 
 ### Potvrzení Akce (Confirmation)
 

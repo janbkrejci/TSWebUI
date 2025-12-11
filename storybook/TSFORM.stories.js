@@ -872,3 +872,57 @@ export const ConfirmationDialog = {
         values: '{}'
     }
 };
+
+export const VerificationWithImportExport = {
+    args: {
+        ...defaultArgs,
+        layout: JSON.stringify({
+            tabs: [
+                {
+                    label: 'Basic Fields',
+                    rows: [
+                        [{ field: 'text' }, { field: 'number' }],
+                        [{ field: 'date' }, { field: 'datetime' }],
+                        [{ field: 'textarea' }]
+                    ]
+                },
+                {
+                    label: 'Selection',
+                    rows: [
+                        [{ field: 'select' }, { field: 'multiselect' }],
+                        [{ field: 'combobox' }, { field: 'radio' }],
+                        [{ field: 'checkbox' }, { field: 'switch' }]
+                    ]
+                },
+                {
+                    label: 'Files',
+                    rows: [
+                        [{ field: 'fileSingle' }],
+                        [{ field: 'fileMultiple' }],
+                        [{ field: 'imageMultiple' }]
+                    ]
+                }
+            ]
+        }),
+        fields: JSON.stringify({
+            text: { type: 'text', label: 'Text' },
+            number: { type: 'number', label: 'Number' },
+            date: { type: 'date', label: 'Date' },
+            datetime: { type: 'datetime', label: 'Datetime' },
+            textarea: { type: 'textarea', label: 'Long Text' },
+            select: { type: 'select', label: 'Select', options: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }] },
+            multiselect: { type: 'select', label: 'Multi Select', multiple: true, options: [{ value: 'x', label: 'X' }, { value: 'y', label: 'Y' }] },
+            combobox: { type: 'combobox', label: 'Combobox', options: [{ value: '1', label: 'One' }, { value: '2', label: 'Two' }] },
+            radio: { type: 'radio', label: 'Radio', options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }] },
+            checkbox: { type: 'checkbox', label: 'Checkbox' },
+            switch: { type: 'switch', label: 'Switch' },
+            fileSingle: { type: 'file', label: 'Single File' },
+            fileMultiple: { type: 'file', label: 'Multiple Files', multiple: true },
+            imageMultiple: { type: 'image', label: 'Multiple Images', multiple: true }
+        }),
+        buttons: JSON.stringify([
+            { action: 'import-data', label: 'Načíst data (Import)', variant: 'default', position: 'left' },
+            { action: 'export-data', label: 'Uložit data (Export)', variant: 'primary', position: 'right' }
+        ])
+    }
+};
