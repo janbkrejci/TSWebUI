@@ -381,8 +381,10 @@
         };
 
         const buttons = [
-            { action: 'cancel', label: 'Zrušit', variant: 'default', position: 'left' },
-            { action: 'save', label: 'Uložit', variant: 'primary' }
+            { action: 'import-data', label: 'Načíst data', variant: 'neutral', position: 'left' },
+            { action: 'export-data', label: 'Uložit data', variant: 'neutral', position: 'left' },
+            { action: 'cancel', label: 'Zrušit', variant: 'default', position: 'right' },
+            { action: 'save', label: 'Uložit', variant: 'primary', position: 'right' }
         ];
 
         const form = document.getElementById('form');
@@ -427,6 +429,11 @@
                     }
                 }
                 console.log('Uloženo!', data);
+                alert('Uloženo! Data v konzoli.');
+            } else if (e.detail.action === 'export-data') {
+                form.exportFormData();
+            } else if (e.detail.action === 'import-data') {
+                form.importFormData();
             }
         });
 

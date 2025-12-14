@@ -1,4 +1,4 @@
-import{j as n,M as r}from"./blocks-D3nkoQsX.js";import{useMDXComponents as i}from"./index-5lGWLAE7.js";import"./preload-helper-PPVm8Dsz.js";import"./iframe-CvsoDv_z.js";function t(o){const e={h1:"h1",h2:"h2",li:"li",p:"p",strong:"strong",ul:"ul",...i(),...o.components};return n.jsxs(n.Fragment,{children:[n.jsx(r,{title:"TSWebUI/Introduction"}),`
+import{j as n,M as r}from"./blocks-C0SWHazZ.js";import{useMDXComponents as i}from"./index-BaWYbSgU.js";import"./preload-helper-PPVm8Dsz.js";import"./iframe-D4Tk91Ln.js";function t(o){const e={h1:"h1",h2:"h2",li:"li",p:"p",strong:"strong",ul:"ul",...i(),...o.components};return n.jsxs(n.Fragment,{children:[n.jsx(r,{title:"TSWebUI/Introduction"}),`
 `,n.jsx(e.h1,{id:"knihovna-tswebui",children:"Knihovna TSWebUI"}),`
 `,n.jsxs(e.p,{children:["Vítejte v ",n.jsx(e.strong,{children:"TSWebUI"}),", knihovně webových komponent navržených pro tvorbu moderních, čistých a efektivních webových aplikací."]}),`
 `,n.jsx(e.h2,{id:"o-knihovně",children:"O knihovně"}),`
