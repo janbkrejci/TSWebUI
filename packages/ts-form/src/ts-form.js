@@ -257,13 +257,19 @@ class TSForm extends HTMLElement {
             }
             .form-row {
                 display: grid;
-                gap: 1rem;
+                gap: 0;
                 margin-bottom: 1rem;
             }
             .form-col {
                 min-width: 0; /* Critical: allows flex item to shrink below content size */
                 overflow: visible; /* Changed from hidden to allow tooltips (slider) to show */
-                padding: 4px; /* Prevent focus ring clipping */
+                padding: 4px 0.5rem; /* Simulate gap with padding */
+            }
+            .form-col:first-child {
+                padding-left: 4px;
+            }
+            .form-col:last-child {
+                padding-right: 4px;
             }
             .error-message {
                 color: var(--sl-color-danger-500);

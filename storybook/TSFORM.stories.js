@@ -803,15 +803,51 @@ export const AllElements = {
             infoNeutral: { type: 'infobox', variant: 'neutral', icon: 'gear', content: 'Neutral alert.' },
             markdownExample: {
                 type: 'markdown',
-                content: '# Markdown Header\n\nThis is a paragraph with **bold** and *italic* text.\n\n- List item 1\n- List item 2\n\n| Col 1 | Col 2 |\n|---|---|\n| Val 1 | Val 2 |'
+                content: `
+### Markdown Content
+You can include **bold**, *italic*, and [links](#).
+- Bullet points
+- Lists
+`
             }
         }),
         values: '{}'
     }
 }
 
-
-
+export const PartialRow = {
+    args: {
+        ...defaultArgs,
+        layout: JSON.stringify({
+            tabs: [
+                {
+                    label: 'Adresa',
+                    rows: [
+                        [
+                            { field: 'street', width: '8fr' },
+                            { field: 'cp', width: '2fr' },
+                            { field: 'ce', width: '2fr' }
+                        ],
+                        [
+                            { field: 'zip', width: '2fr' },
+                            { field: 'city', width: '6fr' },
+                            { field: 'country', width: '2fr' },
+                            { type: 'empty', width: '2fr' }
+                        ]
+                    ]
+                }
+            ]
+        }),
+        fields: JSON.stringify({
+            street: { type: 'text', label: 'Ulice' },
+            cp: { type: 'text', label: 'ČP' },
+            ce: { type: 'text', label: 'Č.ev.' },
+            zip: { type: 'text', label: 'PSČ' },
+            city: { type: 'text', label: 'Obec' },
+            country: { type: 'text', label: 'Stát' }
+        })
+    }
+}
 
 export const LoginForm = {
     args: {
@@ -924,5 +960,29 @@ export const VerificationWithImportExport = {
             { action: 'import-data', label: 'Načíst data (Import)', variant: 'default', position: 'left' },
             { action: 'export-data', label: 'Uložit data (Export)', variant: 'primary', position: 'right' }
         ])
+    }
+};
+
+export const DebugCombobox = {
+    args: {
+        ...defaultArgs,
+        layout: JSON.stringify({
+            rows: [
+                [{ field: 'numericCombobox', width: '1fr' }]
+            ]
+        }),
+        fields: JSON.stringify({
+            numericCombobox: {
+                type: 'combobox',
+                label: 'Numeric Values',
+                options: [
+                    { value: 1, label: 'One (ID: 1)' },
+                    { value: 2, label: 'Two (ID: 2)' }
+                ]
+            }
+        }),
+        values: JSON.stringify({
+            numericCombobox: 1
+        })
     }
 };
