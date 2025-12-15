@@ -843,16 +843,7 @@ export const DebugCombobox = {
                 [{ field: 'numericCombobox', width: '1fr' }]
             ]
         }),
-        fields: JSON.stringify({
-            numericCombobox: {
-                type: 'combobox',
-                label: 'Numeric Values',
-                options: [
-                    { value: 1, label: 'One (ID: 1)' },
-                    { value: 2, label: 'Two (ID: 2)' }
-                ]
-            }
-        }),
+        fields: "{\"numericCombobox\":{\"required\":true,\"type\":\"combobox\",\"label\":\"Numeric Values\",\"options\":[{\"value\":1,\"label\":\"One (ID: 1)\"},{\"value\":2,\"label\":\"Two (ID: 2)\"}]}}",
         values: JSON.stringify({
             numericCombobox: 1
         })
