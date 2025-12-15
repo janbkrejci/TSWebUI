@@ -1,4 +1,4 @@
-import{j as n,M as K}from"./blocks-drMzULvl.js";import{useMDXComponents as U}from"./index-zHTT5-1K.js";import"./preload-helper-PPVm8Dsz.js";import"./iframe-CzFpelWl.js";/**
+import{j as n,M as K}from"./blocks-BdP8jdi6.js";import{useMDXComponents as U}from"./index-BT6abAXA.js";import"./preload-helper-PPVm8Dsz.js";import"./iframe-BWZ3Z96k.js";/**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
@@ -88,6 +88,7 @@ import{j as n,M as K}from"./blocks-drMzULvl.js";import{useMDXComponents as U}fro
 `,n.jsxs(e.li,{children:[n.jsx(e.strong,{children:"hint"}),": (string) Nápověda pod polem."]}),`
 `,n.jsxs(e.li,{children:[n.jsx(e.strong,{children:"width"}),": (string) Šířka samotného inputu (např. '100%')."]}),`
 `,n.jsxs(e.li,{children:[n.jsx(e.strong,{children:"autofocus"}),": (boolean) Automaticky zaměří pole po načtení formuláře."]}),`
+`,n.jsxs(e.li,{children:[n.jsx(e.strong,{children:"placeholder"}),": (string) Text zobrazený v prázdném poli (týká se textových polí, comboboxu, data atd.)."]}),`
 `,n.jsxs(e.li,{children:[n.jsx(e.strong,{children:"enterAction"}),": (string) Akce při stisku Enter (např. ",n.jsx(e.code,{children:"'submit'"}),", ",n.jsx(e.code,{children:"'click:myButton'"}),", ",n.jsx(e.code,{children:"'focus:nextField'"}),")."]}),`
 `,n.jsxs(e.li,{children:[n.jsx(e.strong,{children:"escapeAction"}),": (string) Akce při stisku Escape (např. ",n.jsx(e.code,{children:"'clear'"}),", ",n.jsx(e.code,{children:"'click:cancel'"}),")."]}),`
 `]}),`
