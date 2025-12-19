@@ -875,4 +875,25 @@ export const FileUploadWithDualLabels = {
         }),
         values: '{}'
     }
-};;
+};
+
+export const Separators = {
+    args: {
+        fields: JSON.stringify({
+            field1: { type: 'text', label: 'Field Above' },
+            field2: { type: 'text', label: 'Field Below' }
+        }),
+        layout: JSON.stringify({
+            rows: [
+                [{ field: 'field1' }],
+                [{ type: 'separator', label: 'Separator With Label' }],
+                [{ type: 'empty' }], // Spacer
+                [{ type: 'separator', label: '' }], // Separator Without Label
+                [{ field: 'field2' }]
+            ]
+        }),
+        values: '{}',
+        errors: '{}',
+        buttons: '[]'
+    }
+};
