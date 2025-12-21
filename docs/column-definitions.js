@@ -1,0 +1,147 @@
+// Column definitions for TSTABLE component
+var columnDefinitions = [
+    {
+        key: 'id',
+        title: 'ID',
+        type: 'number',
+        sortable: false,
+        sortDirection: 'none',
+        filterable: true,
+        filterPlaceholder: 'Filtr ID',
+        visible: false,
+        align: 'right',
+        order: 0
+    },
+    {
+        key: 'name',
+        title: 'Jméno',
+        type: 'text',
+        sortable: true,
+        sortDirection: 'asc',
+        filterable: true,
+        filterPlaceholder: 'Filtr jména',
+        visible: true,
+        align: 'left',
+        order: 1,
+        isClickable: true
+    },
+    {
+        key: 'username',
+        title: 'Uživatelské jméno',
+        type: 'text',
+        sortable: true,
+        sortDirection: 'desc',
+        filterable: true,
+        filterPlaceholder: 'Filtr uživatelského jména',
+        visible: false,
+        align: 'left',
+        order: 2
+    },
+    {
+        key: 'email',
+        title: 'E-mail',
+        type: 'text',
+        sortable: false,
+        sortDirection: 'none',
+        filterable: true,
+        filterPlaceholder: 'Filtr e-mailu',
+        visible: false,
+        align: 'left',
+        order: 3,
+        canBeCopied: true,
+        isClickable: true
+    },
+    {
+        key: 'city',
+        title: 'Město',
+        type: 'text',
+        sortable: false,
+        sortDirection: 'none',
+        filterable: true,
+        filterPlaceholder: 'Filtr města',
+        visible: false,
+        align: 'left',
+        order: 4
+    },
+    {
+        key: 'phone',
+        title: 'Telefon',
+        type: 'text',
+        sortable: false,
+        sortDirection: 'none',
+        filterable: true,
+        filterPlaceholder: 'Filtr telefonu',
+        visible: false,
+        align: 'center',
+        order: 5
+    },
+    {
+        key: 'website',
+        title: 'Webové stránky',
+        type: 'text',
+        sortable: false,
+        sortDirection: 'none',
+        filterable: true,
+        filterPlaceholder: 'Filtr webových stránek',
+        visible: false,
+        align: 'left',
+        order: 6
+    },
+    {
+        key: 'company',
+        title: 'Firma',
+        type: 'text',
+        sortable: false,
+        sortDirection: 'none',
+        filterable: true,
+        filterPlaceholder: 'Filtr firmy',
+        visible: false,
+        align: 'left',
+        order: 7,
+        isClickable: true
+    },
+    {
+        key: 'turnover',
+        title: 'Obrat',
+        type: 'number',
+        sortable: true,
+        sortDirection: 'none',
+        filterable: true,
+        filterPlaceholder: 'Filtr obratu',
+        visible: true,
+        align: 'right',
+        isClickable: true,
+        order: 8,
+        canBeCopied: true
+    },
+    {
+        key: 'contractDate',
+        title: 'Datum smlouvy',
+        type: 'date',
+        sortable: true,
+        sortDirection: 'none',
+        filterable: true,
+        filterPlaceholder: 'Filtr data smlouvy',
+        visible: true,
+        align: 'right',
+        order: 9,
+        canBeCopied: true
+    },
+    {
+        key: 'approved',
+        title: 'Schváleno',
+        type: 'boolean',
+        sortable: true,
+        sortDirection: 'none',
+        filterable: true,
+        filterPlaceholder: 'Filtr schválení',
+        visible: true,
+        align: 'center',
+        isClickable: true,
+        order: 10,
+        canBeCopied: true
+    }
+];
+
+// Make it available globally for the HTML file
+window.columnDefinitions = columnDefinitions;

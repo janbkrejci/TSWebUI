@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TS-Table Test</title>
+    <script>
+        // Apply theme based on system preference
+        function applyTheme() {
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('sl-theme-dark', isDark);
+            document.documentElement.classList.toggle('sl-theme-light', !isDark);
+        }
+        applyTheme();
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            opacity: 0;
+        }
+
+        body.ready {
+            opacity: 1;
+            transition: 1s opacity;
+        }
+    </style>
+
+
+    <!-- Shoelace CSS and Components -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/dark.css" />
+    <script type="module"
+        src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/shoelace-autoloader.js"></script>
+
+    <!-- TS-Table Bundle - load as module -->
+    <script type="module" src="./dist/ts-table-bundle.js"></script>
+</head>
+
+<body>
+    <!-- TS-Table component with all configurable attributes -->
+    <ts-table id="table" show-create-button="true" show-import-button="true" show-export-button="true"
+        show-column-selector="true" enable-sorting="true" enable-filtering="true" enable-column-resizing="true"
+        enable-column-reordering="true" enable-selection="true" enable-row-menu="true" enable-clickable-rows="true"
+        enable-clickable-columns="true" enable-pagination="true"
+        single-item-actions="edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek"
+        multiple-items-actions="delete/Smazat vybrané,export/Exportovat vybrané"
+        visible-columns="name,email,turnover,contractDate,approved" unhideable-columns="name,email"
+        columns-required-for-import="id,name,email" unshowable-columns="id" items-per-page="5"
+        items-per-page-options="3,5,10,20,50,-1">
+    </ts-table>
+
+    <!-- Table data and initialization -->
+    <script type="module">
+        // References to component
+        var table = null;
+
+        const tableData = [
+            {
+                id: 1,
+                name: "Jana Nováková",
+                username: "jana_n",
+                email: "jana@example.com123456789123456789",
+                city: "Praha",
+                phone: "555-1234",
+                website: "www.jananovakova.com",
+                company: "Novák s.r.o.",
+                turnover: 125000.50,
+                contractDate: "2022-03-15",
+                approved: true
+            },
+            {
+                id: 2,
+                name: "Petr Svoboda",
+                username: "petr_s",
+                email: "petr@example.com",
+                city: "Brno",
+                phone: "555-5678",
+                website: "www.petrsvoboda.com",
+                company: "Svoboda a.s.",
+                turnover: 89000.75,
+                contractDate: "2019-07-22",
+                approved: false
+            },
+            {
+                id: 3,
+                name: "Marie Černá",
+                username: "marie_c",
+                email: "marie@example.com",
+                city: "Ostrava",
+                phone: "555-8765",
+                website: "www.mariecerna.com",
+                company: "Černá spol. s r.o.",
+                turnover: 234000.25,
+                contractDate: "2024-01-10",
+                approved: true
+            },
+            {
+                id: 4,
+                name: "Tomáš Dvořák",
+                username: "tomas_d",
+                email: "tomas@example.com",
+                city: "Plzeň",
+                phone: "555-4321",
+                website: "www.tomasdvorak.com",
+                company: "Dvořák s.r.o.",
+                turnover: 156000.00,
+                contractDate: "2020-05-08",
+                approved: true
+            },
+            {
+                id: 5,
+                name: "Eva Procházková",
+                username: "eva_p",
+                email: "eva@example.com",
+                city: "České Budějovice",
+                phone: "555-2468",
+                website: "www.evaprocha.com",
+                company: "Procházka a syn",
+                turnover: 78000.90,
+                contractDate: "2018-09-14",
+                approved: false
+            },
+            {
+                id: 6,
+                name: "Jiří Krejčí",
+                username: "jiri_k",
+                email: "jiri@example.com",
+                city: "Hradec Králové",
+                phone: "555-1357",
+                website: "www.jirikrejci.com",
+                company: "Krejčí Group s.r.o.",
+                turnover: 312000.45,
+                contractDate: "2021-02-28",
+                approved: true
+            },
+            {
+                id: 7,
+                name: "Alena Horáková",
+                username: "alena_h",
+                email: "alena@example.com",
+                city: "Pardubice",
+                phone: "555-9753",
+                website: "www.alenahorak.com",
+                company: "Horák s.r.o.",
+                turnover: 187000.30,
+                contractDate: "2025-11-03",
+                approved: false
+            },
+            {
+                id: 8,
+                name: "Pavel Němeček",
+                username: "pavel_n",
+                email: "pavel@example.com",
+                city: "Liberec",
+                phone: "555-8642",
+                website: "www.pavelnemecek.com",
+                company: "Němeček a partneři",
+                turnover: 95000.60,
+                contractDate: "2019-06-19",
+                approved: true
+            },
+            {
+                id: 9,
+                name: "Tereza Poláková",
+                username: "tereza_p",
+                email: "tereza@example.com",
+                city: "Olomouc",
+                phone: "555-7531",
+                website: "www.terezapolak.com",
+                company: "Polák Group s.r.o.",
+                turnover: 268000.80,
+                contractDate: "2023-04-12",
+                approved: true
+            },
+            {
+                id: 10,
+                name: "Martin Veselý",
+                username: "martin_v",
+                email: "martin@example.com",
+                city: "Zlín",
+                phone: "555-1597",
+                website: "www.martinvesely.com",
+                company: "Veselý a.s.",
+                turnover: 134000.15,
+                contractDate: "2020-08-27",
+                approved: false
+            },
+            {
+                id: 11,
+                name: "Kateřina Svobodová",
+                username: "katerina_s",
+                email: "katerina@example.com",
+                city: "Jihlava",
+                phone: "555-2001",
+                website: "www.katkasvoboda.com",
+                company: "Svoboda Industries s.r.o.",
+                turnover: 445000.00,
+                contractDate: "2024-12-01",
+                approved: true
+            },
+            {
+                id: 12,
+                name: "Lukáš Machala",
+                username: "lukas_m",
+                email: "lukas@example.com",
+                city: "Frýdek-Místek",
+                phone: "555-2002",
+                website: "www.lukasmachala.com",
+                company: "Machala Corp a.s.",
+                turnover: 178000.40,
+                contractDate: "2018-10-16",
+                approved: false
+            },
+            {
+                id: 13,
+                name: "Zuzana Bartošová",
+                username: "zuzana_b",
+                email: "zuzana@example.com",
+                city: "Karviná",
+                phone: "555-2003",
+                website: "www.zuzanabartosh.com",
+                company: "Bartoš LLC s.r.o.",
+                turnover: 223000.70,
+                contractDate: "2021-07-30",
+                approved: true
+            },
+            {
+                id: 14,
+                name: "Jakub Říha",
+                username: "jakub_r",
+                email: "jakub@example.com",
+                city: "Teplice",
+                phone: "555-2004",
+                website: "www.jakubriha.com",
+                company: "Říha Group s.r.o.",
+                turnover: 112000.25,
+                contractDate: "2019-03-22",
+                approved: true
+            },
+            {
+                id: 15,
+                name: "Veronika Horáčková",
+                username: "veronika_h",
+                email: "veronika@example.com",
+                city: "Děčín",
+                phone: "555-2005",
+                website: "www.veronikahoracek.com",
+                company: "Horáček Inc s.r.o.",
+                turnover: 289000.90,
+                contractDate: "2025-11-18",
+                approved: false
+            },
+            {
+                id: 16,
+                name: "Michaela Čechová",
+                username: "michaela_c",
+                email: "michaela@example.com",
+                city: "Prostějov",
+                phone: "555-2006",
+                website: "www.michaelacech.com",
+                company: "Čech Ltd s.r.o.",
+                turnover: 167000.35,
+                contractDate: "2022-09-05",
+                approved: true
+            },
+            {
+                id: 17,
+                name: "Radek Kolář",
+                username: "radek_k",
+                email: "radek@example.com",
+                city: "Přerov",
+                phone: "555-2007",
+                website: "www.radekkolar.com",
+                company: "Kolář Enterprises s.r.o.",
+                turnover: 356000.55,
+                contractDate: "2020-05-29",
+                approved: false
+            },
+            {
+                id: 18,
+                name: "Simona Kratochvílová",
+                username: "simona_k",
+                email: "simona@example.com",
+                city: "Vsetín",
+                phone: "555-2008",
+                website: "www.simonakratochvil.com",
+                company: "Kratochvíl Co s.r.o.",
+                turnover: 89000.20,
+                contractDate: "2024-12-07",
+                approved: true
+            },
+            {
+                id: 19,
+                name: "Ondřej Pešek",
+                username: "ondrej_p",
+                email: "ondrej@example.com",
+                city: "Uherské Hradiště",
+                phone: "555-2009",
+                website: "www.ondrejpesek.com",
+                company: "Pešek Group s.r.o.",
+                turnover: 245000.85,
+                contractDate: "2018-08-11",
+                approved: false
+            },
+            {
+                id: 20,
+                name: "Barbora Konečná",
+                username: "barbora_k",
+                email: "barbora@example.com",
+                city: "Kroměříž",
+                phone: "555-2010",
+                website: "www.barborakonecna.com",
+                company: "Konečný Inc a.s.",
+                turnover: 134000.60,
+                contractDate: "2021-06-03",
+                approved: true
+            },
+            {
+                id: 21,
+                name: "Filip Štěpánek",
+                username: "filip_s",
+                email: "filip@example.com",
+                city: "Třebíč",
+                phone: "555-2011",
+                website: "www.filipstepanek.com",
+                company: "Štěpánek Corp a.s.",
+                turnover: 201000.45,
+                contractDate: "2019-10-25",
+                approved: true
+            },
+            {
+                id: 22,
+                name: "Klára Doležalová",
+                username: "klara_d",
+                email: "klara@example.com",
+                city: "Znojmo",
+                phone: "555-2012",
+                website: "www.klaradolezal.com",
+                company: "Doležal LLC s.r.o.",
+                turnover: 178000.30,
+                contractDate: "2022-04-17",
+                approved: false
+            },
+            {
+                id: 23,
+                name: "Marek Blažek",
+                username: "marek_b",
+                email: "marek@example.com",
+                city: "Blansko",
+                phone: "555-2013",
+                website: "www.marekblazek.com",
+                company: "Blažek Group s.r.o.",
+                turnover: 267000.75,
+                contractDate: "2025-11-09",
+                approved: true
+            },
+            {
+                id: 24,
+                name: "Nikola Fialová",
+                username: "nikola_f",
+                email: "nikola@example.com",
+                city: "Hodonín",
+                phone: "555-2014",
+                website: "www.nikolafiala.com",
+                company: "Fiala Industries a.s.",
+                turnover: 312000.20,
+                contractDate: "2018-07-14",
+                approved: false
+            },
+            {
+                id: 25,
+                name: "Daniel Urban",
+                username: "daniel_u",
+                email: "daniel@example.com",
+                city: "Břeclav",
+                phone: "555-2015",
+                website: "www.danielurban.com",
+                company: "Urban Inc a.s.",
+                turnover: 145000.95,
+                contractDate: "2024-12-20",
+                approved: true
+            }
+        ];
+
+        const columnDefinitions = [
+            {
+                key: 'id',
+                title: 'ID',
+                type: 'number',
+                sortable: false,
+                sortDirection: 'none',
+                filterable: true,
+                filterPlaceholder: 'Filtr ID',
+                visible: false,
+                align: 'right',
+                order: 0
+            },
+            {
+                key: 'name',
+                title: 'Jméno',
+                type: 'text',
+                sortable: true,
+                sortDirection: 'asc',
+                filterable: true,
+                filterPlaceholder: 'Filtr jména',
+                visible: true,
+                align: 'left',
+                order: 1,
+                isClickable: true
+            },
+            {
+                key: 'username',
+                title: 'Uživatelské jméno',
+                type: 'text',
+                sortable: true,
+                sortDirection: 'desc',
+                filterable: true,
+                filterPlaceholder: 'Filtr uživatelského jména',
+                visible: false,
+                align: 'left',
+                order: 2
+            },
+            {
+                key: 'email',
+                title: 'E-mail',
+                type: 'text',
+                sortable: false,
+                sortDirection: 'none',
+                filterable: true,
+                filterPlaceholder: 'Filtr e-mailu',
+                visible: false,
+                align: 'left',
+                order: 3,
+                canBeCopied: true,
+                isClickable: true
+            },
+            {
+                key: 'city',
+                title: 'Město',
+                type: 'text',
+                sortable: false,
+                sortDirection: 'none',
+                filterable: true,
+                filterPlaceholder: 'Filtr města',
+                visible: false,
+                align: 'left',
+                order: 4
+            },
+            {
+                key: 'phone',
+                title: 'Telefon',
+                type: 'text',
+                sortable: false,
+                sortDirection: 'none',
+                filterable: true,
+                filterPlaceholder: 'Filtr telefonu',
+                visible: false,
+                align: 'center',
+                order: 5
+            },
+            {
+                key: 'website',
+                title: 'Webové stránky',
+                type: 'text',
+                sortable: false,
+                sortDirection: 'none',
+                filterable: true,
+                filterPlaceholder: 'Filtr webových stránek',
+                visible: false,
+                align: 'left',
+                order: 6
+            },
+            {
+                key: 'company',
+                title: 'Firma',
+                type: 'text',
+                sortable: false,
+                sortDirection: 'none',
+                filterable: true,
+                filterPlaceholder: 'Filtr firmy',
+                visible: false,
+                align: 'left',
+                order: 7,
+                isClickable: true
+            },
+            {
+                key: 'turnover',
+                title: 'Obrat',
+                type: 'number',
+                sortable: true,
+                sortDirection: 'none',
+                filterable: true,
+                filterPlaceholder: 'Filtr obratu',
+                visible: true,
+                align: 'right',
+                order: 8,
+                canBeCopied: true
+            },
+            {
+                key: 'contractDate',
+                title: 'Datum smlouvy',
+                type: 'date',
+                sortable: true,
+                sortDirection: 'none',
+                filterable: true,
+                filterPlaceholder: 'Filtr data smlouvy',
+                visible: true,
+                align: 'right',
+                order: 9,
+                canBeCopied: true
+            },
+            {
+                key: 'approved',
+                title: 'Schváleno',
+                type: 'boolean',
+                sortable: true,
+                sortDirection: 'none',
+                filterable: true,
+                filterPlaceholder: 'Filtr schválení',
+                visible: true,
+                align: 'center',
+                order: 10,
+                canBeCopied: true
+            }
+        ];
+
+        // Configuration
+        // const singleItemActions = 'edit/Upravit,duplicate/Duplikovat,delete/Smazat,view_details/Zobrazit detaily,export/Exportovat řádek';
+        // const multipleItemsActions = 'delete/Smazat vybrané,export/Exportovat vybrané';
+        // const visibleColumns = ['name', 'email', 'turnover', 'contractDate', 'approved'];
+        // const unhideableColumns = ['name', 'email'];
+        // const unshowableColumns = ['id'];
+        // const itemsPerPage = 5;
+        // const itemsPerPageOptions = [5, 10, 20, 50, -1];
+
+        // Example: Only show approved records (predefined filter that can't be cleared)
+        // const predefinedFilters = { approved: 'true' };
+        const predefinedFilters = { "approved": "true" };
+
+        // Initialize component when DOM is ready
+        async function initializeComponents() {
+            // Wait for custom element to be defined
+            await customElements.whenDefined('ts-table');
+
+            table = document.getElementById('table');
+
+            // Configure table
+            table.setColumnDefinitions(columnDefinitions);
+
+            // Note: The following are now set via HTML attributes and don't need to be set in code
+            // table.setVisibleColumns(visibleColumns);
+            // table.setUnhideableColumns(unhideableColumns);
+            // table.setUnshowableColumns(unshowableColumns);
+            // table.setSingleItemActions(singleItemActions);
+            // table.setMultipleItemsActions(multipleItemsActions);
+            // table.setItemsPerPage(itemsPerPage);
+            // table.setItemsPerPageOptions(itemsPerPageOptions);
+            table.setPredefinedFilters(predefinedFilters);
+
+            // UI visibility options
+            // table.setShowColumnSelector(false); // Uncomment to hide column selector
+            // table.setShowImportButton(false); // Uncomment to hide import button
+            // table.setShowExportButton(false); // Uncomment to hide export button
+            // table.setShowCreateButton(false); // Uncomment to hide create button
+            // table.setEnableSorting(false); // Disable sorting for testing
+            // table.setEnableFiltering(false); // Disable filtering for testing
+            // table.setEnableColumnResizing(false); // Disable column resizing for testing
+            // table.setEnableColumnReordering(false); // Disable column reordering for testing
+            // table.setEnableSelection(false); // Disable selection for testing
+            // table.setEnableRowMenu(false); // Disable row menu for testing
+            // table.setEnableClickableRows(false); // Disable clickable rows for testing
+            // table.setEnablePagination(false); // Disable pagination for testing
+
+            table.setData(tableData); // Set data after predefined filters
+
+            setupEventListeners();
+
+            // Initialize table
+            table.run();
+        }
+
+        function setupEventListeners() {
+            // Table events
+            table.addEventListener('create-new-record', () => {
+                console.log('Create new record');
+            });
+
+            table.addEventListener('selection-action-activated', (event) => {
+                const { action, rows } = event.detail;
+                console.log('Action:', action, 'for', rows.length, 'row(s):', rows);
+            });
+
+            table.addEventListener('row-clicked', (event) => {
+                const { row, columnKey } = event.detail;
+                console.log('Row clicked:', row, 'in column:', columnKey);
+            });
+
+            table.addEventListener('do-import', (event) => {
+                const importData = event.detail.data;
+                console.log('Import received:', importData.length);
+
+                // Process import data - demo logic with random rejection
+                let added = 0, updated = 0, rejected = 0, skipped = 0;
+                const rejectedRows = [];
+                const rejectedRowsData = [];
+                const processedRows = [];
+
+                importData.forEach((data, __index) => {
+                    // Randomly reject ~20% of rows for testing purposes
+                    const shouldRejectRandomly = Math.random() < 0.2;
+
+                    if (shouldRejectRandomly) {
+                        rejected++;
+                        rejectedRows.push(__index);
+                        rejectedRowsData.push(data);
+                        return;
+                    }
+
+                    // Check if row with same ID exists (for update vs add logic)
+                    const existingRow = table.getAllRows().find(r => r.id === data?.id);
+
+                    if (!data?.id) {
+                        rejected++;
+                        rejectedRows.push(__index);
+                        rejectedRowsData.push(data);
+                    } else if (existingRow) {
+                        // table.updateExistingRow(data.id, data);
+                        updated++;
+                        processedRows.push({ ...data, __importAction: 'updated' });
+                    } else {
+                        // table.addImportedRow(data);
+                        added++;
+                        processedRows.push({ ...data, __importAction: 'added' });
+                    }
+                });
+
+                // Show results via the table
+                table.showImportResults({
+                    added,
+                    updated,
+                    rejected,
+                    skipped,
+                    rejectedRows,
+                    rejectedRowsData
+                });
+
+                console.log('Import completed:', processedRows);
+            });
+        }
+
+        initializeComponents();
+    </script>
+
+    <script type="module">
+        (async () => {
+            await Promise.allSettled([
+                customElements.whenDefined('sl-copy-button'),
+                customElements.whenDefined('sl-icon'),
+                customElements.whenDefined('sl-switch'),
+            ]);
+
+            // Button, card, and rating are registered now! Add
+            // the `ready` class so the UI fades in.
+            document.body.classList.add('ready');
+        })();
+    </script>
+</body>
+
+</html>
