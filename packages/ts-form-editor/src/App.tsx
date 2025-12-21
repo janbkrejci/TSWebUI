@@ -81,6 +81,20 @@ function App() {
                 };
 
                 useFormStore.getState().moveField(source, target);
+
+                // Select the moved element at the target location
+                const { layout } = useFormStore.getState();
+                let targetColId: string | undefined;
+
+                if (layout.mode === 'single' || !layout.tabs) {
+                    targetColId = layout.rows?.[target.rowIndex]?.columns?.[target.colIndex]?.id;
+                } else {
+                    targetColId = layout.tabs?.[target.tabIndex]?.rows?.[target.rowIndex]?.columns?.[target.colIndex]?.id;
+                }
+
+                if (targetColId) {
+                    useFormStore.getState().selectElement(targetColId, 'field');
+                }
             } else if (over && over.data.current?.type === 'new-row-zone') {
                 const source = active.data.current.source;
                 const { activeTabIndex } = useFormStore.getState();

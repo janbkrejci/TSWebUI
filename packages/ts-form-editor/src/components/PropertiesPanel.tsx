@@ -4,7 +4,7 @@ import { FormFieldConfig } from '../types';
 import clsx from 'clsx';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Trash2 } from 'lucide-react';
 import {
     Select,
     SelectContent,
@@ -55,23 +55,24 @@ function SortableButton({
     };
 
     return (
-        <div ref={setNodeRef} style={style} className={clsx("p-3 bg-gray-50 rounded border border-gray-200 space-y-2 relative group")}>
-            <div className="absolute left-2 top-2 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600" {...listeners} {...attributes}>
-                <GripVertical size={16} />
+        <div ref={setNodeRef} style={style} className={clsx("bg-gray-50 rounded border border-gray-200 relative group")}>
+            <div className="flex items-center justify-between px-2 pt-2">
+                <div className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600" {...listeners} {...attributes}>
+                    <GripVertical size={16} />
+                </div>
+                <button
+                    onClick={() => {
+                        const newBtns = [...buttons];
+                        newBtns.splice(index, 1);
+                        updateButtons(newBtns);
+                    }}
+                    className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-all p-1"
+                >
+                    <Trash2 size={14} />
+                </button>
             </div>
 
-            <button
-                onClick={() => {
-                    const newBtns = [...buttons];
-                    newBtns.splice(index, 1);
-                    updateButtons(newBtns);
-                }}
-                className="absolute top-2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-                &times;
-            </button>
-
-            <div className="grid grid-cols-2 gap-2 pl-6">
+            <div className="grid grid-cols-2 gap-2 p-2">
                 <div>
                     <label className="block text-xs font-medium text-gray-500">Label</label>
                     <input
@@ -100,7 +101,7 @@ function SortableButton({
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 pl-6">
+            <div className="grid grid-cols-2 gap-2 p-2 pt-0">
                 <div>
                     <label className="block text-xs font-medium text-gray-500">Variant</label>
                     <Select

@@ -289,21 +289,32 @@ export const useFormStore = create<FormStore>((set, get) => ({
 
         if (targetCol.type === 'empty') {
             // MOVE: Target becomes source, Source becomes empty
-            targetCol.field = sourceData.field;
-            targetCol.type = sourceData.type;
-            if (sourceData.label !== undefined) targetCol.label = sourceData.label;
+            // Copy full properties
+            targetCol.field = sourceCol.field;
+            targetCol.type = sourceCol.type;
+            if (sourceCol.label !== undefined) targetCol.label = sourceCol.label;
+            if (sourceCol.align !== undefined) targetCol.align = sourceCol.align;
 
             // Reset Source
             sourceCol.type = 'empty';
             sourceCol.field = '';
             delete sourceCol.label;
+            delete sourceCol.align;
         } else {
             // SWAP: Target takes source, Source takes target
-            // Snapshot target data
+            // Snapshot target data fully
             const targetData = {
                 field: targetCol.field,
                 type: targetCol.type,
-                label: targetCol.label
+                label: targetCol.label,
+                align: targetCol.align
+            };
+
+            const sourceData = {
+                field: sourceCol.field,
+                type: sourceCol.type,
+                label: sourceCol.label,
+                align: sourceCol.align
             };
 
             // Apply source to target
@@ -311,12 +322,16 @@ export const useFormStore = create<FormStore>((set, get) => ({
             targetCol.type = sourceData.type;
             if (sourceData.label !== undefined) targetCol.label = sourceData.label;
             else delete targetCol.label;
+            if (sourceData.align !== undefined) targetCol.align = sourceData.align;
+            else delete targetCol.align;
 
             // Apply target to source
             sourceCol.field = targetData.field;
             sourceCol.type = targetData.type;
             if (targetData.label !== undefined) sourceCol.label = targetData.label;
             else delete sourceCol.label;
+            if (targetData.align !== undefined) sourceCol.align = targetData.align;
+            else delete sourceCol.align;
         }
 
         return { layout: newLayout };
