@@ -141,6 +141,9 @@ export const useFormStore = create<FormStore>((set, get) => ({
         const newFieldConfig: FormFieldConfig = {
             type: type as any,
             label: type === 'separator' ? 'Separator' : 'New Field',
+            enterAction: 'focus:nextField',
+            escapeAction: 'clear',
+            roundTo: type === 'number' ? 0.01 : undefined,
         };
 
         const newFields = { ...state.fields };
@@ -659,6 +662,9 @@ export const useFormStore = create<FormStore>((set, get) => ({
             const newFieldConfig: FormFieldConfig = {
                 type: fieldType as any,
                 label: fieldType === 'separator' ? 'Separator' : 'New Field',
+                enterAction: 'focus:nextField',
+                escapeAction: 'clear',
+                roundTo: fieldType === 'number' ? 0.01 : undefined,
             };
             if (fieldType !== 'separator') {
                 newFields[fieldName] = newFieldConfig;
