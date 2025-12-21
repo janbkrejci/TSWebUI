@@ -15,8 +15,9 @@
   },
   "scripts": {
     "bundle": "vite build --config vite.bundle.config.js",
-    "storybook": "storybook dev --ci -p 3000",
-    "build-storybook": "rm -rf docs && storybook build -o docs"
+    "build:editor": "cd packages/ts-form-editor && npm install && npm run build",
+    "storybook": "npm run build:editor && storybook dev --ci -p 3000",
+    "build-storybook": "npm run build:editor && rm -rf docs && storybook build -o docs"
   },
   "devDependencies": {
     "@storybook/addon-actions": "^9.0.8",

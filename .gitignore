@@ -2,6 +2,7 @@
 logs
 /dist/
 public/dist/
+public/ts-form-editor/
 packages/ts-form-editor/dist/
 *.log
 npm-debug.log*

@@ -90,7 +90,7 @@ function App() {
             }
         } else if (active.data.current?.type === 'row-move') {
             const targetType = over.data.current?.type;
-            if (targetType === 'row-move' || targetType === 'cell') {
+            if ((targetType === 'row-move' || targetType === 'cell') && over.data.current) {
                 const sourceIndex = Number(active.data.current.rowIndex);
                 const targetIndex = Number(over.data.current.rowIndex);
                 const tabIndex = Number(active.data.current.tabIndex);
