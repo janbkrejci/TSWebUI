@@ -22,12 +22,14 @@ function App() {
 
     const handleDragStart = (event: DragStartEvent) => {
         setActiveData(event.active.data.current);
+        document.body.classList.add('is-dragging');
     };
 
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
         setActiveData(null);
+        document.body.classList.remove('is-dragging');
 
         if (!over) return;
 
@@ -86,9 +88,22 @@ function App() {
     };
 
     const customCollisionDetection: CollisionDetection = (args) => {
-        if (activeData?.type === 'row-move' || activeData?.type === 'tab-move') {
-            return closestCenter(args);
+        // Filter droppable containers based on active drag type
+        if (activeData?.type === 'row-move') {
+            const rowContainers = args.droppableContainers.filter(container =>
+                container.data.current?.type === 'row-move'
+            );
+            return closestCenter({ ...args, droppableContainers: rowContainers });
         }
+
+        if (activeData?.type === 'tab-move') {
+            const tabContainers = args.droppableContainers.filter(container =>
+                container.data.current?.type === 'tab-move'
+            );
+            return closestCenter({ ...args, droppableContainers: tabContainers });
+        }
+
+        // For fields, we want strict pointerWithin on cells
         return pointerWithin(args);
     };
 

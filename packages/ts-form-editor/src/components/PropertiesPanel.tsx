@@ -273,6 +273,24 @@ export default function PropertiesPanel() {
                         />
                         <p className="text-xs text-gray-400 mt-1">CSS Grid width (1fr, auto, 100%, 200px)</p>
                     </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Alignment</label>
+                        <select
+                            value={selectedCol.align || ''}
+                            onChange={(e) => {
+                                if (location) {
+                                    updateLayoutColumn(location.tabIndex, location.rowIndex, location.colIndex, { align: e.target.value as any });
+                                }
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        >
+                            <option value="">Default (Left)</option>
+                            <option value="left">Left</option>
+                            <option value="center">Center</option>
+                            <option value="right">Right</option>
+                        </select>
+                    </div>
                 </div>
             )}
 

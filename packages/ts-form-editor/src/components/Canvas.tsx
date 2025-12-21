@@ -58,10 +58,13 @@ function SortableDesignerRow({ tabIndex, rowIndex, row }: { tabIndex: number, ro
     };
 
     return (
-        <div ref={setNodeRef} style={style} className={clsx("relative", isDragging && "z-50")}>
+        <div ref={setNodeRef} style={style} className={clsx("relative group", isDragging && "z-50")}>
             <div
                 ref={setActivatorNodeRef}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full pr-2 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 z-10 w-6 h-6 flex items-center justify-center"
+                className={clsx(
+                    "absolute -left-8 top-1/2 -translate-y-1/2 transition-opacity cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 z-10 w-6 h-6 flex items-center justify-center",
+                    isDragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                )}
                 style={{ touchAction: 'none' }}
                 {...listeners}
                 {...attributes}
@@ -178,12 +181,19 @@ function DesignerCell({
 
     const hasContent = (column.type === 'field' && fieldConfig) || column.type === 'separator';
 
+    const alignClass = {
+        'left': 'justify-start',
+        'center': 'justify-center',
+        'right': 'justify-end'
+    }[(column.align as string) || 'left'];
+
     return (
         <div
             ref={setNodeRef}
             onClick={handleClick}
             className={clsx(
                 "min-h-[72px] border rounded-md p-2 transition-colors relative group flex items-center",
+                alignClass,
                 isOver ? "bg-blue-50 border-blue-300 border-2 border-dashed" : "bg-white border-gray-200",
                 isSelected ? "ring-2 ring-blue-500 border-blue-500" : "hover:border-gray-300"
             )}
@@ -247,7 +257,7 @@ function DesignerRow({ tabIndex, rowIndex, row }: { tabIndex: number, rowIndex: 
     const { insertColumn } = useFormStore();
 
     return (
-        <div className="mb-0 relative group/row border border-transparent hover:border-gray-200 rounded p-1 -m-1 transition-colors">
+        <div className="mb-0 relative group/row rounded p-1 -m-1 transition-colors">
             <div className="flex gap-4 items-stretch">
                 {/* Insert Before First Column */}
                 <InsertHandle
@@ -359,7 +369,7 @@ export default function Canvas() {
                 <div className="w-full mx-auto bg-white min-h-[500px] shadow-sm border border-gray-200 rounded-lg p-6">
                     {isTabsMode ? (
                         <>
-                            <div className="flex flex-col gap-4">
+                            <div className="flex flex-col">
                                 <SortableContext
                                     items={tabs[activeTabIndex]?.rows.map(r => r.id) || []}
                                     strategy={verticalListSortingStrategy}
@@ -395,7 +405,7 @@ export default function Canvas() {
                         </>
                     ) : (
                         <>
-                            <div className="flex flex-col gap-4">
+                            <div className="flex flex-col">
                                 <SortableContext
                                     items={layout.rows?.map(r => r.id) || []}
                                     strategy={verticalListSortingStrategy}

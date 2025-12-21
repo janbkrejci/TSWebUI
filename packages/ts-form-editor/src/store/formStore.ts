@@ -86,7 +86,7 @@ export const useFormStore = create<FormStore>((set, get) => ({
     fields: {},
     buttons: [
         { action: 'cancel', label: 'Cancel', variant: 'default', position: 'left' },
-        { action: 'submit', label: 'Submit', variant: 'primary', position: 'left' }
+        { action: 'submit', label: 'Submit', variant: 'primary', position: 'right' }
     ],
     selectedFieldId: null,
     selectedElement: null,
