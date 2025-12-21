@@ -3,8 +3,8 @@ export type FieldType =
     | 'select' | 'multiselect' | 'combobox' | 'radio' | 'checkbox' | 'switch'
     | 'date' | 'datetime'
     | 'file' | 'image'
-    | 'relationship'
-    | 'button' | 'infobox' | 'markdown' | 'table';
+    | 'relationship' | 'slider'
+    | 'button' | 'button-group' | 'infobox' | 'markdown' | 'table';
 
 export interface FormFieldConfig {
     type: FieldType;
@@ -19,17 +19,54 @@ export interface FormFieldConfig {
     autofocus?: boolean;
     enterAction?: string;
     escapeAction?: string;
-    // Specific to number
+
+    // Textarea
+    rows?: number;
+
+    // Number / Slider
     min?: number;
     max?: number;
     step?: number;
     roundTo?: number;
-    // Specific to select/radio
-    options?: Array<{ value: string; label: string }>;
-    // Specific to relationships
+    hideLabel?: boolean;
+
+    // Select / Radio / ButtonGroup / Combobox / Relationship
+    options?: Array<{ value: string; label: string }> | string[]; // ButtonGroup uses string[] format
+    allowCustom?: boolean; // Combobox
+    allowEmpty?: boolean; // Combobox
+
+    // Relationship
     targetEntity?: string;
-    // Specific to table
+    mode?: 'single' | 'multiple';
+    displayFields?: string[];
+    chipDisplayFields?: string[];
+
+    // File / Image
+    multiple?: boolean;
+    accept?: string;
+    innerLabel?: string;
+
+    // Button / ButtonGroup / Infobox
+    variant?: string; // primary, default, neutral, danger, success, warning, process (for button-group)
+    action?: string;
+
+    // Infobox
+    icon?: string;
+
+    // Markdown / Infobox
+    content?: string;
+    value?: string; // value override
+
+    // Table
     columns?: any[];
+    data?: any[];
+    showCreateButton?: boolean;
+    enableSorting?: boolean;
+    enableFiltering?: boolean;
+    enablePagination?: boolean;
+    singleItemActions?: any[];
+    multipleItemsActions?: any[];
+
     // Any other prop
     [key: string]: any;
 }

@@ -1,24 +1,31 @@
 import { useDraggable } from '@dnd-kit/core';
-import { Type, Hash, AlignJustify, List, CheckSquare, Calendar, Image, FileText, Minus, Circle, ToggleLeft, Link, Box } from 'lucide-react';
+import { Type, Hash, AlignJustify, List, CheckSquare, Calendar, Image, File, FileText, Minus, Circle, ToggleLeft, Link, Box, Lock, ChevronsUpDown, SlidersHorizontal, MousePointerClick, LayoutList, Info } from 'lucide-react';
 import clsx from 'clsx';
 
 
 export const fieldTypes = [
     { type: 'text', label: 'Text Input', icon: Type },
+    { type: 'password', label: 'Password', icon: Lock },
     { type: 'number', label: 'Number', icon: Hash },
     { type: 'textarea', label: 'Text Area', icon: AlignJustify },
+    { type: 'combobox', label: 'Combobox', icon: ChevronsUpDown },
     { type: 'select', label: 'Select', icon: List },
     { type: 'multiselect', label: 'Multi Select', icon: List },
     { type: 'checkbox', label: 'Checkbox', icon: CheckSquare },
     { type: 'radio', label: 'Radio Group', icon: Circle },
     { type: 'switch', label: 'Switch', icon: ToggleLeft },
+    { type: 'slider', label: 'Slider', icon: SlidersHorizontal },
     { type: 'date', label: 'Date', icon: Calendar },
     { type: 'datetime', label: 'Date Time', icon: Calendar },
-    { type: 'file', label: 'File Upload', icon: Image },
+    { type: 'file', label: 'File Upload', icon: File },
+    { type: 'image', label: 'Image Upload', icon: Image },
     { type: 'relationship', label: 'Relationship', icon: Link },
+    { type: 'button', label: 'Button', icon: MousePointerClick },
+    { type: 'button-group', label: 'Button Group', icon: LayoutList },
+    { type: 'infobox', label: 'Info Box', icon: Info },
     { type: 'markdown', label: 'Markdown', icon: FileText },
-    { type: 'separator', label: 'Separator', icon: Minus },
     { type: 'table', label: 'Table', icon: Box },
+    { type: 'separator', label: 'Separator', icon: Minus },
 ];
 
 export function SidebarBtn({ label, icon: Icon }: { label: string, icon: any }) {

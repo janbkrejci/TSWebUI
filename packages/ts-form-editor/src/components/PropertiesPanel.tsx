@@ -26,6 +26,37 @@ import {
 
 // ...
 
+function JsonTextarea({ value, onChange, placeholder, className, allowString }: { value: any, onChange: (val: any) => void, placeholder?: string, className?: string, allowString?: boolean }) {
+    const [text, setText] = React.useState('');
+
+    React.useEffect(() => {
+        setText(Array.isArray(value) || typeof value === 'object' ? JSON.stringify(value, null, 2) : (typeof value === 'string' ? value : ''));
+    }, [value]);
+
+    const handleBlur = () => {
+        try {
+            const parsed = JSON.parse(text);
+            onChange(parsed);
+        } catch (e) {
+            if (allowString) {
+                onChange(text);
+            } else {
+                console.warn("Invalid JSON, saving as string or ignoring depending on context");
+            }
+        }
+    };
+
+    return (
+        <textarea
+            value={text}
+            onChange={e => setText(e.target.value)}
+            onBlur={handleBlur}
+            className={className}
+            placeholder={placeholder}
+        />
+    );
+}
+
 // Sortable Button Item
 function SortableButton({
     btn,
@@ -232,7 +263,11 @@ export default function PropertiesPanel() {
 
     const handleChange = (key: keyof FormFieldConfig, value: any) => {
         if (selectedElement.fieldName) {
-            updateFieldConfig(selectedElement.fieldName, { [key]: value });
+            if (key === 'width' && value === '') {
+                updateFieldConfig(selectedElement.fieldName, { [key]: undefined });
+            } else {
+                updateFieldConfig(selectedElement.fieldName, { [key]: value });
+            }
         }
     };
 
@@ -370,7 +405,7 @@ export default function PropertiesPanel() {
                         </div>
                     )}
 
-                    {selectedElement.type !== 'separator' && (
+                    {selectedElement.type !== 'separator' && fieldConfig?.type !== 'infobox' && (
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Label</label>
                             <input
@@ -382,7 +417,7 @@ export default function PropertiesPanel() {
                         </div>
                     )}
 
-                    {selectedElement.type !== 'separator' && (
+                    {selectedElement.type !== 'separator' && fieldConfig?.type !== 'infobox' && (
                         <>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Hint</label>
@@ -431,6 +466,255 @@ export default function PropertiesPanel() {
                         </>
                     )}
 
+                    {/* Textarea Specific */}
+                    {fieldConfig.type === 'textarea' && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Rows</label>
+                            <input
+                                type="number"
+                                value={fieldConfig.rows || ''}
+                                onChange={(e) => handleChange('rows', parseInt(e.target.value))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                            />
+                        </div>
+                    )}
+
+                    {/* Number & Slider Specific */}
+                    {['number', 'slider'].includes(fieldConfig.type) && (
+                        <>
+                            <div className="grid grid-cols-3 gap-2">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Min</label>
+                                    <input
+                                        type="number"
+                                        value={fieldConfig.min || ''}
+                                        onChange={(e) => handleChange('min', parseFloat(e.target.value))}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Max</label>
+                                    <input
+                                        type="number"
+                                        value={fieldConfig.max || ''}
+                                        onChange={(e) => handleChange('max', parseFloat(e.target.value))}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Step</label>
+                                    <input
+                                        type="number"
+                                        value={fieldConfig.step || ''}
+                                        onChange={(e) => handleChange('step', parseFloat(e.target.value))}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                    />
+                                </div>
+                            </div>
+                            {fieldConfig.type === 'slider' && (
+                                <div className="flex items-center gap-2 mt-2">
+                                    <input
+                                        type="checkbox"
+                                        id="hideLabel"
+                                        checked={fieldConfig.hideLabel || false}
+                                        onChange={(e) => handleChange('hideLabel', e.target.checked)}
+                                        className="rounded border-gray-300 text-blue-600 shadow-sm"
+                                    />
+                                    <label htmlFor="hideLabel" className="text-sm text-gray-700">Hide Value Label</label>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {/* Options (Select, MultiSelect, Radio, Combobox, ButtonGroup) */}
+                    {['select', 'multiselect', 'radio', 'combobox', 'button-group'].includes(fieldConfig.type) && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Options {fieldConfig.type === 'button-group' ? '(value/enabled/variant/Label)' : '(JSON array or value/Label strings)'}
+                            </label>
+                            <JsonTextarea
+                                key={`${selectedElement.id}_options`}
+                                value={fieldConfig.options}
+                                onChange={(val) => handleChange('options', val)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono h-32"
+                                placeholder='[{"value": "1", "label": "One"}]'
+                                allowString={true}
+                            />
+                        </div>
+                    )}
+
+                    {/* Combobox Specific */}
+                    {fieldConfig.type === 'combobox' && (
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    id="allowCustom"
+                                    checked={fieldConfig.allowCustom || false}
+                                    onChange={(e) => handleChange('allowCustom', e.target.checked)}
+                                    className="rounded border-gray-300 text-blue-600 shadow-sm"
+                                />
+                                <label htmlFor="allowCustom" className="text-sm text-gray-700">Allow Custom Values</label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    id="allowEmpty"
+                                    checked={fieldConfig.allowEmpty !== false} // Default true
+                                    onChange={(e) => handleChange('allowEmpty', e.target.checked)}
+                                    className="rounded border-gray-300 text-blue-600 shadow-sm"
+                                />
+                                <label htmlFor="allowEmpty" className="text-sm text-gray-700">Allow Empty (Clearable)</label>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Relationship Specific */}
+                    {fieldConfig.type === 'relationship' && (
+                        <>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Target Entity</label>
+                                <input
+                                    type="text"
+                                    value={fieldConfig.targetEntity || ''}
+                                    onChange={(e) => handleChange('targetEntity', e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Mode</label>
+                                <Select
+                                    value={fieldConfig.mode || 'single'}
+                                    onValueChange={(value) => handleChange('mode', value)}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="single">Single</SelectItem>
+                                        <SelectItem value="multiple">Multiple</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Display Fields (comma separated)</label>
+                                <input
+                                    type="text"
+                                    value={(fieldConfig.displayFields || []).join(', ')}
+                                    onChange={(e) => handleChange('displayFields', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Chip Display Fields</label>
+                                <input
+                                    type="text"
+                                    value={(fieldConfig.chipDisplayFields || []).join(', ')}
+                                    onChange={(e) => handleChange('chipDisplayFields', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                />
+                            </div>
+                        </>
+                    )}
+
+                    {/* File / Image Specific */}
+                    {['file', 'image'].includes(fieldConfig.type) && (
+                        <>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    id="multiple"
+                                    checked={fieldConfig.multiple || false}
+                                    onChange={(e) => handleChange('multiple', e.target.checked)}
+                                    className="rounded border-gray-300 text-blue-600 shadow-sm"
+                                />
+                                <label htmlFor="multiple" className="text-sm text-gray-700">Multiple Files</label>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Accept (MIME types)</label>
+                                <input
+                                    type="text"
+                                    value={fieldConfig.accept || ''}
+                                    onChange={(e) => handleChange('accept', e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                    placeholder=".pdf,image/*"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Inner Label (Drop Zone Text)</label>
+                                <input
+                                    type="text"
+                                    value={fieldConfig.innerLabel || ''}
+                                    onChange={(e) => handleChange('innerLabel', e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                />
+                            </div>
+                        </>
+                    )}
+
+                    {/* Button / Button Group / Infobox Variant */}
+                    {['button', 'button-group', 'infobox'].includes(fieldConfig.type) && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Variant</label>
+                            <Select
+                                value={fieldConfig.variant || (fieldConfig.type === 'infobox' ? 'neutral' : 'default')}
+                                onValueChange={(value) => handleChange('variant', value)}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {fieldConfig.type !== 'infobox' && <SelectItem value="default">Default</SelectItem>}
+                                    <SelectItem value="primary">Primary</SelectItem>
+                                    <SelectItem value="success">Success</SelectItem>
+                                    <SelectItem value="neutral">Neutral</SelectItem>
+                                    <SelectItem value="warning">Warning</SelectItem>
+                                    <SelectItem value="danger">Danger</SelectItem>
+                                    {fieldConfig.type !== 'infobox' && <SelectItem value="text">Text (Button only)</SelectItem>}
+                                    {fieldConfig.type === 'button-group' && <SelectItem value="process">Process (Arrows)</SelectItem>}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
+
+                    {/* Button Specific */}
+                    {fieldConfig.type === 'button' && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Action Event ID</label>
+                            <input
+                                type="text"
+                                value={fieldConfig.action || ''}
+                                onChange={(e) => handleChange('action', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                            />
+                        </div>
+                    )}
+
+                    {/* Infobox Specific */}
+                    {fieldConfig.type === 'infobox' && (
+                        <>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Icon (Shoelace Name)</label>
+                                <input
+                                    type="text"
+                                    value={fieldConfig.icon || ''}
+                                    onChange={(e) => handleChange('icon', e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                    placeholder="info-circle"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Content (HTML allowed)</label>
+                                <textarea
+                                    value={fieldConfig.content || ''}
+                                    onChange={(e) => handleChange('content', e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm h-24"
+                                />
+                            </div>
+                        </>
+                    )}
+
+                    {/* Markdown Specific */}
                     {fieldConfig.type === 'markdown' && (
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Content (Markdown)</label>
@@ -443,8 +727,35 @@ export default function PropertiesPanel() {
                         </div>
                     )}
 
-                    {!['separator', 'markdown'].includes(selectedElement.type) && (
+                    {/* Table Specific */}
+                    {fieldConfig.type === 'table' && (
                         <>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Columns (JSON)</label>
+                                <JsonTextarea
+                                    key={`${selectedElement.id}_columns`}
+                                    value={fieldConfig.columns}
+                                    onChange={(val) => handleChange('columns', val)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm h-32 font-mono"
+                                    placeholder='[{ "field": "name", "header": "Name" }]'
+                                />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    id="showCreateButton"
+                                    checked={fieldConfig.showCreateButton || false}
+                                    onChange={(e) => handleChange('showCreateButton', e.target.checked)}
+                                    className="rounded border-gray-300 text-blue-600 shadow-sm"
+                                />
+                                <label htmlFor="showCreateButton" className="text-sm text-gray-700">Show Create Button</label>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Common Flags */}
+                    {selectedElement.type !== 'separator' && !['markdown', 'infobox'].includes(fieldConfig?.type || '') && (
+                        <div className="space-y-2 pt-2 border-t border-gray-100 mt-2">
                             <div className="flex items-center gap-2">
                                 <input
                                     type="checkbox"
@@ -499,25 +810,33 @@ export default function PropertiesPanel() {
                                 />
                                 <label htmlFor="autofocus" className="text-sm text-gray-700">Autofocus</label>
                             </div>
-                        </>
+                        </div>
                     )}
 
                     {fieldConfig.type === 'number' && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Round To (e.g. 0.01 for Currency)</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Round To (e.g. 0.01)</label>
                             <input
-                                key={`${fieldConfig.label}_roundTo_${fieldConfig.roundTo}`}
                                 type="number"
                                 step="any"
-                                defaultValue={fieldConfig.roundTo ?? ''}
-                                onBlur={(e) => {
-                                    const val = parseFloat(e.target.value);
-                                    if (!isNaN(val)) {
-                                        handleChange('roundTo', val);
-                                    }
-                                }}
+                                value={fieldConfig.roundTo ?? ''}
+                                onChange={(e) => handleChange('roundTo', parseFloat(e.target.value))}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                                 placeholder="0.01"
+                            />
+                        </div>
+                    )}
+
+                    {/* Value Override (Advanced) */}
+                    {fieldConfig?.type !== 'infobox' && (
+                        <div>
+                            <label className="block text-xs font-medium text-gray-400 mb-1 mt-4 border-t pt-2">Default Value / Override</label>
+                            <input
+                                type="text"
+                                value={typeof fieldConfig.value === 'object' ? JSON.stringify(fieldConfig.value) : (fieldConfig.value || '')}
+                                onChange={(e) => handleChange('value', e.target.value)}
+                                className="w-full px-2 py-1 border border-gray-200 rounded text-xs text-gray-500"
+                                placeholder="Static value override"
                             />
                         </div>
                     )}
