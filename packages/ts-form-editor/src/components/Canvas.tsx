@@ -350,25 +350,7 @@ export default function Canvas({ activeDragType }: { activeDragType?: string }) 
         }
     }, [tabs.length, activeTabIndex, setActiveTabIndex]);
 
-    // Global keyboard shortcuts
-    React.useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            // Ignore if typing in input/textarea
-            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-                return;
-            }
 
-            if (e.key === 'Delete' || e.key === 'Backspace') {
-                const { selectedElement, deleteSelectedElement } = useFormStore.getState();
-                if (selectedElement) {
-                    deleteSelectedElement();
-                }
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
 
     const isTabsMode = layout.mode === 'tabs' || !layout.mode; // Default to tabs
 

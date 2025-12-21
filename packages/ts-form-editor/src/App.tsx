@@ -24,17 +24,19 @@ function App() {
     // Handle Delete Key
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            if (isPreviewOpen) return;
+
             if (e.key === 'Delete' || e.key === 'Backspace') {
                 const target = e.target as HTMLElement;
                 if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable) {
                     return;
                 }
-                useFormStore.getState().deleteSelected();
+                useFormStore.getState().deleteSelectedElement();
             }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    });
+    }, [isPreviewOpen]);
 
     const handleDragStart = (event: DragStartEvent) => {
         setActiveData(event.active.data.current);
@@ -165,6 +167,7 @@ function App() {
                     try {
                         const json = JSON.parse(ev.target?.result as string);
                         setFormDefinition(json);
+                        useFormStore.getState().selectElement(null, null);
                         toast.success('Form imported successfully');
                     } catch (err) {
                         toast.error('Invalid JSON file');
