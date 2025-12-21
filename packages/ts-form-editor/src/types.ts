@@ -15,6 +15,10 @@ export interface FormFieldConfig {
     readonly?: boolean;
     hint?: string;
     placeholder?: string;
+    width?: string;
+    autofocus?: boolean;
+    enterAction?: string;
+    escapeAction?: string;
     // Specific to number
     min?: number;
     max?: number;

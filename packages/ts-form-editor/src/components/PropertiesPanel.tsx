@@ -382,6 +382,55 @@ export default function PropertiesPanel() {
                         </div>
                     )}
 
+                    {selectedElement.type !== 'separator' && (
+                        <>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Hint</label>
+                                <input
+                                    type="text"
+                                    value={fieldConfig.hint || ''}
+                                    onChange={(e) => handleChange('hint', e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                    placeholder="Help text..."
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Input Width</label>
+                                <input
+                                    type="text"
+                                    value={fieldConfig.width || ''}
+                                    onChange={(e) => handleChange('width', e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                    placeholder="100%"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Enter Action</label>
+                                    <input
+                                        type="text"
+                                        value={fieldConfig.enterAction || ''}
+                                        onChange={(e) => handleChange('enterAction', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                        placeholder="submit"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Escape Action</label>
+                                    <input
+                                        type="text"
+                                        value={fieldConfig.escapeAction || ''}
+                                        onChange={(e) => handleChange('escapeAction', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                        placeholder="clear"
+                                    />
+                                </div>
+                            </div>
+                        </>
+                    )}
+
                     {fieldConfig.type === 'markdown' && (
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Content (Markdown)</label>
@@ -427,6 +476,28 @@ export default function PropertiesPanel() {
                                     className="rounded border-gray-300 text-blue-600 shadow-sm"
                                 />
                                 <label htmlFor="disabled" className="text-sm text-gray-700">Disabled</label>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    id="readonly"
+                                    checked={fieldConfig.readonly || false}
+                                    onChange={(e) => handleChange('readonly', e.target.checked)}
+                                    className="rounded border-gray-300 text-blue-600 shadow-sm"
+                                />
+                                <label htmlFor="readonly" className="text-sm text-gray-700">Readonly</label>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    id="autofocus"
+                                    checked={fieldConfig.autofocus || false}
+                                    onChange={(e) => handleChange('autofocus', e.target.checked)}
+                                    className="rounded border-gray-300 text-blue-600 shadow-sm"
+                                />
+                                <label htmlFor="autofocus" className="text-sm text-gray-700">Autofocus</label>
                             </div>
                         </>
                     )}
