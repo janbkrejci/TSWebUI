@@ -369,7 +369,7 @@ export default function Canvas() {
                 <div className="w-full mx-auto bg-white min-h-[500px] shadow-sm border border-gray-200 rounded-lg p-6">
                     {isTabsMode ? (
                         <>
-                            <div className="flex flex-col">
+                            <div className="flex flex-col gap-4">
                                 <SortableContext
                                     items={tabs[activeTabIndex]?.rows.map(r => r.id) || []}
                                     strategy={verticalListSortingStrategy}
@@ -405,7 +405,7 @@ export default function Canvas() {
                         </>
                     ) : (
                         <>
-                            <div className="flex flex-col">
+                            <div className="flex flex-col gap-4">
                                 <SortableContext
                                     items={layout.rows?.map(r => r.id) || []}
                                     strategy={verticalListSortingStrategy}

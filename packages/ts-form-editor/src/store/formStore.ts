@@ -10,6 +10,7 @@ interface FormStore extends EditorState {
     updateFieldConfig: (fieldName: string, config: Partial<FormFieldConfig>) => void;
     updateLayoutColumn: (tabIndex: number, rowIndex: number, colIndex: number, formattedCol: Partial<FormColumn>) => void;
     selectElement: (id: string | null, type: 'field' | 'separator' | 'empty' | 'tab' | null, fieldName?: string) => void;
+    deleteSelected: () => void;
     selectedElement: { id: string, type: 'field' | 'separator' | 'empty' | 'tab', fieldName?: string } | null;
     renameField: (oldName: string, newName: string) => void;
 
@@ -154,17 +155,60 @@ export const useFormStore = create<FormStore>((set, get) => ({
             rows = newLayout.tabs[tabIndex]?.rows;
         }
 
+        let newSelectedElement = state.selectedElement;
+
         if (rows && rowIndex !== undefined && colIndex !== undefined && rows[rowIndex]) {
             const cell = rows[rowIndex].columns[colIndex];
             cell.type = type === 'separator' ? 'separator' : 'field';
             cell.field = type === 'separator' ? undefined : fieldName;
+
+            newSelectedElement = {
+                id: cell.id,
+                type: cell.type as any,
+                fieldName: cell.field
+            };
         }
 
-        return { fields: newFields, layout: newLayout };
+        return { fields: newFields, layout: newLayout, selectedElement: newSelectedElement };
     }),
 
     selectElement: (id, type, fieldName) => set({
         selectedElement: id ? { id, type: type as any, fieldName } : null
+    }),
+
+    deleteSelected: () => set((state) => {
+        if (!state.selectedElement) return state;
+
+        const newLayout = JSON.parse(JSON.stringify(state.layout));
+        const targetId = state.selectedElement.id;
+
+        // Traverse to find and clear the element
+        const processRows = (rows: FormRow[]) => {
+            for (const row of rows) {
+                for (const col of row.columns) {
+                    if (col.id === targetId) {
+                        // Found it, clear it
+                        col.type = 'empty';
+                        delete col.field;
+                        delete col.label;
+                        delete col.align;
+                        // Don't delete width usually, or maybe reset it? Keeping width is safer.
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+
+        if (newLayout.mode === 'single' || !newLayout.tabs) {
+            if (newLayout.rows) processRows(newLayout.rows);
+        } else if (newLayout.tabs) {
+            for (const tab of newLayout.tabs) {
+                if (processRows(tab.rows)) break;
+            }
+        }
+
+        return { layout: newLayout, selectedElement: null };
     }),
 
     updateTab: (tabIndex, props) => set((state) => {
@@ -411,6 +455,8 @@ export const useFormStore = create<FormStore>((set, get) => ({
         const mapRows = (rows: FormRow[]) => {
             return rows.map(r => r.columns.map(c => {
                 const col: any = { width: c.width || '1fr' };
+                if (c.align) col.align = c.align; // Add align property
+
                 if (c.type === 'field' && c.field) {
                     col.field = c.field;
                     usedFields.add(c.field);
