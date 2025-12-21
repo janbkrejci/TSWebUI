@@ -5,6 +5,24 @@ import clsx from 'clsx';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from './ui/Select';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from './ui/AlertDialog';
 
 // ...
 
@@ -241,19 +259,31 @@ export default function PropertiesPanel() {
                     </div>
 
                     <div className="pt-4 border-t border-gray-100">
-                        <button
-                            onClick={() => {
-                                if (confirm('Are you sure you want to delete this tab? All content in it will be lost.')) {
-                                    removeTab(selectedTabIndex);
-                                }
-                            }}
-                            className="w-full py-2 bg-red-50 text-red-600 border border-red-200 rounded-md hover:bg-red-100 text-sm font-medium"
-                        >
-                            Delete Tab
-                        </button>
-                        <p className="text-xs text-gray-400 mt-2 text-center">
-                            {layout.tabs.length === 1 ? "Deleting the last tab will switch the form to Single Mode." : ""}
-                        </p>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <button
+                                    className="w-full py-2 bg-red-50 text-red-600 border border-red-200 rounded-md hover:bg-red-100 text-sm font-medium"
+                                >
+                                    Delete Tab
+                                </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Tab</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Are you sure you want to delete this tab? All content in it will be lost.
+                                        {layout.tabs.length === 1 && " This will switch the form to Single Mode."}
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => removeTab(selectedTabIndex)} className="bg-red-600 hover:bg-red-700">
+                                        Delete
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+
                     </div>
                 </div>
             )}
@@ -272,24 +302,26 @@ export default function PropertiesPanel() {
                             placeholder="e.g. 1fr, 50%, 200px"
                         />
                         <p className="text-xs text-gray-400 mt-1">CSS Grid width (1fr, auto, 100%, 200px)</p>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Alignment</label>
-                        <select
-                            value={selectedCol.align || ''}
-                            onChange={(e) => {
-                                if (location) {
-                                    updateLayoutColumn(location.tabIndex, location.rowIndex, location.colIndex, { align: e.target.value as any });
-                                }
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                        >
-                            <option value="">Default (Left)</option>
-                            <option value="left">Left</option>
-                            <option value="center">Center</option>
-                            <option value="right">Right</option>
-                        </select>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Alignment</label>
+                            <Select
+                                value={selectedCol.align || ''}
+                                onValueChange={(value) => {
+                                    if (location) {
+                                        updateLayoutColumn(location.tabIndex, location.rowIndex, location.colIndex, { align: value as any });
+                                    }
+                                }}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Default (Left)" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="left">Left</SelectItem>
+                                    <SelectItem value="center">Center</SelectItem>
+                                    <SelectItem value="right">Right</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 </div>
             )}

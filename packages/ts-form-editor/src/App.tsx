@@ -6,6 +6,7 @@ import PreviewModal from './components/PreviewModal';
 import { DndContext, useSensor, useSensors, PointerSensor, DragEndEvent, pointerWithin, DragStartEvent, DragOverlay, closestCenter, rectIntersection, CollisionDetection } from '@dnd-kit/core';
 import { useFormStore } from './store/formStore';
 import { Eye, Download, Upload } from 'lucide-react';
+import { Toaster, toast } from 'sonner';
 
 function App() {
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -164,8 +165,9 @@ function App() {
                     try {
                         const json = JSON.parse(ev.target?.result as string);
                         setFormDefinition(json);
+                        toast.success('Form imported successfully');
                     } catch (err) {
-                        alert('Invalid JSON');
+                        toast.error('Invalid JSON file');
                     }
                 };
                 reader.readAsText(file);
@@ -214,6 +216,7 @@ function App() {
 
                 <PreviewModal isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} />
             </div>
+            <Toaster position="top-center" richColors />
             <DragOverlay dropAnimation={null}>
                 {activeData?.type === 'field-source' ? (
                     <div className="opacity-90">
