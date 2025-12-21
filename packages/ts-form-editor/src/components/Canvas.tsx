@@ -287,7 +287,49 @@ function DesignerRow({ tabIndex, rowIndex, row }: { tabIndex: number, rowIndex: 
     );
 }
 
-export default function Canvas() {
+
+function BottomDropZone({ activeDragType }: { activeDragType?: string }) {
+    const { setNodeRef, isOver } = useDroppable({
+        id: 'bottom-drop-zone',
+        data: { type: 'new-row-zone' }
+    });
+
+    const isFieldDrag = activeDragType === 'field-source' || activeDragType === 'field-move';
+
+    if (!isFieldDrag) return null;
+
+    return (
+        <div className="mb-0 relative rounded p-1 -m-1 mt-2">
+            <div className="flex gap-4 items-stretch">
+                {/* Left Spacer to match InsertHandle */}
+                <div className="w-4 -mx-2 py-2 opacity-0 pointer-events-none" />
+
+                {/* Drop Zone acting as a single cell */}
+                <div className="flex-1 min-w-0">
+                    <div
+                        ref={setNodeRef}
+                        className={clsx(
+                            "min-h-[72px] w-full border rounded-md flex items-center justify-center transition-colors",
+                            isOver ? "bg-blue-50 border-blue-300 border-2 border-dashed" : "bg-white border-gray-200"
+                        )}
+                    >
+                        <div className={clsx(
+                            "text-xs italic pointer-events-none",
+                            isOver ? "text-blue-600" : "text-gray-300"
+                        )}>
+                            Drop to create new row
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Spacer to match InsertHandle */}
+                <div className="w-4 -mx-2 py-2 opacity-0 pointer-events-none" />
+            </div>
+        </div>
+    );
+}
+
+export default function Canvas({ activeDragType }: { activeDragType?: string }) {
     const { layout, addTab, selectElement, activeTabIndex, setActiveTabIndex, insertRow, addRow } = useFormStore();
     const tabs = layout.tabs || [];
 
@@ -402,6 +444,7 @@ export default function Canvas() {
                                     Start by adding a row
                                 </button>
                             )}
+                            <BottomDropZone activeDragType={activeDragType} />
                         </>
                     ) : (
                         <>
@@ -436,6 +479,7 @@ export default function Canvas() {
                                     Start by adding a row
                                 </button>
                             )}
+                            <BottomDropZone activeDragType={activeDragType} />
 
                             <div className="flex justify-center mt-4">
                                 <button

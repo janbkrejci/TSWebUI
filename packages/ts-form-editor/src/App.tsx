@@ -48,12 +48,28 @@ function App() {
 
         if (!over) return;
 
-        if (active.data.current?.type === 'field-source' && over.data.current?.type === 'cell') {
-            // Dropped a new field onto a cell
+        if (active.data.current?.type === 'field-source') {
             const fieldType = active.data.current.fieldType;
-            const { tabIndex, rowIndex, colIndex } = over.data.current;
 
-            useFormStore.getState().addField({ type: fieldType, rowIndex, colIndex, tabIndex });
+            if (over.data.current?.type === 'cell') {
+                // Dropped on a cell
+                const { tabIndex, rowIndex, colIndex } = over.data.current;
+                useFormStore.getState().addField({ type: fieldType, rowIndex, colIndex, tabIndex });
+            } else if (over.data.current?.type === 'new-row-zone') {
+                // Dropped on new row zone
+                const { activeTabIndex, layout } = useFormStore.getState();
+                // Determine tab index: if tabs mode, use activeTabIndex, else -1?
+                // Wait, Canvas passes tabIndex in props? No.
+                // We need to know which tab we are on.
+                // activeTabIndex is in store.
+                // Single mode uses -1 or just layout.rows. 
+                // If layout.mode === 'single', we ignore tabIndex.
+
+                // However, addRowWithField signature is (tabIndex, fieldType).
+                // Logic inside handles single mode.
+                useFormStore.getState().addRowWithField(activeTabIndex, fieldType);
+            }
+
         } else if (active.data.current?.type === 'field-move') {
             if (over && over.data.current?.type === 'cell') {
                 const source = active.data.current.source;
@@ -64,6 +80,10 @@ function App() {
                 };
 
                 useFormStore.getState().moveField(source, target);
+            } else if (over && over.data.current?.type === 'new-row-zone') {
+                const source = active.data.current.source;
+                const { activeTabIndex } = useFormStore.getState();
+                useFormStore.getState().moveFieldToNewRow(activeTabIndex, source);
             }
         } else if (active.data.current?.type === 'row-move') {
             const targetType = over.data.current?.type;
@@ -184,7 +204,7 @@ function App() {
                     </aside>
 
                     <section className="flex-1 bg-gray-50 overflow-hidden relative">
-                        <Canvas />
+                        <Canvas activeDragType={activeData?.type} />
                     </section>
 
                     <aside className="w-80 bg-white border-l border-gray-200 p-4 overflow-y-auto z-0">

@@ -11,6 +11,8 @@ interface FormStore extends EditorState {
     updateLayoutColumn: (tabIndex: number, rowIndex: number, colIndex: number, formattedCol: Partial<FormColumn>) => void;
     selectElement: (id: string | null, type: 'field' | 'separator' | 'empty' | 'tab' | null, fieldName?: string) => void;
     deleteSelected: () => void;
+    addRowWithField: (tabIndex: number, fieldType: string) => void;
+    moveFieldToNewRow: (tabIndex: number, source: { tabIndex: number, rowIndex: number, colIndex: number }) => void;
     selectedElement: { id: string, type: 'field' | 'separator' | 'empty' | 'tab', fieldName?: string } | null;
     renameField: (oldName: string, newName: string) => void;
 
@@ -600,6 +602,131 @@ export const useFormStore = create<FormStore>((set, get) => ({
             const insertIdx = position === 'after' ? targetRowIndex + 1 : targetRowIndex;
             rows.splice(insertIdx, 0, newRow);
         }
+        return { layout: newLayout };
+    }),
+
+    addRowWithField: (tabIndex, fieldType) => set((state) => {
+        const newLayout = JSON.parse(JSON.stringify(state.layout));
+        const newFields = { ...state.fields };
+
+        let rows: FormRow[] | undefined;
+        if (state.layout.mode === 'single' || !state.layout.tabs) {
+            if (!newLayout.rows) newLayout.rows = [];
+            rows = newLayout.rows;
+        } else {
+            rows = newLayout.tabs[tabIndex]?.rows;
+            if (!rows) {
+                if (newLayout.tabs[tabIndex]) {
+                    newLayout.tabs[tabIndex].rows = [];
+                    rows = newLayout.tabs[tabIndex].rows;
+                }
+            }
+        }
+
+        let newSelectedElement = state.selectedElement;
+
+        if (rows) {
+            const fieldName = `field_${generateId()}`;
+            const newFieldConfig: FormFieldConfig = {
+                type: fieldType as any,
+                label: fieldType === 'separator' ? 'Separator' : 'New Field',
+            };
+            if (fieldType !== 'separator') {
+                newFields[fieldName] = newFieldConfig;
+            }
+
+            const newId = generateId();
+            const newColId = generateId();
+            const newRow: FormRow = {
+                id: newId,
+                columns: [{
+                    id: newColId,
+                    type: fieldType === 'separator' ? 'separator' : 'field',
+                    field: fieldType === 'separator' ? undefined : fieldName,
+                    width: '1fr'
+                }]
+            };
+            rows.push(newRow);
+
+            newSelectedElement = {
+                id: newColId,
+                type: (fieldType === 'separator' ? 'separator' : 'field') as any,
+                fieldName: fieldType === 'separator' ? undefined : fieldName
+            };
+        }
+
+        return { layout: newLayout, fields: newFields, selectedElement: newSelectedElement };
+    }),
+
+    moveFieldToNewRow: (tabIndex, source) => set((state) => {
+        // Reuse moveField logic part to clear source, then append new row
+        // Actually, easier to replicate the logic here.
+        const newLayout = JSON.parse(JSON.stringify(state.layout));
+
+        const getColumn = (loc: { tabIndex: number, rowIndex: number, colIndex: number }) => {
+            if (newLayout.mode === 'single' || !newLayout.tabs) {
+                return newLayout.rows?.[loc.rowIndex]?.columns?.[loc.colIndex];
+            } else {
+                return newLayout.tabs?.[loc.tabIndex]?.rows?.[loc.rowIndex]?.columns?.[loc.colIndex];
+            }
+        };
+
+        const sourceCol = getColumn(source);
+        if (!sourceCol) return state;
+
+        // Snapshot data
+        const sourceData = {
+            field: sourceCol.field,
+            type: sourceCol.type,
+            label: sourceCol.label,
+            align: sourceCol.align // preserve align?
+        };
+
+        // Clear source
+        sourceCol.type = 'empty';
+        sourceCol.field = '';
+        delete sourceCol.label;
+        delete sourceCol.align;
+
+        // Add new row at end of target tab
+        let rows: FormRow[] | undefined;
+        if (state.layout.mode === 'single' || !state.layout.tabs) {
+            if (!newLayout.rows) newLayout.rows = [];
+            rows = newLayout.rows;
+        } else {
+            rows = newLayout.tabs[tabIndex]?.rows;
+            if (!rows) {
+                if (newLayout.tabs[tabIndex]) {
+                    newLayout.tabs[tabIndex].rows = [];
+                    rows = newLayout.tabs[tabIndex].rows;
+                }
+            }
+        }
+
+        // This is simplified. Normally moveField handles clearing logic better.
+        // But for creating new row:
+        if (rows) {
+            const newColId = generateId();
+            const newRow: FormRow = {
+                id: generateId(),
+                columns: [{
+                    id: newColId,
+                    type: sourceData.type,
+                    field: sourceData.field,
+                    label: sourceData.label,
+                    align: sourceData.align as any,
+                    width: '1fr'
+                }]
+            };
+            rows.push(newRow);
+
+            // Select the moved element
+            return {
+                layout: newLayout,
+                selectedElement: { id: newColId, type: sourceData.type as any, fieldName: sourceData.field }
+            };
+        }
+
         return { layout: newLayout };
     }),
 
