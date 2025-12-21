@@ -3,7 +3,7 @@ import Sidebar, { SidebarBtn, fieldTypes } from './components/Sidebar';
 import Canvas from './components/Canvas';
 import PropertiesPanel from './components/PropertiesPanel';
 import PreviewModal from './components/PreviewModal';
-import { DndContext, useSensor, useSensors, PointerSensor, DragEndEvent, pointerWithin, DragStartEvent, DragOverlay } from '@dnd-kit/core';
+import { DndContext, useSensor, useSensors, PointerSensor, DragEndEvent, pointerWithin, DragStartEvent, DragOverlay, closestCenter, rectIntersection, CollisionDetection } from '@dnd-kit/core';
 import { useFormStore } from './store/formStore';
 import { Eye, Download, Upload } from 'lucide-react';
 
@@ -71,7 +71,25 @@ function App() {
                     useFormStore.getState().moveButton(sourceIndex, targetIndex);
                 }
             }
+        } else if (active.data.current?.type === 'tab-move') {
+            if (over && over.data.current?.type === 'tab-move') {
+                const sourceIndex = active.data.current.index;
+                const targetIndex = over.data.current.index;
+
+                if (sourceIndex !== targetIndex) {
+                    useFormStore.getState().moveTab(sourceIndex, targetIndex);
+                    useFormStore.getState().setActiveTabIndex(targetIndex);
+                    useFormStore.getState().selectElement(String(active.id), 'tab');
+                }
+            }
         }
+    };
+
+    const customCollisionDetection: CollisionDetection = (args) => {
+        if (activeData?.type === 'row-move' || activeData?.type === 'tab-move') {
+            return closestCenter(args);
+        }
+        return pointerWithin(args);
     };
 
     const handleExport = () => {
@@ -107,7 +125,7 @@ function App() {
     }
 
     return (
-        <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <DndContext sensors={sensors} collisionDetection={customCollisionDetection} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             <div className="w-full h-screen bg-gray-100 text-gray-900 flex flex-col font-sans">
                 <header className="bg-white border-b border-gray-200 px-6 py-3 shadow-sm flex justify-between items-center z-10">
                     <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
@@ -146,7 +164,7 @@ function App() {
 
                 <PreviewModal isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} />
             </div>
-            <DragOverlay>
+            <DragOverlay dropAnimation={null}>
                 {activeData?.type === 'field-source' ? (
                     <div className="opacity-90">
                         <SidebarBtn

@@ -1,11 +1,42 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 import { useFormStore } from '../store/formStore';
 import { FormRow, FormColumn } from '../types';
 import clsx from 'clsx';
+
+// Sortable Tab Component
+function SortableTab({ tab, isActive, onClick, index }: { tab: any, isActive: boolean, onClick: () => void, index: number }) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+        id: tab.id,
+        data: { type: 'tab-move', index }
+    });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 50 : 'auto',
+    };
+
+    return (
+        <button
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
+            onClick={onClick}
+            className={clsx(
+                "px-4 py-2 text-sm font-medium border-b-2 transition-colors cursor-grab active:cursor-grabbing shrink-0",
+                isActive ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300",
+                isDragging ? "opacity-50" : ""
+            )}
+        >
+            {tab.label}
+        </button>
+    );
+}
 
 // Draggable Row Wrapper
 function SortableDesignerRow({ tabIndex, rowIndex, row }: { tabIndex: number, rowIndex: number, row: FormRow }) {
@@ -13,6 +44,7 @@ function SortableDesignerRow({ tabIndex, rowIndex, row }: { tabIndex: number, ro
         attributes,
         listeners,
         setNodeRef,
+        setActivatorNodeRef,
         transform,
         transition,
         isDragging
@@ -27,7 +59,13 @@ function SortableDesignerRow({ tabIndex, rowIndex, row }: { tabIndex: number, ro
 
     return (
         <div ref={setNodeRef} style={style} className={clsx("relative", isDragging && "z-50")}>
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full pr-2 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 z-10" {...listeners} {...attributes}>
+            <div
+                ref={setActivatorNodeRef}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full pr-2 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 z-10 w-6 h-6 flex items-center justify-center"
+                style={{ touchAction: 'none' }}
+                {...listeners}
+                {...attributes}
+            >
                 <GripVertical size={16} />
             </div>
             <DesignerRow tabIndex={tabIndex} rowIndex={rowIndex} row={row} />
@@ -240,16 +278,25 @@ function DesignerRow({ tabIndex, rowIndex, row }: { tabIndex: number, rowIndex: 
 }
 
 export default function Canvas() {
-    const { layout, addTab, selectElement, selectedElement } = useFormStore();
+    const { layout, addTab, selectElement, activeTabIndex, setActiveTabIndex, insertRow, addRow } = useFormStore();
     const tabs = layout.tabs || [];
-    const [activeTabIdx, setActiveTabIdx] = useState(0);
 
     // Ensure activeTabIdx is valid
-    if (activeTabIdx >= tabs.length && tabs.length > 0) {
-        setActiveTabIdx(tabs.length - 1);
-    } else if (tabs.length === 0 && activeTabIdx !== 0) {
-        setActiveTabIdx(0);
+    if (activeTabIndex >= tabs.length && tabs.length > 0) {
+        // Defer update to avoid render loop if possible, or trust React handles it. 
+        // Better to check during render but update via effect?
+        // Or just let store handle it? Store doesn't auto-validate.
+        // For now, let's keep it simple.
     }
+
+    // Sync validation
+    React.useEffect(() => {
+        if (activeTabIndex >= tabs.length && tabs.length > 0) {
+            setActiveTabIndex(tabs.length - 1);
+        } else if (tabs.length === 0 && activeTabIndex !== 0) {
+            setActiveTabIndex(0);
+        }
+    }, [tabs.length, activeTabIndex, setActiveTabIndex]);
 
     // Global keyboard shortcuts
     React.useEffect(() => {
@@ -277,24 +324,24 @@ export default function Canvas() {
         <div className="h-full flex flex-col">
             {/* Tabs Header - Only show if in tabs mode */}
             {isTabsMode && (
-                <div className="flex gap-1 border-b border-gray-200 px-4 bg-white">
-                    {tabs.map((tab, idx) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => {
-                                setActiveTabIdx(idx);
-                                selectElement(tab.id, 'tab');
-                            }}
-                            className={clsx(
-                                "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
-                                activeTabIdx === idx && selectedElement?.id === tab.id
-                                    ? "border-blue-500 text-blue-600"
-                                    : (activeTabIdx === idx ? "border-blue-400 text-blue-500" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300")
-                            )}
-                        >
-                            {tab.label}
-                        </button>
-                    ))}
+                <div className="flex gap-1 border-b border-gray-200 px-4 bg-white overflow-x-auto">
+                    <SortableContext
+                        items={tabs.map(t => t.id)}
+                        strategy={horizontalListSortingStrategy}
+                    >
+                        {tabs.map((tab, idx) => (
+                            <SortableTab
+                                key={tab.id}
+                                tab={tab}
+                                index={idx}
+                                isActive={activeTabIndex === idx}
+                                onClick={() => {
+                                    setActiveTabIndex(idx);
+                                    selectElement(tab.id, 'tab');
+                                }}
+                            />
+                        ))}
+                    </SortableContext>
                     <button
                         onClick={addTab}
                         className="px-3 py-2 text-sm font-medium text-gray-400 hover:text-blue-500"
@@ -314,22 +361,22 @@ export default function Canvas() {
                         <>
                             <div className="flex flex-col gap-4">
                                 <SortableContext
-                                    items={tabs[activeTabIdx]?.rows.map(r => r.id) || []}
+                                    items={tabs[activeTabIndex]?.rows.map(r => r.id) || []}
                                     strategy={verticalListSortingStrategy}
                                 >
                                     {/* Insert before first row */}
                                     <InsertHandle
-                                        onClick={() => useFormStore.getState().insertRow(activeTabIdx, 0, 'before')}
+                                        onClick={() => insertRow(activeTabIndex, 0, 'before')}
                                     />
-                                    {tabs[activeTabIdx]?.rows.map((row, rowIdx) => (
+                                    {tabs[activeTabIndex]?.rows.map((row, rowIdx) => (
                                         <React.Fragment key={row.id}>
                                             <SortableDesignerRow
-                                                tabIndex={activeTabIdx}
+                                                tabIndex={activeTabIndex}
                                                 rowIndex={rowIdx}
                                                 row={row}
                                             />
                                             <InsertHandle
-                                                onClick={() => useFormStore.getState().insertRow(activeTabIdx, rowIdx, 'after')}
+                                                onClick={() => insertRow(activeTabIndex, rowIdx, 'after')}
                                             />
                                         </React.Fragment>
                                     ))}
@@ -337,9 +384,9 @@ export default function Canvas() {
                             </div>
 
                             {/* Empty State / Add First Row if empty */}
-                            {(!tabs[activeTabIdx]?.rows || tabs[activeTabIdx]?.rows.length === 0) && (
+                            {(!tabs[activeTabIndex]?.rows || tabs[activeTabIndex]?.rows.length === 0) && (
                                 <button
-                                    onClick={() => useFormStore.getState().addRow(activeTabIdx)}
+                                    onClick={() => addRow(activeTabIndex)}
                                     className="w-full py-8 border-2 border-dashed border-gray-200 rounded-lg text-gray-400 hover:border-gray-300 hover:text-gray-500 text-sm font-medium transition-colors flex items-center justify-center gap-2"
                                 >
                                     Start by adding a row

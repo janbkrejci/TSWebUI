@@ -35,9 +35,37 @@ interface FormStore extends EditorState {
     insertColumn: (tabIndex: number, rowIndex: number, targetColIndex: number, position: 'before' | 'after') => void;
     moveRow: (tabIndex: number, sourceIndex: number, targetIndex: number) => void;
     moveButton: (sourceIndex: number, targetIndex: number) => void;
+    moveTab: (sourceIndex: number, targetIndex: number) => void;
+
+    // UI State
+    activeTabIndex: number;
+    setActiveTabIndex: (index: number) => void;
 }
 
 export const useFormStore = create<FormStore>((set, get) => ({
+    moveTab: (sourceIndex, targetIndex) => set((state) => {
+        const newLayout = JSON.parse(JSON.stringify(state.layout));
+        if (newLayout.tabs) {
+            const [movedTab] = newLayout.tabs.splice(sourceIndex, 1);
+            newLayout.tabs.splice(targetIndex, 0, movedTab);
+        }
+        return { layout: newLayout };
+    }),
+    moveRow: (tabIndex, sourceIndex, targetIndex) => set((state) => {
+        const newLayout = JSON.parse(JSON.stringify(state.layout));
+        let rows;
+        if (tabIndex === -1 || newLayout.mode === 'single') {
+            rows = newLayout.rows;
+        } else {
+            rows = newLayout.tabs[tabIndex].rows;
+        }
+
+        if (rows) {
+            const [movedRow] = rows.splice(sourceIndex, 1);
+            rows.splice(targetIndex, 0, movedRow);
+        }
+        return { layout: newLayout };
+    }),
     layout: {
         mode: 'tabs',
         tabs: [
@@ -57,11 +85,13 @@ export const useFormStore = create<FormStore>((set, get) => ({
     },
     fields: {},
     buttons: [
-        { action: 'cancel', label: 'Cancel', variant: 'default' },
-        { action: 'submit', label: 'Submit', variant: 'primary' }
+        { action: 'cancel', label: 'Cancel', variant: 'default', position: 'left' },
+        { action: 'submit', label: 'Submit', variant: 'primary', position: 'left' }
     ],
     selectedFieldId: null,
     selectedElement: null,
+    activeTabIndex: 0,
+    setActiveTabIndex: (index) => set({ activeTabIndex: index }),
 
     updateButtons: (buttons) => set({ buttons }),
 
@@ -148,16 +178,11 @@ export const useFormStore = create<FormStore>((set, get) => ({
     removeTab: (tabIndex) => set((state) => {
         const newLayout = JSON.parse(JSON.stringify(state.layout));
         if (newLayout.tabs) {
-            newLayout.tabs.splice(tabIndex, 1);
+            const [removedTab] = newLayout.tabs.splice(tabIndex, 1);
             if (newLayout.tabs.length === 0) {
                 // Switch to single mode if no tabs left
                 newLayout.mode = 'single';
-                newLayout.rows = [
-                    {
-                        id: generateId(),
-                        columns: [{ id: generateId(), type: 'empty', field: '', width: '1fr' }]
-                    }
-                ];
+                newLayout.rows = removedTab.rows;
                 delete newLayout.tabs;
             }
         }
@@ -492,13 +517,13 @@ export const useFormStore = create<FormStore>((set, get) => ({
         }
 
         if (found) {
-            let newSelected: typeof selectedElement = selectedElement;
+            let newSelected: any;
             if (found === 'cleared' && selectedElement) {
                 newSelected = { ...selectedElement, type: 'empty' };
             } else {
                 newSelected = null;
             }
-            return { layout: newLayout, selectedElement: newSelected as any };
+            return { layout: newLayout, selectedElement: newSelected };
         }
 
         return state;
@@ -555,23 +580,7 @@ export const useFormStore = create<FormStore>((set, get) => ({
         return { layout: newLayout };
     }),
 
-    moveRow: (tabIndex, sourceIndex, targetIndex) => set((state) => {
-        const newLayout = JSON.parse(JSON.stringify(state.layout));
-        let rows: FormRow[] | undefined;
 
-        if (state.layout.mode === 'single' || !state.layout.tabs) {
-            rows = newLayout.rows;
-        } else {
-            rows = newLayout.tabs[tabIndex]?.rows;
-        }
-
-        if (rows && rows[sourceIndex]) {
-            const [movedRow] = rows.splice(sourceIndex, 1);
-            rows.splice(targetIndex, 0, movedRow);
-        }
-
-        return { layout: newLayout };
-    }),
 
     moveButton: (sourceIndex, targetIndex) => set((state) => {
         if (!state.buttons) return state;
