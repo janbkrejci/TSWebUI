@@ -88,8 +88,8 @@ export const useFormStore = create<FormStore>((set, get) => ({
     },
     fields: {},
     buttons: [
-        { action: 'cancel', label: 'Cancel', variant: 'default', position: 'left' },
-        { action: 'submit', label: 'Submit', variant: 'primary', position: 'right' }
+        { id: 'btn_cancel', action: 'cancel', label: 'Cancel', variant: 'default', position: 'left' },
+        { id: 'btn_submit', action: 'submit', label: 'Submit', variant: 'primary', position: 'right' }
     ],
     selectedFieldId: null,
     selectedElement: null,
@@ -566,8 +566,9 @@ export const useFormStore = create<FormStore>((set, get) => ({
 
         if (found) {
             let newSelected: any;
-            if (found === 'cleared' && selectedElement) {
-                newSelected = { ...selectedElement, type: 'empty' };
+            if (found === 'cleared') {
+                // User requested to switch to Form Properties on delete
+                newSelected = null;
             } else {
                 newSelected = null;
             }

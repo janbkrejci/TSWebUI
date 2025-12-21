@@ -3,7 +3,7 @@ import Sidebar, { SidebarBtn, fieldTypes } from './components/Sidebar';
 import Canvas from './components/Canvas';
 import PropertiesPanel from './components/PropertiesPanel';
 import PreviewModal from './components/PreviewModal';
-import { DndContext, useSensor, useSensors, PointerSensor, DragEndEvent, pointerWithin, DragStartEvent, DragOverlay, closestCenter, rectIntersection, CollisionDetection } from '@dnd-kit/core';
+import { DndContext, useSensor, useSensors, PointerSensor, DragEndEvent, pointerWithin, DragStartEvent, DragOverlay, closestCenter, CollisionDetection } from '@dnd-kit/core';
 import { useFormStore } from './store/formStore';
 import { Eye, Download, Upload } from 'lucide-react';
 import { Toaster, toast } from 'sonner';

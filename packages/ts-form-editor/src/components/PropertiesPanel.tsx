@@ -45,7 +45,7 @@ function SortableButton({
         transform,
         transition,
         isDragging
-    } = useSortable({ id: `btn-${index}`, data: { type: 'button-move', index } });
+    } = useSortable({ id: btn.id, data: { type: 'button-move', index, label: btn.label } });
 
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -55,7 +55,7 @@ function SortableButton({
     };
 
     return (
-        <div ref={setNodeRef} style={style} className={clsx("p-3 bg-gray-50 rounded border border-gray-200 space-y-2 relative group", isDragging && "z-50 opacity-50")}>
+        <div ref={setNodeRef} style={style} className={clsx("p-3 bg-gray-50 rounded border border-gray-200 space-y-2 relative group")}>
             <div className="absolute left-2 top-2 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600" {...listeners} {...attributes}>
                 <GripVertical size={16} />
             </div>
@@ -165,13 +165,13 @@ export default function PropertiesPanel() {
                     <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Buttons</h3>
                     <div className="space-y-3">
                         <SortableContext
-                            items={buttons?.map((_, i) => `btn-${i}`) || []}
+                            items={buttons?.map(b => b.id) || []}
                             strategy={verticalListSortingStrategy}
                         >
                             {buttons?.map((btn, idx) => (
                                 <SortableButton
-                                    key={`btn-${idx}`} // Key must match ID used in useSortable
-                                    btn={{ ...btn, id: `btn-${idx}` }}
+                                    key={btn.id}
+                                    btn={btn}
                                     index={idx}
                                     updateButtons={updateButtons}
                                     buttons={buttons}
@@ -316,7 +316,7 @@ export default function PropertiesPanel() {
                                 value={selectedCol.align || ''}
                                 onValueChange={(value) => {
                                     if (location) {
-                                        updateLayoutColumn(location.tabIndex, location.rowIndex, location.colIndex, { align: value as any });
+                                        updateLayoutColumn(location.tabIndex, location.rowIndex, location.colIndex, { align: value === 'default' ? undefined : value as any });
                                     }
                                 }}
                             >
@@ -324,6 +324,7 @@ export default function PropertiesPanel() {
                                     <SelectValue placeholder="Default (Left)" />
                                 </SelectTrigger>
                                 <SelectContent>
+                                    <SelectItem value="default">Default</SelectItem>
                                     <SelectItem value="left">Left</SelectItem>
                                     <SelectItem value="center">Center</SelectItem>
                                     <SelectItem value="right">Right</SelectItem>
