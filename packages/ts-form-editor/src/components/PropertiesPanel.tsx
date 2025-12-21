@@ -103,38 +103,46 @@ function SortableButton({
             <div className="grid grid-cols-2 gap-2 pl-6">
                 <div>
                     <label className="block text-xs font-medium text-gray-500">Variant</label>
-                    <select
+                    <Select
                         value={btn.variant || 'default'}
-                        onChange={(e) => {
+                        onValueChange={(value) => {
                             const newBtns = [...buttons];
-                            newBtns[index].variant = e.target.value;
+                            newBtns[index].variant = value;
                             updateButtons(newBtns);
                         }}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
                     >
-                        <option value="default">Default</option>
-                        <option value="primary">Primary</option>
-                        <option value="success">Success</option>
-                        <option value="neutral">Neutral</option>
-                        <option value="warning">Warning</option>
-                        <option value="danger">Danger</option>
-                        <option value="text">Text</option>
-                    </select>
+                        <SelectTrigger className="w-full h-8 text-xs">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="default">Default</SelectItem>
+                            <SelectItem value="primary">Primary</SelectItem>
+                            <SelectItem value="success">Success</SelectItem>
+                            <SelectItem value="neutral">Neutral</SelectItem>
+                            <SelectItem value="warning">Warning</SelectItem>
+                            <SelectItem value="danger">Danger</SelectItem>
+                            <SelectItem value="text">Text</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-gray-500">Position</label>
-                    <select
+                    <Select
                         value={btn.position || 'left'}
-                        onChange={(e) => {
+                        onValueChange={(value) => {
                             const newBtns = [...buttons];
-                            newBtns[index].position = e.target.value;
+                            newBtns[index].position = value;
                             updateButtons(newBtns);
                         }}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
                     >
-                        <option value="left">Left</option>
-                        <option value="right">Right</option>
-                    </select>
+                        <SelectTrigger className="w-full h-8 text-xs">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="left">Left</SelectItem>
+                            <SelectItem value="right">Right</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
         </div>
