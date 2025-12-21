@@ -33,6 +33,8 @@ interface FormStore extends EditorState {
     deleteSelectedElement: () => void;
     insertRow: (tabIndex: number, targetRowIndex: number, position: 'before' | 'after') => void;
     insertColumn: (tabIndex: number, rowIndex: number, targetColIndex: number, position: 'before' | 'after') => void;
+    moveRow: (tabIndex: number, sourceIndex: number, targetIndex: number) => void;
+    moveButton: (sourceIndex: number, targetIndex: number) => void;
 }
 
 export const useFormStore = create<FormStore>((set, get) => ({
@@ -126,7 +128,6 @@ export const useFormStore = create<FormStore>((set, get) => ({
             const cell = rows[rowIndex].columns[colIndex];
             cell.type = type === 'separator' ? 'separator' : 'field';
             cell.field = type === 'separator' ? undefined : fieldName;
-            if (type === 'separator') cell.label = 'Separator';
         }
 
         return { fields: newFields, layout: newLayout };
@@ -208,41 +209,43 @@ export const useFormStore = create<FormStore>((set, get) => ({
 
         if (!sourceCol || !targetCol) return state;
 
-        // Perform swap
-        // We swap all relevant properties: field, type, label, width (maybe not width?)
-        // Usually drag drop only moves content, not column width.
-        // So we swap field, type, label.
-
+        // Snapshot source data before mutation
         const sourceData = {
             field: sourceCol.field,
             type: sourceCol.type,
             label: sourceCol.label
         };
 
-        const targetData = {
-            field: targetCol.field,
-            type: targetCol.type,
-            label: targetCol.label
-        };
-
-        // Apply source data to target
-        targetCol.field = sourceData.field;
-        targetCol.type = sourceData.type;
-        targetCol.label = sourceData.label;
-
-        // Apply target data to source
-        sourceCol.field = targetData.field;
-        sourceCol.type = targetData.type;
-        sourceCol.label = targetData.label;
-
-        // normalization for 'empty'
         if (targetCol.type === 'empty') {
-            targetCol.field = '';
-            delete targetCol.label;
-        }
-        if (sourceCol.type === 'empty') {
+            // MOVE: Target becomes source, Source becomes empty
+            targetCol.field = sourceData.field;
+            targetCol.type = sourceData.type;
+            if (sourceData.label !== undefined) targetCol.label = sourceData.label;
+
+            // Reset Source
+            sourceCol.type = 'empty';
             sourceCol.field = '';
             delete sourceCol.label;
+        } else {
+            // SWAP: Target takes source, Source takes target
+            // Snapshot target data
+            const targetData = {
+                field: targetCol.field,
+                type: targetCol.type,
+                label: targetCol.label
+            };
+
+            // Apply source to target
+            targetCol.field = sourceData.field;
+            targetCol.type = sourceData.type;
+            if (sourceData.label !== undefined) targetCol.label = sourceData.label;
+            else delete targetCol.label;
+
+            // Apply target to source
+            sourceCol.field = targetData.field;
+            sourceCol.type = targetData.type;
+            if (targetData.label !== undefined) sourceCol.label = targetData.label;
+            else delete sourceCol.label;
         }
 
         return { layout: newLayout };
@@ -448,7 +451,7 @@ export const useFormStore = create<FormStore>((set, get) => ({
 
         // If it's a column item (field, separator, empty)
         const newLayout = JSON.parse(JSON.stringify(layout));
-        let found = false;
+        let found: boolean | string = false;
 
         const processRows = (rows: FormRow[] | undefined) => {
             if (!rows) return;
@@ -456,12 +459,26 @@ export const useFormStore = create<FormStore>((set, get) => ({
                 const row = rows[rIdx];
                 const cIdx = row.columns.findIndex(c => c.id === selectedElement.id);
                 if (cIdx !== -1) {
-                    // Found the column, remove it
-                    row.columns.splice(cIdx, 1);
-                    found = true;
-                    // If row is empty, remove row
-                    if (row.columns.length === 0) {
-                        rows.splice(rIdx, 1);
+                    const col = row.columns[cIdx];
+
+                    if (col.type === 'field' || col.type === 'separator') {
+                        // First delete: Clear content, become empty placeholder
+                        col.type = 'empty';
+                        col.field = '';
+                        delete col.label;
+                        // Keep selection? Or clear? Usually keep selection on the empty cell so user can delete again.
+                        // But we need to update selectedElement state too? 
+                        // No, selectedElement ID is same, but type changes?
+                        // We should return updated selectedElement type.
+                        found = 'cleared';
+                    } else {
+                        // Second delete (already empty): Remove column
+                        row.columns.splice(cIdx, 1);
+                        found = 'removed';
+                        // If row is empty, remove row
+                        if (row.columns.length === 0) {
+                            rows.splice(rIdx, 1);
+                        }
                     }
                     return;
                 }
@@ -475,7 +492,13 @@ export const useFormStore = create<FormStore>((set, get) => ({
         }
 
         if (found) {
-            return { layout: newLayout, selectedElement: null };
+            let newSelected: typeof selectedElement = selectedElement;
+            if (found === 'cleared' && selectedElement) {
+                newSelected = { ...selectedElement, type: 'empty' };
+            } else {
+                newSelected = null;
+            }
+            return { layout: newLayout, selectedElement: newSelected as any };
         }
 
         return state;
@@ -530,5 +553,31 @@ export const useFormStore = create<FormStore>((set, get) => ({
             rows[rowIndex].columns.splice(insertIdx, 0, newCol);
         }
         return { layout: newLayout };
+    }),
+
+    moveRow: (tabIndex, sourceIndex, targetIndex) => set((state) => {
+        const newLayout = JSON.parse(JSON.stringify(state.layout));
+        let rows: FormRow[] | undefined;
+
+        if (state.layout.mode === 'single' || !state.layout.tabs) {
+            rows = newLayout.rows;
+        } else {
+            rows = newLayout.tabs[tabIndex]?.rows;
+        }
+
+        if (rows && rows[sourceIndex]) {
+            const [movedRow] = rows.splice(sourceIndex, 1);
+            rows.splice(targetIndex, 0, movedRow);
+        }
+
+        return { layout: newLayout };
+    }),
+
+    moveButton: (sourceIndex, targetIndex) => set((state) => {
+        if (!state.buttons) return state;
+        const newButtons = [...state.buttons];
+        const [movedBtn] = newButtons.splice(sourceIndex, 1);
+        newButtons.splice(targetIndex, 0, movedBtn);
+        return { buttons: newButtons };
     })
 }));

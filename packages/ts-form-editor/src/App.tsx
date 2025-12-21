@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import Sidebar from './components/Sidebar';
+import Sidebar, { SidebarBtn, fieldTypes } from './components/Sidebar';
 import Canvas from './components/Canvas';
 import PropertiesPanel from './components/PropertiesPanel';
 import PreviewModal from './components/PreviewModal';
-import { DndContext, useSensor, useSensors, PointerSensor, DragEndEvent, closestCenter } from '@dnd-kit/core';
+import { DndContext, useSensor, useSensors, PointerSensor, DragEndEvent, pointerWithin, DragStartEvent, DragOverlay } from '@dnd-kit/core';
 import { useFormStore } from './store/formStore';
 import { Eye, Download, Upload } from 'lucide-react';
 
 function App() {
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const { setFormDefinition, getFormDefinition } = useFormStore();
+    const [activeData, setActiveData] = useState<any>(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -19,8 +20,14 @@ function App() {
         })
     );
 
+    const handleDragStart = (event: DragStartEvent) => {
+        setActiveData(event.active.data.current);
+    };
+
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
+        setActiveData(null);
 
         if (!over) return;
 
@@ -29,24 +36,41 @@ function App() {
             const fieldType = active.data.current.fieldType;
             const { tabIndex, rowIndex, colIndex } = over.data.current;
 
-            // Update store
-            // We need to implement logic to update the SPECIFIC CELL to be 'field' type with the new field name.
-            // The `addField` action in store currently just adds to `fields`. 
-            // We need to update it to also place it in the layout.
-
-            // This requires updating the store logic slightly.
-            // Let's call a more complex action: `dropNewField(type, location)`
-
-            // For now, let's manually act on store via custom expanded logic or updated store.
-            // I'll update the store logic in a separate file update or just hack it here?
-            // Better to update store logic. But I can't easily multi-file edit. 
-            // I'll assume addField does the right thing or I update it next.
-
-            // Actually I will invoke a specialized method which I will add to store in next step or now.
-            // let's use: useFormStore.getState().handleDropNewField(fieldType, tabIndex, rowIndex, colIndex);
-            // Check if handleDropNewField exists? Use addField and I will patch it.
-
             useFormStore.getState().addField({ type: fieldType, rowIndex, colIndex, tabIndex });
+        } else if (active.data.current?.type === 'field-move') {
+            if (over && over.data.current?.type === 'cell') {
+                const source = active.data.current.source;
+                const target = {
+                    tabIndex: Number(over.data.current.tabIndex),
+                    rowIndex: Number(over.data.current.rowIndex),
+                    colIndex: Number(over.data.current.colIndex)
+                };
+
+                useFormStore.getState().moveField(source, target);
+            }
+        } else if (active.data.current?.type === 'row-move') {
+            const targetType = over.data.current?.type;
+            if (targetType === 'row-move' || targetType === 'cell') {
+                const sourceIndex = Number(active.data.current.rowIndex);
+                const targetIndex = Number(over.data.current.rowIndex);
+                const tabIndex = Number(active.data.current.tabIndex);
+
+                // Ensure we are in the same tab 
+                const targetTab = Number(over.data.current.tabIndex);
+
+                if (sourceIndex !== targetIndex && tabIndex === targetTab) {
+                    useFormStore.getState().moveRow(tabIndex, sourceIndex, targetIndex);
+                }
+            }
+        } else if (active.data.current?.type === 'button-move') {
+            if (over && over.data.current?.type === 'button-move') {
+                const sourceIndex = active.data.current.index;
+                const targetIndex = over.data.current.index;
+
+                if (sourceIndex !== targetIndex) {
+                    useFormStore.getState().moveButton(sourceIndex, targetIndex);
+                }
+            }
         }
     };
 
@@ -83,7 +107,7 @@ function App() {
     }
 
     return (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             <div className="w-full h-screen bg-gray-100 text-gray-900 flex flex-col font-sans">
                 <header className="bg-white border-b border-gray-200 px-6 py-3 shadow-sm flex justify-between items-center z-10">
                     <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
@@ -107,7 +131,7 @@ function App() {
                 </header>
 
                 <main className="flex-1 flex overflow-hidden">
-                    <aside className="w-64 bg-white border-r border-gray-200 p-4 flex flex-col z-0">
+                    <aside className="w-64 bg-white border-r border-gray-200 p-4 flex flex-col z-0 overflow-hidden shrink-0">
                         <Sidebar />
                     </aside>
 
@@ -122,6 +146,16 @@ function App() {
 
                 <PreviewModal isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} />
             </div>
+            <DragOverlay>
+                {activeData?.type === 'field-source' ? (
+                    <div className="opacity-90">
+                        <SidebarBtn
+                            label={fieldTypes.find(f => f.type === activeData.fieldType)?.label || 'Field'}
+                            icon={fieldTypes.find(f => f.type === activeData.fieldType)?.icon || Upload}
+                        />
+                    </div>
+                ) : null}
+            </DragOverlay>
         </DndContext>
     )
 }

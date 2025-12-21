@@ -1,8 +1,127 @@
-
+import React from 'react';
 import { useFormStore } from '../store/formStore';
 import { FormFieldConfig } from '../types';
+import clsx from 'clsx';
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical } from 'lucide-react';
 
+// ...
 
+// Sortable Button Item
+function SortableButton({
+    btn,
+    index,
+    updateButtons,
+    buttons
+}: {
+    btn: any,
+    index: number,
+    updateButtons: (btns: any[]) => void,
+    buttons: any[]
+}) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: `btn-${index}`, data: { type: 'button-move', index } });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 50 : 'auto',
+        position: isDragging ? 'relative' as const : undefined
+    };
+
+    return (
+        <div ref={setNodeRef} style={style} className={clsx("p-3 bg-gray-50 rounded border border-gray-200 space-y-2 relative group", isDragging && "z-50 opacity-50")}>
+            <div className="absolute left-2 top-2 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600" {...listeners} {...attributes}>
+                <GripVertical size={16} />
+            </div>
+
+            <button
+                onClick={() => {
+                    const newBtns = [...buttons];
+                    newBtns.splice(index, 1);
+                    updateButtons(newBtns);
+                }}
+                className="absolute top-2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+                &times;
+            </button>
+
+            <div className="grid grid-cols-2 gap-2 pl-6">
+                <div>
+                    <label className="block text-xs font-medium text-gray-500">Label</label>
+                    <input
+                        type="text"
+                        value={btn.label}
+                        onChange={(e) => {
+                            const newBtns = [...buttons];
+                            newBtns[index].label = e.target.value;
+                            updateButtons(newBtns);
+                        }}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
+                    />
+                </div>
+                <div>
+                    <label className="block text-xs font-medium text-gray-500">Action</label>
+                    <input
+                        type="text"
+                        value={btn.action}
+                        onChange={(e) => {
+                            const newBtns = [...buttons];
+                            newBtns[index].action = e.target.value;
+                            updateButtons(newBtns);
+                        }}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
+                    />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 pl-6">
+                <div>
+                    <label className="block text-xs font-medium text-gray-500">Variant</label>
+                    <select
+                        value={btn.variant || 'default'}
+                        onChange={(e) => {
+                            const newBtns = [...buttons];
+                            newBtns[index].variant = e.target.value;
+                            updateButtons(newBtns);
+                        }}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
+                    >
+                        <option value="default">Default</option>
+                        <option value="primary">Primary</option>
+                        <option value="success">Success</option>
+                        <option value="neutral">Neutral</option>
+                        <option value="warning">Warning</option>
+                        <option value="danger">Danger</option>
+                        <option value="text">Text</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-xs font-medium text-gray-500">Position</label>
+                    <select
+                        value={btn.position || 'left'}
+                        onChange={(e) => {
+                            const newBtns = [...buttons];
+                            newBtns[index].position = e.target.value;
+                            updateButtons(newBtns);
+                        }}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
+                    >
+                        <option value="left">Left</option>
+                        <option value="right">Right</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 export default function PropertiesPanel() {
     const {
@@ -19,71 +138,23 @@ export default function PropertiesPanel() {
                 <div className="space-y-4">
                     <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Buttons</h3>
                     <div className="space-y-3">
-                        {buttons?.map((btn, idx) => (
-                            <div key={idx} className="p-3 bg-gray-50 rounded border border-gray-200 space-y-2 relative group">
-                                <button
-                                    onClick={() => {
-                                        const newBtns = [...buttons];
-                                        newBtns.splice(idx, 1);
-                                        updateButtons(newBtns);
-                                    }}
-                                    className="absolute top-2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                    &times;
-                                </button>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label className="block text-xs font-medium text-gray-500">Label</label>
-                                        <input
-                                            type="text"
-                                            value={btn.label}
-                                            onChange={(e) => {
-                                                const newBtns = [...buttons];
-                                                newBtns[idx].label = e.target.value;
-                                                updateButtons(newBtns);
-                                            }}
-                                            className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-gray-500">Action</label>
-                                        <input
-                                            type="text"
-                                            value={btn.action}
-                                            onChange={(e) => {
-                                                const newBtns = [...buttons];
-                                                newBtns[idx].action = e.target.value;
-                                                updateButtons(newBtns);
-                                            }}
-                                            className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500">Variant</label>
-                                    <select
-                                        value={btn.variant || 'default'}
-                                        onChange={(e) => {
-                                            const newBtns = [...buttons];
-                                            newBtns[idx].variant = e.target.value;
-                                            updateButtons(newBtns);
-                                        }}
-                                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
-                                    >
-                                        <option value="default">Default</option>
-                                        <option value="primary">Primary</option>
-                                        <option value="success">Success</option>
-                                        <option value="neutral">Neutral</option>
-                                        <option value="warning">Warning</option>
-                                        <option value="danger">Danger</option>
-                                        <option value="text">Text</option>
-                                    </select>
-                                </div>
-                            </div>
-                        ))}
+                        <SortableContext
+                            items={buttons?.map((_, i) => `btn-${i}`) || []}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            {buttons?.map((btn, idx) => (
+                                <SortableButton
+                                    key={`btn-${idx}`} // Key must match ID used in useSortable
+                                    btn={{ ...btn, id: `btn-${idx}` }}
+                                    index={idx}
+                                    updateButtons={updateButtons}
+                                    buttons={buttons}
+                                />
+                            ))}
+                        </SortableContext>
 
                         <button
-                            onClick={() => updateButtons([...(buttons || []), { label: 'New Button', action: 'action', variant: 'default' }])}
+                            onClick={() => updateButtons([...(buttons || []), { label: 'New Button', action: 'action', variant: 'default', position: 'left' }])}
                             className="w-full py-2 border-2 border-dashed border-gray-200 rounded text-sm text-gray-500 hover:border-blue-300 hover:text-blue-500 transition-colors"
                         >
                             + Add Button
@@ -146,9 +217,16 @@ export default function PropertiesPanel() {
 
     return (
         <div className="space-y-6">
-            <h2 className="text-lg font-bold border-b pb-2">
-                {selectedElement.type === 'tab' ? 'Tab Properties' : 'Properties'}
-            </h2>
+            <div className="border-b pb-2">
+                <h2 className="text-lg font-bold">
+                    {selectedElement.type === 'tab' ? 'Tab Properties' : 'Properties'}
+                </h2>
+                {(fieldConfig?.type || selectedElement.type === 'separator') && (
+                    <p className="text-xs text-gray-400 font-mono mt-1">
+                        type: {fieldConfig?.type || selectedElement.type}
+                    </p>
+                )}
+            </div>
 
             {selectedElement.type === 'tab' && selectedTabIndex !== -1 && layout.tabs && (
                 <div className="space-y-4">

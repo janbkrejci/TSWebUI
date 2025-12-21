@@ -1,21 +1,62 @@
 import React, { useState } from 'react';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical } from 'lucide-react';
 import { useFormStore } from '../store/formStore';
 import { FormRow, FormColumn } from '../types';
 import clsx from 'clsx';
 
-// Component for a draggable existing field
-function DraggableField({
-    fieldConfig,
+// Draggable Row Wrapper
+function SortableDesignerRow({ tabIndex, rowIndex, row }: { tabIndex: number, rowIndex: number, row: FormRow }) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: row.id, data: { type: 'row-move', rowIndex, tabIndex } });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 50 : 'auto',
+        position: isDragging ? 'relative' as const : undefined
+    };
+
+    return (
+        <div ref={setNodeRef} style={style} className={clsx("relative", isDragging && "z-50")}>
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full pr-2 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 z-10" {...listeners} {...attributes}>
+                <GripVertical size={16} />
+            </div>
+            <DesignerRow tabIndex={tabIndex} rowIndex={rowIndex} row={row} />
+        </div>
+    );
+}
+
+// ... (keep DesignerRow definition as is, just used for rendering content)
+
+// In Canvas component:
+// <SortableContext items={rows.map(r => r.id)} strategy={verticalListSortingStrategy}>
+//   ... map rows ...
+// </SortableContext>
+
+// Be careful: SortableContext needs items prop.
+// I will just replace the rendering logic in Canvas.
+
+// Component for a draggable element (field or separator)
+function DraggableElement({
     column,
+    fieldConfig,
     location
 }: {
-    fieldConfig: any,
     column: FormColumn,
+    fieldConfig?: any,
     location: { tabIndex: number, rowIndex: number, colIndex: number }
 }) {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-        id: `field-move-${column.id}`,
+        id: `move-${column.id}`,
         data: {
             type: 'field-move',
             fieldId: column.field,
@@ -35,16 +76,33 @@ function DraggableField({
             {...listeners}
             {...attributes}
             className={clsx(
-                "cursor-grab active:cursor-grabbing",
+                "cursor-grab active:cursor-grabbing w-full",
                 isDragging ? "opacity-50" : ""
             )}
         >
-            <label className="text-xs font-semibold text-gray-600 mb-1 block select-none">
-                {fieldConfig.label} {fieldConfig.required && <span className="text-red-500">*</span>}
-            </label>
-            <div className="h-8 bg-gray-100 rounded border border-gray-200 w-full flex items-center px-2 text-xs text-gray-500 select-none">
-                {fieldConfig.type}
-            </div>
+            {column.type === 'field' && fieldConfig && (
+                <>
+                    <label className="text-xs font-semibold text-gray-600 mb-1 block select-none text-left">
+                        {fieldConfig.label} {fieldConfig.required && <span className="text-red-500">*</span>}
+                    </label>
+                    <div className="h-8 bg-gray-100 rounded border border-gray-200 w-full flex items-center px-2 text-xs text-gray-500 select-none">
+                        {fieldConfig.type}
+                    </div>
+                </>
+            )}
+
+            {column.type === 'separator' && (
+                <div className="flex items-center gap-2 py-4 select-none w-full">
+                    {column.label ? (
+                        <>
+                            <span className="text-xs font-bold text-gray-500 uppercase whitespace-nowrap">{column.label}</span>
+                            <div className="h-[1px] bg-gray-300 w-full"></div>
+                        </>
+                    ) : (
+                        <div className="h-[1px] bg-gray-300 w-full"></div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
@@ -80,37 +138,31 @@ function DesignerCell({
         selectElement(column.id, column.type || 'empty', column.field);
     };
 
+    const hasContent = (column.type === 'field' && fieldConfig) || column.type === 'separator';
+
     return (
         <div
             ref={setNodeRef}
             onClick={handleClick}
             className={clsx(
-                "min-h-[72px] border rounded-md p-2 transition-colors relative group",
+                "min-h-[72px] border rounded-md p-2 transition-colors relative group flex items-center",
                 isOver ? "bg-blue-50 border-blue-300 border-2 border-dashed" : "bg-white border-gray-200",
                 isSelected ? "ring-2 ring-blue-500 border-blue-500" : "hover:border-gray-300"
             )}
             style={{ width: column.width || '1fr' }} // This works if parent is flex
         >
             {column.type === 'empty' && (
-                <div className="h-full flex items-center justify-center text-gray-300 text-xs italic pointer-events-none">
+                <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs italic pointer-events-none">
                     Drop field here
                 </div>
             )}
 
-            {column.type === 'field' && fieldConfig && (
-                <DraggableField
-                    fieldConfig={fieldConfig}
+            {hasContent && (
+                <DraggableElement
                     column={column}
+                    fieldConfig={fieldConfig}
                     location={{ tabIndex, rowIndex, colIndex }}
                 />
-            )}
-
-            {column.type === 'separator' && (
-                <div className="flex items-center gap-2 py-4 select-none">
-                    <div className="h-[1px] bg-gray-300 flex-1"></div>
-                    <span className="text-xs font-bold text-gray-500 uppercase">{column.label || 'Separator'}</span>
-                    <div className="h-[1px] bg-gray-300 flex-1"></div>
-                </div>
             )}
         </div>
     );
@@ -158,7 +210,7 @@ function DesignerRow({ tabIndex, rowIndex, row }: { tabIndex: number, rowIndex: 
 
     return (
         <div className="mb-0 relative group/row border border-transparent hover:border-gray-200 rounded p-1 -m-1 transition-colors">
-            <div className="flex items-stretch">
+            <div className="flex gap-4 items-stretch">
                 {/* Insert Before First Column */}
                 <InsertHandle
                     vertical
@@ -260,23 +312,28 @@ export default function Canvas() {
                 <div className="w-full mx-auto bg-white min-h-[500px] shadow-sm border border-gray-200 rounded-lg p-6">
                     {isTabsMode ? (
                         <>
-                            <div className="flex flex-col">
-                                {/* Insert before first row */}
-                                <InsertHandle
-                                    onClick={() => useFormStore.getState().insertRow(activeTabIdx, 0, 'before')}
-                                />
-                                {tabs[activeTabIdx]?.rows.map((row, rowIdx) => (
-                                    <React.Fragment key={row.id}>
-                                        <DesignerRow
-                                            tabIndex={activeTabIdx}
-                                            rowIndex={rowIdx}
-                                            row={row}
-                                        />
-                                        <InsertHandle
-                                            onClick={() => useFormStore.getState().insertRow(activeTabIdx, rowIdx, 'after')}
-                                        />
-                                    </React.Fragment>
-                                ))}
+                            <div className="flex flex-col gap-4">
+                                <SortableContext
+                                    items={tabs[activeTabIdx]?.rows.map(r => r.id) || []}
+                                    strategy={verticalListSortingStrategy}
+                                >
+                                    {/* Insert before first row */}
+                                    <InsertHandle
+                                        onClick={() => useFormStore.getState().insertRow(activeTabIdx, 0, 'before')}
+                                    />
+                                    {tabs[activeTabIdx]?.rows.map((row, rowIdx) => (
+                                        <React.Fragment key={row.id}>
+                                            <SortableDesignerRow
+                                                tabIndex={activeTabIdx}
+                                                rowIndex={rowIdx}
+                                                row={row}
+                                            />
+                                            <InsertHandle
+                                                onClick={() => useFormStore.getState().insertRow(activeTabIdx, rowIdx, 'after')}
+                                            />
+                                        </React.Fragment>
+                                    ))}
+                                </SortableContext>
                             </div>
 
                             {/* Empty State / Add First Row if empty */}
@@ -291,22 +348,27 @@ export default function Canvas() {
                         </>
                     ) : (
                         <>
-                            <div className="flex flex-col">
-                                <InsertHandle
-                                    onClick={() => useFormStore.getState().insertRow(-1, 0, 'before')}
-                                />
-                                {layout.rows?.map((row, rowIdx) => (
-                                    <React.Fragment key={row.id}>
-                                        <DesignerRow
-                                            tabIndex={-1}
-                                            rowIndex={rowIdx}
-                                            row={row}
-                                        />
-                                        <InsertHandle
-                                            onClick={() => useFormStore.getState().insertRow(-1, rowIdx, 'after')}
-                                        />
-                                    </React.Fragment>
-                                ))}
+                            <div className="flex flex-col gap-4">
+                                <SortableContext
+                                    items={layout.rows?.map(r => r.id) || []}
+                                    strategy={verticalListSortingStrategy}
+                                >
+                                    <InsertHandle
+                                        onClick={() => useFormStore.getState().insertRow(-1, 0, 'before')}
+                                    />
+                                    {layout.rows?.map((row, rowIdx) => (
+                                        <React.Fragment key={row.id}>
+                                            <SortableDesignerRow
+                                                tabIndex={-1}
+                                                rowIndex={rowIdx}
+                                                row={row}
+                                            />
+                                            <InsertHandle
+                                                onClick={() => useFormStore.getState().insertRow(-1, rowIdx, 'after')}
+                                            />
+                                        </React.Fragment>
+                                    ))}
+                                </SortableContext>
                             </div>
 
                             {(!layout.rows || layout.rows.length === 0) && (
@@ -331,6 +393,6 @@ export default function Canvas() {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
