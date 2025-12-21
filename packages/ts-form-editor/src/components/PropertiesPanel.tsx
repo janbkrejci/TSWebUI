@@ -91,16 +91,36 @@ function SortableButton({
                 <div className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600" {...listeners} {...attributes}>
                     <GripVertical size={16} />
                 </div>
-                <button
-                    onClick={() => {
-                        const newBtns = [...buttons];
-                        newBtns.splice(index, 1);
-                        updateButtons(newBtns);
-                    }}
-                    className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-all p-1"
-                >
-                    <Trash2 size={14} />
-                </button>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <button
+                            className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-all p-1"
+                        >
+                            <Trash2 size={14} />
+                        </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Button</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Are you sure you want to delete this button?
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={() => {
+                                    const newBtns = [...buttons];
+                                    newBtns.splice(index, 1);
+                                    updateButtons(newBtns);
+                                }}
+                                className="bg-red-600 hover:bg-red-700"
+                            >
+                                Delete
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
 
             <div className="grid grid-cols-2 gap-2 p-2">
@@ -263,11 +283,18 @@ export default function PropertiesPanel() {
 
     const handleChange = (key: keyof FormFieldConfig, value: any) => {
         if (selectedElement.fieldName) {
-            if (key === 'width' && value === '') {
-                updateFieldConfig(selectedElement.fieldName, { [key]: undefined });
-            } else {
-                updateFieldConfig(selectedElement.fieldName, { [key]: value });
+            let newValue = value;
+
+            // General cleanup: remove empty strings and false flags from JSON
+            if (typeof value === 'string' && value === '') {
+                newValue = undefined;
+            } else if (['hidden', 'disabled', 'required', 'readonly', 'autofocus'].includes(key as string) && value === false) {
+                newValue = undefined;
+            } else if (typeof value === 'number' && isNaN(value)) {
+                newValue = undefined;
             }
+
+            updateFieldConfig(selectedElement.fieldName, { [key]: newValue });
         }
     };
 
@@ -398,10 +425,13 @@ export default function PropertiesPanel() {
                             <input
                                 type="text"
                                 value={selectedElement.fieldName}
-                                onChange={(e) => renameField(selectedElement.fieldName!, e.target.value)}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    renameField(selectedElement.fieldName!, val ? val : `field_${Math.random().toString(36).substr(2, 9)}`);
+                                }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono text-gray-600"
                             />
-                            <p className="text-xs text-gray-400 mt-1">Must be unique</p>
+                            <p className="text-xs text-gray-400 mt-1">Must be unique. Clears to random ID.</p>
                         </div>
                     )}
 
@@ -479,8 +509,8 @@ export default function PropertiesPanel() {
                         </div>
                     )}
 
-                    {/* Number & Slider Specific */}
-                    {['number', 'slider'].includes(fieldConfig.type) && (
+                    {/* Slider Specific */}
+                    {fieldConfig.type === 'slider' && (
                         <>
                             <div className="grid grid-cols-3 gap-2">
                                 <div>
@@ -828,7 +858,7 @@ export default function PropertiesPanel() {
                     )}
 
                     {/* Value Override (Advanced) */}
-                    {fieldConfig?.type !== 'infobox' && (
+                    {!['infobox', 'markdown', 'text', 'textarea', 'password'].includes(fieldConfig?.type || '') && (
                         <div>
                             <label className="block text-xs font-medium text-gray-400 mb-1 mt-4 border-t pt-2">Default Value / Override</label>
                             <input

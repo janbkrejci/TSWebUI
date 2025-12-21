@@ -288,7 +288,7 @@ function DesignerRow({ tabIndex, rowIndex, row }: { tabIndex: number, rowIndex: 
 }
 
 
-function BottomDropZone({ activeDragType }: { activeDragType?: string }) {
+function BottomDropZone({ activeDragType, isEmpty }: { activeDragType?: string, isEmpty?: boolean }) {
     const { setNodeRef, isOver } = useDroppable({
         id: 'bottom-drop-zone',
         data: { type: 'new-row-zone' }
@@ -299,7 +299,7 @@ function BottomDropZone({ activeDragType }: { activeDragType?: string }) {
     if (!isFieldDrag) return null;
 
     return (
-        <div className="mb-0 relative rounded p-1 -m-1 mt-2">
+        <div className={clsx("relative rounded p-1 -m-1", isEmpty ? "mt-3 mb-9" : "mt-2 mb-0")}>
             <div className="flex gap-4 items-stretch">
                 {/* Left Spacer to match InsertHandle */}
                 <div className="w-4 -mx-2 py-2 opacity-0 pointer-events-none" />
@@ -350,40 +350,39 @@ export default function Canvas({ activeDragType }: { activeDragType?: string }) 
         }
     }, [tabs.length, activeTabIndex, setActiveTabIndex]);
 
-
+    const isFieldDrag = activeDragType === 'field-source' || activeDragType === 'field-move';
 
     const isTabsMode = layout.mode === 'tabs' || !layout.mode; // Default to tabs
 
     return (
         <div className="h-full flex flex-col">
-            {/* Tabs Header - Only show if in tabs mode */}
-            {isTabsMode && (
-                <div className="flex gap-1 border-b border-gray-200 px-4 bg-white overflow-x-auto">
-                    <SortableContext
-                        items={tabs.map(t => t.id)}
-                        strategy={horizontalListSortingStrategy}
-                    >
-                        {tabs.map((tab, idx) => (
-                            <SortableTab
-                                key={tab.id}
-                                tab={tab}
-                                index={idx}
-                                isActive={activeTabIndex === idx}
-                                onClick={() => {
-                                    setActiveTabIndex(idx);
-                                    selectElement(tab.id, 'tab');
-                                }}
-                            />
-                        ))}
-                    </SortableContext>
-                    <button
-                        onClick={addTab}
-                        className="px-3 py-2 text-sm font-medium text-gray-400 hover:text-blue-500"
-                    >
-                        +
-                    </button>
-                </div>
-            )}
+            {/* Tabs Header - Always show */}
+            <div className="flex gap-1 border-b border-gray-200 px-4 bg-white overflow-x-auto">
+                <SortableContext
+                    items={tabs.map(t => t.id)}
+                    strategy={horizontalListSortingStrategy}
+                >
+                    {tabs.map((tab, idx) => (
+                        <SortableTab
+                            key={tab.id}
+                            tab={tab}
+                            index={idx}
+                            isActive={activeTabIndex === idx}
+                            onClick={() => {
+                                setActiveTabIndex(idx);
+                                selectElement(tab.id, 'tab');
+                            }}
+                        />
+                    ))}
+                </SortableContext>
+                <button
+                    onClick={addTab}
+                    className="px-3 py-2 text-sm font-medium text-gray-400 hover:text-blue-500"
+                    title={tabs.length === 0 ? "Convert to Tabs" : "Add Tab"}
+                >
+                    +
+                </button>
+            </div>
 
             {/* Tab/Content (Canvas) */}
             <div
@@ -418,15 +417,19 @@ export default function Canvas({ activeDragType }: { activeDragType?: string }) 
                             </div>
 
                             {/* Empty State / Add First Row if empty */}
-                            {(!tabs[activeTabIndex]?.rows || tabs[activeTabIndex]?.rows.length === 0) && (
-                                <button
-                                    onClick={() => addRow(activeTabIndex)}
-                                    className="w-full py-8 border-2 border-dashed border-gray-200 rounded-lg text-gray-400 hover:border-gray-300 hover:text-gray-500 text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                                >
-                                    Start by adding a row
-                                </button>
+                            {(!tabs[activeTabIndex]?.rows || tabs[activeTabIndex]?.rows.length === 0) && !isFieldDrag && (
+                                <div className="flex gap-4 items-stretch mt-4 mb-8">
+                                    <div className="w-4 -mx-2 opacity-0" />
+                                    <button
+                                        onClick={() => addRow(activeTabIndex)}
+                                        className="flex-1 h-[72px] border-2 border-dashed border-gray-200 rounded-lg text-gray-400 hover:border-gray-300 hover:text-gray-500 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        Start by adding a row
+                                    </button>
+                                    <div className="w-4 -mx-2 opacity-0" />
+                                </div>
                             )}
-                            <BottomDropZone activeDragType={activeDragType} />
+                            <BottomDropZone activeDragType={activeDragType} isEmpty={!tabs[activeTabIndex]?.rows || tabs[activeTabIndex]?.rows.length === 0} />
                         </>
                     ) : (
                         <>
@@ -453,25 +456,21 @@ export default function Canvas({ activeDragType }: { activeDragType?: string }) 
                                 </SortableContext>
                             </div>
 
-                            {(!layout.rows || layout.rows.length === 0) && (
-                                <button
-                                    onClick={() => useFormStore.getState().addRow(-1)}
-                                    className="w-full py-8 border-2 border-dashed border-gray-200 rounded-lg text-gray-400 hover:border-gray-300 hover:text-gray-500 text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                                >
-                                    Start by adding a row
-                                </button>
+                            {(!layout.rows || layout.rows.length === 0) && !isFieldDrag && (
+                                <div className="flex gap-4 items-stretch mt-4 mb-8">
+                                    <div className="w-4 -mx-2 opacity-0" />
+                                    <button
+                                        onClick={() => useFormStore.getState().addRow(-1)}
+                                        className="flex-1 h-[72px] border-2 border-dashed border-gray-200 rounded-lg text-gray-400 hover:border-gray-300 hover:text-gray-500 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        Start by adding a row
+                                    </button>
+                                    <div className="w-4 -mx-2 opacity-0" />
+                                </div>
                             )}
-                            <BottomDropZone activeDragType={activeDragType} />
+                            <BottomDropZone activeDragType={activeDragType} isEmpty={!layout.rows || layout.rows.length === 0} />
 
-                            <div className="flex justify-center mt-4">
-                                <button
-                                    onClick={addTab}
-                                    className="px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-sm font-medium hover:bg-blue-100 transition-colors"
-                                    title="Convert to Tabs Layout"
-                                >
-                                    + Convert to Tabs
-                                </button>
-                            </div>
+                            {/* Removed Convert to Tabs button */}
                         </>
                     )}
                 </div>
