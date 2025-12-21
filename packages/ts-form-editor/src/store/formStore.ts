@@ -235,12 +235,23 @@ export const useFormStore = create<FormStore>((set, get) => ({
         return { layout: newLayout, selectedElement: null }; // Deselect upon removal
     }),
 
-    updateFieldConfig: (fieldName, config) => set((state) => ({
-        fields: {
+    updateFieldConfig: (fieldName, config) => set((state) => {
+        const newFields = {
             ...state.fields,
             [fieldName]: { ...state.fields[fieldName], ...config }
+        };
+
+        // If setting autofocus to true, remove it from all other fields
+        if (config.autofocus === true) {
+            Object.keys(newFields).forEach(key => {
+                if (key !== fieldName && newFields[key].autofocus) {
+                    newFields[key] = { ...newFields[key], autofocus: false };
+                }
+            });
         }
-    })),
+
+        return { fields: newFields };
+    }),
 
     updateLayoutColumn: (tabIndex, rowIndex, colIndex, formattedCol) => set((state) => {
         const newLayout = JSON.parse(JSON.stringify(state.layout));
