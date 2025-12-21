@@ -314,7 +314,7 @@ export default function PropertiesPanel() {
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Alignment</label>
                             <Select
-                                value={selectedCol.align || ''}
+                                value={selectedCol.align || 'default'}
                                 onValueChange={(value) => {
                                     if (location) {
                                         updateLayoutColumn(location.tabIndex, location.rowIndex, location.colIndex, { align: value === 'default' ? undefined : value as any });

@@ -58,7 +58,7 @@ function App() {
                 useFormStore.getState().addField({ type: fieldType, rowIndex, colIndex, tabIndex });
             } else if (over.data.current?.type === 'new-row-zone') {
                 // Dropped on new row zone
-                const { activeTabIndex, layout } = useFormStore.getState();
+                const { activeTabIndex } = useFormStore.getState();
                 // Determine tab index: if tabs mode, use activeTabIndex, else -1?
                 // Wait, Canvas passes tabIndex in props? No.
                 // We need to know which tab we are on.
@@ -81,20 +81,6 @@ function App() {
                 };
 
                 useFormStore.getState().moveField(source, target);
-
-                // Select the moved element at the target location
-                const { layout } = useFormStore.getState();
-                let targetColId: string | undefined;
-
-                if (layout.mode === 'single' || !layout.tabs) {
-                    targetColId = layout.rows?.[target.rowIndex]?.columns?.[target.colIndex]?.id;
-                } else {
-                    targetColId = layout.tabs?.[target.tabIndex]?.rows?.[target.rowIndex]?.columns?.[target.colIndex]?.id;
-                }
-
-                if (targetColId) {
-                    useFormStore.getState().selectElement(targetColId, 'field');
-                }
             } else if (over && over.data.current?.type === 'new-row-zone') {
                 const source = active.data.current.source;
                 const { activeTabIndex } = useFormStore.getState();
@@ -117,7 +103,7 @@ function App() {
         } else if (active.data.current?.type === 'button-move') {
             if (over && over.data.current?.type === 'button-move') {
                 const sourceIndex = active.data.current.index;
-                const targetIndex = over.data.current.index;
+                const targetIndex = over.data.current!.index;
 
                 if (sourceIndex !== targetIndex) {
                     useFormStore.getState().moveButton(sourceIndex, targetIndex);
@@ -126,7 +112,7 @@ function App() {
         } else if (active.data.current?.type === 'tab-move') {
             if (over && over.data.current?.type === 'tab-move') {
                 const sourceIndex = active.data.current.index;
-                const targetIndex = over.data.current.index;
+                const targetIndex = over.data.current!.index;
 
                 if (sourceIndex !== targetIndex) {
                     useFormStore.getState().moveTab(sourceIndex, targetIndex);

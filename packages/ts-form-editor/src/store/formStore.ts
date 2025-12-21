@@ -280,12 +280,7 @@ export const useFormStore = create<FormStore>((set, get) => ({
 
         if (!sourceCol || !targetCol) return state;
 
-        // Snapshot source data before mutation
-        const sourceData = {
-            field: sourceCol.field,
-            type: sourceCol.type,
-            label: sourceCol.label
-        };
+
 
         if (targetCol.type === 'empty') {
             // MOVE: Target becomes source, Source becomes empty
@@ -334,7 +329,14 @@ export const useFormStore = create<FormStore>((set, get) => ({
             else delete sourceCol.align;
         }
 
-        return { layout: newLayout };
+        return {
+            layout: newLayout,
+            selectedElement: {
+                id: targetCol.id,
+                type: targetCol.type as any,
+                fieldName: targetCol.field
+            }
+        };
     }),
 
     addTab: () => set((state) => {
