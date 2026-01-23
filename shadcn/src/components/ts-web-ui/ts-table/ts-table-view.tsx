@@ -11,6 +11,13 @@ import {
   TableRow 
 } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 
 interface TsTableViewProps {
@@ -26,6 +33,7 @@ export function TsTableView({ table, onRowClick }: TsTableViewProps) {
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
+                const meta = header.column.columnDef.meta as any
                 return (
                   <TableHead 
                     key={header.id}
@@ -46,17 +54,33 @@ export function TsTableView({ table, onRowClick }: TsTableViewProps) {
                         {/* Filter Input */}
                         {header.column.getCanFilter() ? (
                             <div className="pb-2">
-                                <Input
-                                    placeholder={`Filtr...`}
-                                    value={(header.column.getFilterValue() ?? "") as string}
-                                    onChange={(event) =>
-                                        header.column.setFilterValue(event.target.value)
-                                    }
-                                    className="h-8 text-xs bg-background"
-                                />
+                                {meta?.type === 'boolean' ? (
+                                    <Select 
+                                        value={(header.column.getFilterValue() ?? "all") as string} 
+                                        onValueChange={val => header.column.setFilterValue(val === 'all' ? '' : val)}
+                                    >
+                                        <SelectTrigger className="h-8 text-xs bg-background w-full">
+                                            <SelectValue placeholder="Vše" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Vše</SelectItem>
+                                            <SelectItem value="true">Ano</SelectItem>
+                                            <SelectItem value="false">Ne</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                ) : (
+                                    <Input
+                                        placeholder={meta?.type === 'number' ? ">10, 10..20" : meta?.type === 'date' ? ">2023-01-01" : "Filtr..."}
+                                        value={(header.column.getFilterValue() ?? "") as string}
+                                        onChange={(event) =>
+                                            header.column.setFilterValue(event.target.value)
+                                        }
+                                        className="h-8 text-xs bg-background"
+                                    />
+                                )}
                             </div>
                         ) : (
-                            <div className="h-0 pb-2" /> // Spacer to keep alignment if needed, or remove
+                            <div className="h-0 pb-2" />
                         )}
                     </div>
                   </TableHead>

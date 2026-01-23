@@ -129,6 +129,7 @@ export function TsWindow({
 
   // Double click na header -> maximize
   const handleHeaderDoubleClick = () => {
+    if (windowState === "minimized") return
     if (windowState === "maximized") restore()
     else handleMaximize()
   }
@@ -154,6 +155,7 @@ export function TsWindow({
       disableDragging={windowState === "maximized"}
       enableResizing={windowState === "normal"}
       dragHandleClassName="window-drag-handle"
+      bounds="parent"
       style={{ zIndex }}
       className={cn(
         "flex flex-col overflow-hidden rounded-lg border bg-background shadow-xl transition-all duration-100 ease-in-out",
@@ -179,7 +181,7 @@ export function TsWindow({
                 <X className="w-2 h-2 text-red-900 opacity-0 group-hover:opacity-100" />
              </div>
              <div 
-                className={cn("w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 cursor-pointer flex items-center justify-center group", windowState === "minimized" && "bg-gray-400 pointer-events-none")}
+                className={cn("w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 cursor-pointer flex items-center justify-center group")}
                 onClick={handleMinimize}
              >
                  <Minus className="w-2 h-2 text-yellow-900 opacity-0 group-hover:opacity-100" />

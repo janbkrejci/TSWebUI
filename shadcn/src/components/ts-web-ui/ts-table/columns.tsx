@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { numberFilter, dateFilter, booleanFilter } from "./filters"
 
 export interface TsTableColumnDef {
   key: string
@@ -117,10 +118,18 @@ export function generateColumns(
         enableColumnFilter: def.filterable ?? true,
         size: typeof def.width === "number" ? def.width : 200,
         filterFn: (row, id, value) => {
+             if (def.type === 'number') return numberFilter(row, id, value)
+             if (def.type === 'date') return dateFilter(row, id, value)
+             if (def.type === 'boolean') return booleanFilter(row, id, value)
+
              // Custom simple filter logic mirroring original behavior (case insensitive contains)
              const rowValue = String(row.getValue(id) ?? "").toLowerCase()
              const filterValue = String(value ?? "").toLowerCase()
              return rowValue.includes(filterValue)
+        },
+        meta: {
+            // Uložíme si typ pro použití v UI (např. renderování boolean selectu)
+            type: def.type
         }
       })
     })
