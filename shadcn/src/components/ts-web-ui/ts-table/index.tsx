@@ -12,9 +12,10 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 
-import { TsTableView, TsTableColumnDef } from "./ts-table-view"
+import { TsTableView } from "./ts-table-view"
 import { TsTableToolbar } from "./ts-table-toolbar"
 import { TsTablePagination } from "./ts-table-pagination"
+import { generateColumns, TsTableColumnDef } from "./columns"
 
 export interface TsTableProps {
   data: any[]
@@ -62,9 +63,15 @@ export function TsTable({
     setData(initialData)
   }, [initialData])
 
+  // Generate columns definition
+  const columns = React.useMemo(
+      () => generateColumns(columnDefinitions, enableSelection, onRowClick), 
+      [columnDefinitions, enableSelection, onRowClick]
+  )
+
   const table = useReactTable({
     data,
-    columns: [], // Bude vygenerováno uvnitř TsTableView, nebo bychom ho mohli generovat zde
+    columns,
     state: {
       sorting,
       columnFilters,
@@ -105,18 +112,8 @@ export function TsTable({
         onImportClick={handleImport}
       />
       <TsTableView 
-        data={data}
-        columnDefinitions={columnDefinitions}
-        enableSelection={enableSelection}
-        onRowClick={onRowClick}
-        sorting={sorting}
-        setSorting={setSorting}
-        columnFilters={columnFilters}
-        setColumnFilters={setColumnFilters}
-        columnVisibility={columnVisibility}
-        setColumnVisibility={setColumnVisibility}
-        rowSelection={rowSelection}
-        setRowSelection={setRowSelection}
+        table={table}
+        onRowClick={onRowClick ? (row) => onRowClick(row) : undefined}
       />
       <TsTablePagination table={table} pageSizeOptions={pageSizeOptions} />
     </div>

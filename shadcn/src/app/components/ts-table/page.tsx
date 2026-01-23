@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { TsTable } from "@/components/ts-web-ui/ts-table"
-import { TsTableColumnDef } from "@/components/ts-web-ui/ts-table/ts-table-view"
+import { TsTableColumnDef } from "@/components/ts-web-ui/ts-table/columns"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
