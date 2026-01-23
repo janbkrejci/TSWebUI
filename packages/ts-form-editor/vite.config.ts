@@ -5,6 +5,11 @@ import { resolve } from 'path'
 // https://vite.dev/config/
 export default defineConfig({
     plugins: [react()],
+    base: './',
+    build: {
+        outDir: '../../public/ts-form-editor',
+        emptyOutDir: true
+    },
     resolve: {
         alias: {
             '@': resolve(__dirname, './src'),
