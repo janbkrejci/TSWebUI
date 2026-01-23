@@ -1,0 +1,167 @@
+"use client"
+
+import * as React from "react"
+import { useFormContext } from "react-hook-form"
+import { TsFieldDef } from "./types"
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Switch } from "@/components/ui/switch"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { CalendarIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
+import { cs } from "date-fns/locale"
+
+interface TsFormFieldProps {
+  name: string
+  fieldDef: TsFieldDef
+}
+
+export function TsFormField({ name, fieldDef }: TsFormFieldProps) {
+  const form = useFormContext()
+
+  return (
+    <FormField
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <FormItem className={cn(fieldDef.hidden && "hidden")}>
+          {fieldDef.type !== "checkbox" && fieldDef.type !== "switch" && (
+            <FormLabel>
+                {fieldDef.label} 
+                {fieldDef.required && <span className="text-destructive ml-1">*</span>}
+            </FormLabel>
+          )}
+          
+          <FormControl>
+            {renderWidget(field, fieldDef)}
+          </FormControl>
+          
+          {fieldDef.hint && <FormDescription>{fieldDef.hint}</FormDescription>}
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  )
+}
+
+function renderWidget(field: any, def: TsFieldDef) {
+  switch (def.type) {
+    case "text":
+    case "password":
+      return <Input type={def.type} placeholder={def.placeholder} {...field} disabled={def.disabled || def.readonly} />
+    
+    case "number":
+      return (
+        <Input 
+            type="number" 
+            placeholder={def.placeholder} 
+            {...field} 
+            onChange={e => field.onChange(e.target.valueAsNumber)}
+            min={def.min}
+            max={def.max}
+            step={def.step}
+            disabled={def.disabled || def.readonly}
+        />
+      )
+
+    case "textarea":
+      return <Textarea placeholder={def.placeholder} {...field} rows={def.rows || 3} disabled={def.disabled || def.readonly} />
+
+    case "checkbox":
+      return (
+        <div className="flex items-center space-x-2">
+            <Checkbox 
+                checked={field.value} 
+                onCheckedChange={field.onChange} 
+                disabled={def.disabled || def.readonly}
+            />
+            <FormLabel className="font-normal cursor-pointer">
+                {def.label}
+                {def.required && <span className="text-destructive ml-1">*</span>}
+            </FormLabel>
+        </div>
+      )
+
+    case "switch":
+        return (
+            <div className="flex items-center space-x-2">
+                <Switch 
+                    checked={field.value} 
+                    onCheckedChange={field.onChange}
+                    disabled={def.disabled || def.readonly}
+                />
+                <FormLabel className="font-normal cursor-pointer">
+                    {def.label}
+                    {def.required && <span className="text-destructive ml-1">*</span>}
+                </FormLabel>
+            </div>
+        )
+
+    case "select":
+      return (
+        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={def.disabled || def.readonly}>
+          <SelectTrigger>
+            <SelectValue placeholder={def.placeholder || "Vyberte..."} />
+          </SelectTrigger>
+          <SelectContent>
+            {(def.options || []).map((opt: any) => {
+                const value = typeof opt === 'string' ? opt : opt.value
+                const label = typeof opt === 'string' ? opt : opt.label
+                return <SelectItem key={value} value={value}>{label}</SelectItem>
+            })}
+          </SelectContent>
+        </Select>
+      )
+
+    case "date":
+      return (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant={"outline"}
+              className={cn(
+                "w-full justify-start text-left font-normal",
+                !field.value && "text-muted-foreground"
+              )}
+              disabled={def.disabled || def.readonly}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {field.value ? format(field.value, "PPP", { locale: cs }) : <span>{def.placeholder || "Vyberte datum"}</span>}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={field.value}
+              onSelect={field.onChange}
+              initialFocus
+              locale={cs}
+            />
+          </PopoverContent>
+        </Popover>
+      )
+    
+    // Fallback for not implemented
+    default:
+        return <div className="p-2 border border-destructive/50 text-destructive text-sm rounded bg-destructive/10">Unsupported widget: {def.type}</div>
+  }
+}
