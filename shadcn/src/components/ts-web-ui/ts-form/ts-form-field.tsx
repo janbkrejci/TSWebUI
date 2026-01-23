@@ -64,10 +64,21 @@ export function TsFormField({ name, fieldDef }: TsFormFieldProps) {
 }
 
 function renderWidget(field: any, def: TsFieldDef) {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === "Escape") {
+          e.preventDefault()
+          if (def.type === 'number') {
+              field.onChange(undefined)
+          } else {
+              field.onChange("")
+          }
+      }
+  }
+
   switch (def.type) {
     case "text":
     case "password":
-      return <Input type={def.type} placeholder={def.placeholder} {...field} value={field.value ?? ""} disabled={def.disabled || def.readonly} />
+      return <Input type={def.type} placeholder={def.placeholder} {...field} value={field.value ?? ""} onKeyDown={handleKeyDown} disabled={def.disabled || def.readonly} />
     
     case "number":
       return (
@@ -80,6 +91,7 @@ function renderWidget(field: any, def: TsFieldDef) {
                 const val = e.target.value
                 field.onChange(val === "" ? undefined : e.target.valueAsNumber)
             }}
+            onKeyDown={handleKeyDown}
             min={def.min}
             max={def.max}
             step={def.step}
@@ -88,7 +100,7 @@ function renderWidget(field: any, def: TsFieldDef) {
       )
 
     case "textarea":
-      return <Textarea placeholder={def.placeholder} {...field} value={field.value ?? ""} rows={def.rows || 3} disabled={def.disabled || def.readonly} />
+      return <Textarea placeholder={def.placeholder} {...field} value={field.value ?? ""} rows={def.rows || 3} onKeyDown={handleKeyDown} disabled={def.disabled || def.readonly} />
 
     case "checkbox":
       return (

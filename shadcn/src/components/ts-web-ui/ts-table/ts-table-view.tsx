@@ -75,6 +75,12 @@ export function TsTableView({ table, onRowClick }: TsTableViewProps) {
                                         onChange={(event) =>
                                             header.column.setFilterValue(event.target.value)
                                         }
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Escape") {
+                                                e.preventDefault()
+                                                header.column.setFilterValue("")
+                                            }
+                                        }}
                                         className="h-8 text-xs bg-background"
                                     />
                                 )}
