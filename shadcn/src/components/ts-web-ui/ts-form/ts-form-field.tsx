@@ -67,7 +67,7 @@ function renderWidget(field: any, def: TsFieldDef) {
   switch (def.type) {
     case "text":
     case "password":
-      return <Input type={def.type} placeholder={def.placeholder} {...field} disabled={def.disabled || def.readonly} />
+      return <Input type={def.type} placeholder={def.placeholder} {...field} value={field.value ?? ""} disabled={def.disabled || def.readonly} />
     
     case "number":
       return (
@@ -75,7 +75,11 @@ function renderWidget(field: any, def: TsFieldDef) {
             type="number" 
             placeholder={def.placeholder} 
             {...field} 
-            onChange={e => field.onChange(e.target.valueAsNumber)}
+            value={field.value ?? ""}
+            onChange={e => {
+                const val = e.target.value
+                field.onChange(val === "" ? undefined : e.target.valueAsNumber)
+            }}
             min={def.min}
             max={def.max}
             step={def.step}
@@ -84,13 +88,13 @@ function renderWidget(field: any, def: TsFieldDef) {
       )
 
     case "textarea":
-      return <Textarea placeholder={def.placeholder} {...field} rows={def.rows || 3} disabled={def.disabled || def.readonly} />
+      return <Textarea placeholder={def.placeholder} {...field} value={field.value ?? ""} rows={def.rows || 3} disabled={def.disabled || def.readonly} />
 
     case "checkbox":
       return (
         <div className="flex items-center space-x-2">
             <Checkbox 
-                checked={field.value} 
+                checked={!!field.value} 
                 onCheckedChange={field.onChange} 
                 disabled={def.disabled || def.readonly}
             />
@@ -105,7 +109,7 @@ function renderWidget(field: any, def: TsFieldDef) {
         return (
             <div className="flex items-center space-x-2">
                 <Switch 
-                    checked={field.value} 
+                    checked={!!field.value} 
                     onCheckedChange={field.onChange}
                     disabled={def.disabled || def.readonly}
                 />
@@ -118,7 +122,7 @@ function renderWidget(field: any, def: TsFieldDef) {
 
     case "select":
       return (
-        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={def.disabled || def.readonly}>
+        <Select onValueChange={field.onChange} value={field.value} disabled={def.disabled || def.readonly}>
           <SelectTrigger>
             <SelectValue placeholder={def.placeholder || "Vyberte..."} />
           </SelectTrigger>
