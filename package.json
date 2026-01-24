@@ -16,8 +16,9 @@
   "scripts": {
     "bundle": "vite build --config vite.bundle.config.js",
     "build:editor": "cd packages/ts-form-editor && npm install && npm run build",
-    "storybook": "npm run build:editor && storybook dev --ci -p 3000",
-    "build-storybook": "npm run build:editor && rm -rf docs && storybook build -o docs"
+    "build:shadcn": "cd shadcn && npm install && npm run build && cd .. && rm -rf public/shadcn && mkdir -p public/shadcn && cp -r shadcn/out/* public/shadcn/",
+    "build:storybook": "npm run build:editor && rm -rf docs && storybook build -o docs",
+    "storybook": "npm run build:editor && storybook dev --ci -p 3000"
   },
   "devDependencies": {
     "@storybook/addon-actions": "^9.0.8",
