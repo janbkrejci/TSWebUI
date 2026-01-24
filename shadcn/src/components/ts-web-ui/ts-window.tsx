@@ -148,15 +148,20 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       bringToFront: () => onFocus?.()
   }))
 
+  const setGlobalUserSelect = (val: string) => {
+      document.body.style.userSelect = val
+      document.documentElement.style.userSelect = val
+  }
+
   const handleDragStart: RndDragCallback = (e, d) => {
     setIsDragging(true)
-    document.body.style.userSelect = 'none'
+    setGlobalUserSelect('none')
     onFocus?.()
   }
 
   const handleDragStop: RndDragCallback = (e, d) => {
     setIsDragging(false)
-    document.body.style.userSelect = ''
+    setGlobalUserSelect('')
     const newPos = { x: d.x, y: d.y }
     setPosition(newPos)
 
@@ -167,12 +172,12 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
 
   const handleResizeStart = () => {
     setIsResizing(true)
-    document.body.style.userSelect = 'none'
+    setGlobalUserSelect('none')
   }
 
   const handleResizeStop: RndResizeCallback = (e, direction, ref, delta, position) => {
     setIsResizing(false)
-    document.body.style.userSelect = ''
+    setGlobalUserSelect('')
     setSize({
       width: Number.parseInt(ref.style.width),
       height: Number.parseInt(ref.style.height),
@@ -206,7 +211,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       bounds="parent"
       style={{ zIndex }}
       className={cn(
-        "flex flex-col overflow-hidden rounded-lg border bg-background shadow-xl ease-in-out",
+        "flex flex-col overflow-hidden rounded-lg border bg-background shadow-xl ease-in-out select-none",
         // Apply transition ONLY when NOT dragging or resizing
         (!isDragging && !isResizing) && "transition-all duration-200",
         windowState === "maximized" && "rounded-none border-none",
