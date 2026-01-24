@@ -441,14 +441,15 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       <div 
         ref={contentRef}
         className={cn(
-            "flex-1 overflow-auto bg-background p-4 min-h-0 h-full",
+            "overflow-auto bg-background min-h-0",
             // If ANY window is interacting, disable selection on ALL windows via context state
             // If NO interaction, allow selection and auto cursor
             globalIsInteracting ? "select-none" : "select-text cursor-auto",
             windowState === "minimized" && "hidden"
         )}
+        style={{ height: "calc(100% - 2.5rem)" }}
       >
-        <div ref={measureRef} className="h-fit w-full">
+        <div ref={measureRef} className="h-fit w-full p-4 pb-8">
             {children}
         </div>
       </div>
