@@ -67,7 +67,7 @@ export function AppSidebar({ className }: SidebarProps) {
             <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
                 Form Widgets
             </h2>
-            <ScrollArea className="h-[300px] px-2">
+            <ScrollArea className="h-75 px-2">
                 <div className="space-y-1 p-2">
                     <Button variant="ghost" className="w-full justify-start h-8 px-2" disabled>
                         Text Input (Coming Soon)
