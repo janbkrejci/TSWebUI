@@ -69,6 +69,9 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
   // Uložení stavu před maximalizací/minimalizací pro restore
   const [restoreRect, setRestoreRect] = React.useState<Rect | null>(null)
 
+  // Uložení pozice minimalizovaného okna
+  const [minimizedPosition, setMinimizedPosition] = React.useState<{ x: number; y: number } | null>(null)
+
   // Reference na obsah pro auto-size
   const contentRef = React.useRef<HTMLDivElement>(null)
 
@@ -93,11 +96,19 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       restore()
       return
     }
+    // Pokud jsme normal, uložíme si rect pro restore. 
+    // Pokud jsme maximized, restoreRect už máme uložený z doby, kdy jsme šli do max.
     if (windowState === "normal") {
       setRestoreRect({ ...size, ...position })
     }
+    
     setWindowState("minimized")
     setSize({ width: 200, height: 40 })
+
+    // Pokud máme uloženou pozici minimalizovaného okna, přesuneme se tam
+    if (minimizedPosition) {
+        setPosition(minimizedPosition)
+    }
   }
 
   const handleMaximize = () => {
@@ -123,34 +134,41 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
           if (typeof window === 'undefined') return
           const w = window.innerWidth
           const h = window.innerHeight
-          // If maximized, we probably shouldn't center, or we restore first?
-          // Let's assume centering works on current size (useless if maxed)
           if (windowState !== 'maximized') {
               setPosition({ x: (w - size.width) / 2, y: (h - size.height) / 2 })
           }
       },
       fitToContent: () => {
           if (contentRef.current && windowState !== 'minimized') {
-              // Measure content height. 
-              // contentRef points to the content div. 
-              // We need to set Rnd size to content height + header height (40px) + border/padding?
-              // The content div has p-4 (1rem = 16px).
               const contentHeight = contentRef.current.scrollHeight
-              // If overflow is auto, scrollHeight includes hidden content.
-              // We want to expand window to fit it.
-              // Header is 40px.
-              // We might need to add some buffer.
               setSize(prev => ({ ...prev, height: contentHeight + 40 }))
           }
       },
       bringToFront: () => onFocus?.()
   }))
 
+  const handleDragStart: RndDragCallback = (e, d) => {
+    document.body.style.userSelect = 'none'
+    onFocus?.()
+  }
+
   const handleDragStop: RndDragCallback = (e, d) => {
-    setPosition({ x: d.x, y: d.y })
+    document.body.style.userSelect = ''
+    const newPos = { x: d.x, y: d.y }
+    setPosition(newPos)
+
+    // Pokud jsme minimalizovaní a hýbeme s oknem, uložíme si novou "minimized" pozici
+    if (windowState === "minimized") {
+        setMinimizedPosition(newPos)
+    }
+  }
+
+  const handleResizeStart = () => {
+    document.body.style.userSelect = 'none'
   }
 
   const handleResizeStop: RndResizeCallback = (e, direction, ref, delta, position) => {
+    document.body.style.userSelect = ''
     setSize({
       width: Number.parseInt(ref.style.width),
       height: Number.parseInt(ref.style.height),
@@ -159,7 +177,10 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
   }
 
   const handleHeaderDoubleClick = () => {
-    if (windowState === "minimized") return
+    if (windowState === "minimized") {
+      restore()
+      return
+    }
     if (windowState === "maximized") restore()
     else handleMaximize()
   }
@@ -168,9 +189,10 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
     <Rnd
       size={size}
       position={position}
+      onDragStart={handleDragStart}
       onDragStop={handleDragStop}
+      onResizeStart={handleResizeStart}
       onResizeStop={handleResizeStop}
-      onDragStart={onFocus}
       onMouseDown={onFocus}
       minWidth={windowState === "minimized" ? 200 : minWidth}
       minHeight={windowState === "minimized" ? 40 : minHeight}
@@ -189,7 +211,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       <div
         className={cn(
           "window-drag-handle flex h-10 shrink-0 items-center justify-between border-b bg-muted px-3 select-none",
-          windowState !== "maximized" && "cursor-move"
+          windowState === "maximized" ? "cursor-default" : "cursor-move"
         )}
         onDoubleClick={handleHeaderDoubleClick}
       >
@@ -202,7 +224,10 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
                 <X className="w-2 h-2 text-red-900 opacity-0 group-hover:opacity-100" />
              </div>
              <div 
-                className={cn("w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 cursor-pointer flex items-center justify-center group")}
+                className={cn(
+                    "w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 cursor-pointer flex items-center justify-center group",
+                    windowState === "maximized" && "bg-gray-400 pointer-events-none opacity-50"
+                )}
                 onClick={(e) => { e.stopPropagation(); handleMinimize() }}
              >
                  <Minus className="w-2 h-2 text-yellow-900 opacity-0 group-hover:opacity-100" />
