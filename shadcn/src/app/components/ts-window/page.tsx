@@ -295,7 +295,7 @@ export default function Page() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="w-[250px]">Method</TableHead>
+                                        <TableHead className="w-62.5">Method</TableHead>
                                         <TableHead>Description</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -333,7 +333,7 @@ export default function Page() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="w-[250px]">Method</TableHead>
+                                        <TableHead className="w-62.5">Method</TableHead>
                                         <TableHead>Description</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -380,8 +380,8 @@ export default function Page() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="w-[200px]">Prop</TableHead>
-                                        <TableHead className="w-[150px]">Type</TableHead>
+                                        <TableHead className="w-50">Prop</TableHead>
+                                        <TableHead className="w-37.5">Type</TableHead>
                                         <TableHead>Description</TableHead>
                                     </TableRow>
                                 </TableHeader>
