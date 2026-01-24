@@ -23,6 +23,16 @@ export interface TsWindowProps {
   initiallyMaximized?: boolean
 }
 
+export interface TsWindowRef {
+    minimize: () => void
+    maximize: () => void
+    restore: () => void
+    close: () => void
+    centerOnScreen: () => void
+    fitToContent: (animate?: boolean) => void
+    bringToFront: () => void
+}
+
 type WindowState = "normal" | "minimized" | "maximized"
 
 interface Rect {
@@ -32,7 +42,7 @@ interface Rect {
   y: number
 }
 
-export function TsWindow({
+export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
   title = "Window",
   defaultWidth = 400,
   defaultHeight = 300,
@@ -47,7 +57,7 @@ export function TsWindow({
   onFocus,
   initiallyMinimized = false,
   initiallyMaximized = false,
-}: TsWindowProps) {
+}, ref) => {
   const [windowState, setWindowState] = React.useState<WindowState>(
     initiallyMaximized ? "maximized" : initiallyMinimized ? "minimized" : "normal"
   )
@@ -70,50 +80,71 @@ export function TsWindow({
     }
   }, [initiallyMaximized, defaultWidth, defaultHeight, defaultLeft, defaultTop])
 
-  const handleMinimize = (e?: React.MouseEvent) => {
-    e?.stopPropagation()
-    if (windowState === "minimized") {
-      restore()
-      return
-    }
-
-    // Uložíme aktuální stav, pokud nejsme už maximalizovaní (tam už uložený je)
-    if (windowState === "normal") {
-      setRestoreRect({ ...size, ...position })
-    }
-
-    setWindowState("minimized")
-    // Fixní velikost pro minimalizované okno
-    setSize({ width: 200, height: 40 }) // 40px cca výška headeru
-  }
-
-  const handleMaximize = (e?: React.MouseEvent) => {
-    e?.stopPropagation()
-    if (windowState === "maximized") {
-      restore()
-      return
-    }
-
-    // Uložíme aktuální stav
-    if (windowState === "normal") {
-      setRestoreRect({ ...size, ...position })
-    }
-
-    setWindowState("maximized")
-    setSize({ width: window.innerWidth, height: window.innerHeight })
-    setPosition({ x: 0, y: 0 })
-  }
-
   const restore = () => {
     if (!restoreRect) return
 
     setWindowState("normal")
     setSize({ width: restoreRect.width, height: restoreRect.height })
-    // Pozici obnovíme jen pokud jsme byli maximalizovaní, nebo pokud chceme vrátit i pozici po minimalizaci
-    // V původním kódu: minimalizace nemění pozici (jen velikost), ale tady Rnd mění obojí.
-    // Takže musíme obnovit i pozici.
     setPosition({ x: restoreRect.x, y: restoreRect.y })
   }
+
+  const handleMinimize = () => {
+    if (windowState === "minimized") {
+      restore()
+      return
+    }
+    if (windowState === "normal") {
+      setRestoreRect({ ...size, ...position })
+    }
+    setWindowState("minimized")
+    setSize({ width: 200, height: 40 })
+  }
+
+  const handleMaximize = () => {
+    if (windowState === "maximized") {
+      restore()
+      return
+    }
+    if (windowState === "normal") {
+      setRestoreRect({ ...size, ...position })
+    }
+    setWindowState("maximized")
+    setSize({ width: window.innerWidth, height: window.innerHeight })
+    setPosition({ x: 0, y: 0 })
+  }
+
+  // Expose API via ref
+  React.useImperativeHandle(ref, () => ({
+      minimize: handleMinimize,
+      maximize: handleMaximize,
+      restore: restore,
+      close: () => onClose?.(),
+      centerOnScreen: () => {
+          if (typeof window === 'undefined') return
+          const w = window.innerWidth
+          const h = window.innerHeight
+          // If maximized, we probably shouldn't center, or we restore first?
+          // Let's assume centering works on current size (useless if maxed)
+          if (windowState !== 'maximized') {
+              setPosition({ x: (w - size.width) / 2, y: (h - size.height) / 2 })
+          }
+      },
+      fitToContent: () => {
+          if (contentRef.current && windowState !== 'minimized') {
+              // Measure content height. 
+              // contentRef points to the content div. 
+              // We need to set Rnd size to content height + header height (40px) + border/padding?
+              // The content div has p-4 (1rem = 16px).
+              const contentHeight = contentRef.current.scrollHeight
+              // If overflow is auto, scrollHeight includes hidden content.
+              // We want to expand window to fit it.
+              // Header is 40px.
+              // We might need to add some buffer.
+              setSize(prev => ({ ...prev, height: contentHeight + 40 }))
+          }
+      },
+      bringToFront: () => onFocus?.()
+  }))
 
   const handleDragStop: RndDragCallback = (e, d) => {
     setPosition({ x: d.x, y: d.y })
@@ -127,20 +158,11 @@ export function TsWindow({
     setPosition(position)
   }
 
-  // Double click na header -> maximize
   const handleHeaderDoubleClick = () => {
     if (windowState === "minimized") return
     if (windowState === "maximized") restore()
     else handleMaximize()
   }
-
-  // Auto-size (double click na resize handle - simulace)
-  // Rnd nemá přímý support pro double click na handle, ale můžeme zkusit custom handle.
-  // Pro zjednodušení v této fázi přidáme tlačítko "Auto Size" do headeru nebo to vynecháme, 
-  // jelikož shadcn nemá standardizovaný "resize handle" element.
-  // Ale původní požadavek byl "double click na SE handle". 
-  // Rnd renderuje handle jako divy. Můžeme se pokusit připojit přes ref, ale je to hacky.
-  // Alternativa: Přidáme malou ikonku do rohu obsahu pro auto-size.
 
   return (
     <Rnd
@@ -172,7 +194,6 @@ export function TsWindow({
         onDoubleClick={handleHeaderDoubleClick}
       >
         <div className="flex items-center gap-2 overflow-hidden">
-          {/* Mac-like buttons mimic or just functional icons? Let's go functional but clean */}
            <div className="flex gap-1.5 mr-2">
              <div 
                 className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 cursor-pointer flex items-center justify-center group"
@@ -182,13 +203,13 @@ export function TsWindow({
              </div>
              <div 
                 className={cn("w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 cursor-pointer flex items-center justify-center group")}
-                onClick={handleMinimize}
+                onClick={(e) => { e.stopPropagation(); handleMinimize() }}
              >
                  <Minus className="w-2 h-2 text-yellow-900 opacity-0 group-hover:opacity-100" />
              </div>
              <div 
                 className={cn("w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 cursor-pointer flex items-center justify-center group", windowState === "minimized" && "bg-gray-400 pointer-events-none")}
-                onClick={handleMaximize}
+                onClick={(e) => { e.stopPropagation(); handleMaximize() }}
              >
                  {windowState === "maximized" ? (
                      <Copy className="w-2 h-2 text-green-900 opacity-0 group-hover:opacity-100 rotate-180" />
@@ -216,4 +237,5 @@ export function TsWindow({
       </div>
     </Rnd>
   )
-}
+})
+TsWindow.displayName = "TsWindow"

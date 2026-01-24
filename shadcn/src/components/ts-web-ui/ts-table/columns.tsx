@@ -3,10 +3,18 @@
 import * as React from "react"
 import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
+import { ArrowUpDown, ArrowUp, ArrowDown, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { numberFilter, dateFilter, booleanFilter } from "./filters"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export interface TsTableColumnDef {
   key: string
@@ -21,10 +29,17 @@ export interface TsTableColumnDef {
   isClickable?: boolean
 }
 
+export interface TsTableRowAction {
+    action: string
+    label: string
+}
+
 export function generateColumns(
     columnDefinitions: TsTableColumnDef[], 
     enableSelection: boolean,
-    onRowClick?: (row: any, columnKey?: string) => void
+    onRowClick?: (row: any, columnKey?: string) => void,
+    rowActions?: TsTableRowAction[],
+    onAction?: (action: string, row: any) => void
 ): ColumnDef<any>[] {
     const cols: ColumnDef<any>[] = []
 
@@ -55,7 +70,41 @@ export function generateColumns(
       })
     }
 
-    // 2. Data columns
+    // 2. Row Actions Column (if enabled)
+    if (rowActions && rowActions.length > 0) {
+        cols.push({
+            id: "actions",
+            enableHiding: false,
+            size: 40,
+            cell: ({ row }) => {
+                return (
+                    <div className="flex justify-center" onClick={e => e.stopPropagation()}>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Open menu</span>
+                                    <MoreVertical className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Akce</DropdownMenuLabel>
+                                {rowActions.map((action, idx) => (
+                                    <DropdownMenuItem 
+                                        key={idx}
+                                        onClick={() => onAction?.(action.action, row.original)}
+                                    >
+                                        {action.label}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                )
+            }
+        })
+    }
+
+    // 3. Data columns
     columnDefinitions.forEach((def) => {
       cols.push({
         accessorKey: def.key,
@@ -128,7 +177,6 @@ export function generateColumns(
              return rowValue.includes(filterValue)
         },
         meta: {
-            // Uložíme si typ pro použití v UI (např. renderování boolean selectu)
             type: def.type
         }
       })

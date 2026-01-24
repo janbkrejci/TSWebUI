@@ -19,6 +19,8 @@ export type FieldType =
   | 'empty'
   | 'table' // nested
   | 'relationship'
+  | 'infobox'
+  | 'markdown'
 
 export interface TsFieldOptions {
     label: string
@@ -53,7 +55,10 @@ export interface TsFieldDef {
     // Relationship
     targetEntity?: string
     
-    // Custom width in grid (overrides layout width if needed, though layout usually handles it)
+    // Infobox/Markdown
+    content?: string
+    value?: string
+    variant?: string
 }
 
 export interface TsFormRowItem {
@@ -76,10 +81,22 @@ export interface TsFormLayout {
     rows?: TsFormRow[]
 }
 
+export interface TsFormConfirmation {
+    title: string
+    text: string
+    buttons: {
+        action: string
+        label: string
+        variant?: string
+        confirm?: boolean
+    }[]
+}
+
 export interface TsFormButton {
     action: string
     label: string
-    variant?: 'primary' | 'secondary' | 'destructive' | 'outline' | 'ghost' | 'link' | 'default'
+    variant?: 'primary' | 'secondary' | 'destructive' | 'outline' | 'ghost' | 'link' | 'default' | 'danger' | 'success' | 'warning'
     type?: 'submit' | 'button' | 'reset'
     icon?: string
+    confirmation?: TsFormConfirmation
 }
