@@ -61,7 +61,7 @@ function MyWindowApp() {
   }
 
   return (
-    <div className="h-[600px] w-full flex flex-col gap-4">
+    <div className="h-full w-full flex flex-col gap-4 pb-6">
        {/* Toolbar */}
        <div className="p-4 border rounded-lg bg-card shadow-sm">
            <Button onClick={handleOpen}>Open New Window</Button>

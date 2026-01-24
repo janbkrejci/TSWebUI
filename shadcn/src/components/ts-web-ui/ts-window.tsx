@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Rnd, RndResizeCallback, RndDragCallback } from "react-rnd"
-import { X, Minus, Square, Copy } from "lucide-react"
+import { X, Minus, Square, Copy, Target, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 // Global Z-Index counter to ensure new or focused windows are always on top
@@ -110,9 +110,9 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       return { width: window.innerWidth, height: window.innerHeight }
   }, [])
 
-  // ResizeObserver to handle parent container resizing when maximized
+  // ResizeObserver to handle parent container resizing
   React.useEffect(() => {
-      if (windowState !== 'maximized' || !rndRef.current) return
+      if (!rndRef.current) return
 
       const el = rndRef.current.getSelfElement()
       const parent = el?.parentElement
@@ -121,9 +121,38 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       const observer = new ResizeObserver((entries) => {
           const entry = entries[0]
           if (entry) {
-              const { width, height } = entry.contentRect
-              setSize({ width, height })
-              setPosition({ x: 0, y: 0 })
+              const { width: parentWidth, height: parentHeight } = entry.contentRect
+              
+              if (windowState === 'maximized') {
+                  setSize({ width: parentWidth, height: parentHeight })
+                  setPosition({ x: 0, y: 0 })
+              } else if (windowState === 'normal') {
+                  // Ensure window fits in new parent size
+                  setSize(prev => {
+                      const newW = Math.min(prev.width, parentWidth)
+                      const newH = Math.min(prev.height, parentHeight)
+                      return (newW !== prev.width || newH !== prev.height) 
+                          ? { width: newW, height: newH } 
+                          : prev
+                  })
+                  
+                  setPosition(prev => {
+                      let newX = prev.x
+                      let newY = prev.y
+                      const headerHeight = 40
+                      
+                      // Keep window visible
+                      if (newX > parentWidth - 50) newX = parentWidth - 50
+                      if (newY > parentHeight - headerHeight) newY = parentHeight - headerHeight
+                      
+                      newX = Math.max(0, newX)
+                      newY = Math.max(0, newY)
+
+                      return (newX !== prev.x || newY !== prev.y)
+                          ? { x: newX, y: newY }
+                          : prev
+                  })
+              }
           }
       })
 
@@ -222,6 +251,32 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
     bringToFront()
   }
 
+  const handleCenterOnScreen = React.useCallback(() => {
+      if (typeof window === 'undefined') return
+      
+      let currentWidth = size.width
+      let currentHeight = size.height
+      
+      if (rndRef.current) {
+          const el = rndRef.current.getSelfElement()
+          if (el) {
+              const rect = el.getBoundingClientRect()
+              currentWidth = rect.width
+              currentHeight = rect.height
+          }
+      }
+
+      if (windowState !== 'maximized') {
+          const { width: parentW, height: parentH } = getParentSize()
+          
+          const newX = (parentW - currentWidth) / 2
+          const newY = (parentH - currentHeight) / 2
+          
+          setPosition({ x: newX, y: newY })
+      }
+      bringToFront()
+  }, [size, windowState, getParentSize, bringToFront])
+
   const handleFitToContent = React.useCallback(() => {
      if (contentRef.current && measureRef.current && windowState !== 'minimized') {
           const contentStyles = window.getComputedStyle(contentRef.current)
@@ -248,31 +303,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       maximize: handleMaximize,
       restore: restore,
       close: () => onClose?.(),
-      centerOnScreen: () => {
-          if (typeof window === 'undefined') return
-          
-          let currentWidth = size.width
-          let currentHeight = size.height
-          
-          if (rndRef.current) {
-              const el = rndRef.current.getSelfElement()
-              if (el) {
-                  const rect = el.getBoundingClientRect()
-                  currentWidth = rect.width
-                  currentHeight = rect.height
-              }
-          }
-
-          if (windowState !== 'maximized') {
-              const { width: parentW, height: parentH } = getParentSize()
-              
-              const newX = (parentW - currentWidth) / 2
-              const newY = (parentH - currentHeight) / 2
-              
-              setPosition({ x: newX, y: newY })
-          }
-          bringToFront()
-      },
+      centerOnScreen: handleCenterOnScreen,
       fitToContent: handleFitToContent,
       bringToFront: bringToFront
   }))
@@ -322,7 +353,8 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
     }
   }
 
-  const handleResizeStart = () => {
+  const handleResizeStart = (e: any) => {
+    if (e && e.preventDefault) e.preventDefault()
     setIsResizing(true)
     setInteracting(true)
     setGlobalUserSelect('none')
@@ -333,11 +365,54 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
     setIsResizing(false)
     setInteracting(false)
     setGlobalUserSelect('')
-    setSize({
-      width: Number.parseInt(ref.style.width),
-      height: Number.parseInt(ref.style.height),
-    })
-    setPosition(position)
+    
+    let newWidth = Number.parseInt(ref.style.width)
+    let newHeight = Number.parseInt(ref.style.height)
+    let newX = position.x
+    let newY = position.y
+    
+    const { width: parentWidth, height: parentHeight } = getParentSize()
+    const headerHeight = 40
+
+    // Y-Axis Clamping
+    if (newY < 0) {
+        // If Top edge went out
+        if (direction.toLowerCase().includes('top')) {
+            newHeight = Math.max(minHeight, newHeight + newY) // Shrink height (newY is negative)
+        }
+        newY = 0
+    }
+    
+    // Check Bottom edge
+    if (newY + newHeight > parentHeight) {
+        if (direction.toLowerCase().includes('bottom')) {
+            newHeight = Math.max(minHeight, parentHeight - newY)
+        }
+    }
+
+    // X-Axis Clamping
+    if (newX < 0) {
+        // If Left edge went out
+        if (direction.toLowerCase().includes('left')) {
+            newWidth = Math.max(minWidth, newWidth + newX) // Shrink width
+        }
+        newX = 0
+    }
+
+    // Check Right edge
+    if (newX + newWidth > parentWidth) {
+        if (direction.toLowerCase().includes('right')) {
+            newWidth = Math.max(minWidth, parentWidth - newX)
+        }
+    }
+    
+    // Final safety check for minimal visibility if not resizing relevant edges
+    // (e.g. if we somehow got pushed out otherwise)
+    newY = Math.min(newY, parentHeight - headerHeight)
+    newX = Math.min(newX, parentWidth - 30)
+    
+    setSize({ width: newWidth, height: newHeight })
+    setPosition({ x: newX, y: newY })
   }
 
   const handleHeaderDoubleClick = (e: React.MouseEvent) => {
@@ -349,6 +424,12 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
     if (windowState === "maximized") restore()
     else handleMaximize()
   }
+
+  const renderHandle = (dir: string) => (
+      <div 
+          className="w-full h-full"
+      />
+  )
 
   return (
     <Rnd
@@ -366,28 +447,22 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       disableDragging={windowState === "maximized"}
       enableResizing={windowState === "normal"}
       resizeHandleComponent={{
-          bottomRight: (
-              <div 
-                  className="w-5 h-5 bg-transparent hover:bg-primary/20 absolute bottom-0 right-0 cursor-nwse-resize z-50"
-                  onMouseDown={(e) => {
-                      const now = Date.now()
-                      if (now - lastResizeHandleClick.current < 300) {
-                          e.stopPropagation()
-                          e.preventDefault()
-                          handleFitToContent()
-                      }
-                      lastResizeHandleClick.current = now
-                  }}
-              />
-          )
+          top: renderHandle('top'),
+          right: renderHandle('right'),
+          bottom: renderHandle('bottom'),
+          left: renderHandle('left'),
+          topRight: renderHandle('topRight'),
+          bottomRight: renderHandle('bottomRight'),
+          bottomLeft: renderHandle('bottomLeft'),
+          topLeft: renderHandle('topLeft'),
       }}
       dragHandleClassName="window-drag-handle"
       style={{ zIndex: currentZIndex, opacity: isVisible ? 1 : 0 }}
       className={cn(
-        "flex flex-col overflow-hidden rounded-lg border bg-background shadow-xl",
-        // Apply transition ONLY when NOT dragging or resizing. Also fade in.
-        (!isDragging && !isResizing) && "transition-all duration-200",
-        windowState === "maximized" && "rounded-none border-none",
+        "flex flex-col overflow-hidden bg-background",
+        windowState === "maximized" 
+            ? "rounded-none border-none"
+            : "rounded-lg border shadow-xl",
         className
       )}
     >
@@ -431,6 +506,27 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
            <span className="text-sm font-medium truncate opacity-90">
              {title}
            </span>
+        </div>
+
+        <div className="flex items-center gap-1 ml-2">
+            <div title="Center on Screen" className="flex items-center justify-center">
+                <Target 
+                    className="w-3.5 h-3.5 cursor-pointer opacity-50 hover:opacity-100 text-foreground" 
+                    onClick={(e) => { 
+                        e.stopPropagation(); 
+                        handleCenterOnScreen() 
+                    }} 
+                />
+            </div>
+            <div title="Fit to Content" className="flex items-center justify-center">
+                <ChevronsUpDown 
+                    className="w-3.5 h-3.5 cursor-pointer opacity-50 hover:opacity-100 text-foreground" 
+                    onClick={(e) => { 
+                        e.stopPropagation(); 
+                        handleFitToContent(); 
+                    }} 
+                />
+            </div>
         </div>
       </div>
 
