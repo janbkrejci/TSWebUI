@@ -15,7 +15,7 @@ const formFields: Record<string, TsFieldDef> = {
   email: { type: "text", label: "E-mail", required: true, placeholder: "jan@example.com" },
   age: { type: "number", label: "Věk", min: 18, max: 99, required: true },
   bio: { type: "textarea", label: "Biografie", rows: 4, hint: "Krátký popis o vás" },
-  role: { 
+  role: {
       type: "select", 
       label: "Role", 
       options: [
@@ -25,40 +25,103 @@ const formFields: Record<string, TsFieldDef> = {
       ],
       required: true 
   },
+  country: {
+      type: "combobox",
+      label: "Země",
+      options: [
+          { value: "cz", label: "Česká republika" },
+          { value: "sk", label: "Slovensko" },
+          { value: "de", label: "Německo" },
+          { value: "at", label: "Rakousko" }
+      ],
+      placeholder: "Vyberte nebo hledejte..."
+  },
+  gender: {
+      type: "radio",
+      label: "Pohlaví",
+      options: [
+          { value: "male", label: "Muž" },
+          { value: "female", label: "Žena" },
+          { value: "other", label: "Jiné" }
+      ]
+  },
+  rating: {
+      type: "slider",
+      label: "Spokojenost (0-10)",
+      min: 0, 
+      max: 10
+  },
+  skills: {
+      type: "multiselect",
+      label: "Dovednosti",
+      options: [
+          { value: "js", label: "JavaScript" },
+          { value: "react", label: "React" },
+          { value: "ts", label: "TypeScript" },
+          { value: "next", label: "Next.js" }
+      ]
+  },
   active: { type: "switch", label: "Aktivní účet" },
   newsletter: { type: "checkbox", label: "Přihlásit k odběru newsletteru" },
   birthDate: { type: "date", label: "Datum narození", required: true },
-  street: { type: "text", label: "Ulice a číslo" },
-  city: { type: "text", label: "Město" },
-  zip: { type: "text", label: "PSČ" }
+  meetingTime: { type: "datetime", label: "Čas schůzky" },
+  avatar: { type: "image", label: "Profilové foto", accept: "image/png, image/jpeg" },
+  info: {
+      type: "infobox", 
+      variant: "default", 
+      label: "Upozornění", 
+      content: "Tento formulář slouží pouze pro ukázkové účely a data nejsou nikam odesílána." 
+  },
+  notes: {
+      type: "markdown",
+      value: "### Poznámky\n- Markdown je **podporován**\n- Můžete psát seznamy\n- A další formátování"
+  }
 }
 
 const formLayout: TsFormLayout = {
   tabs: [
     {
-      label: "Základní info",
+      label: "Osobní údaje",
       rows: [
+        [{ field: "info" }],
         [{ field: "name", width: "1fr" }, { field: "surname", width: "1fr" }],
         [{ field: "email", width: "1fr" }, { field: "age", width: "100px" }],
-        [{ field: "birthDate", width: "1fr" }, { field: "role", width: "1fr" }],
+        [{ field: "birthDate", width: "1fr" }, { field: "gender", width: "1fr" }],
+        [{ field: "country", width: "1fr" }, { field: "role", width: "1fr" }],
         [{ field: "bio", width: "1fr" }]
       ]
     },
     {
-        label: "Nastavení & Adresa",
+        label: "Detaily & Nastavení",
         rows: [
+            [{ field: "meetingTime" }],
+            [{ field: "avatar" }],
+            [{ field: "rating" }],
+            [{ field: "skills" }],
+            [{ type: "separator", label: "Nastavení účtu" }],
             [{ field: "active" }],
             [{ field: "newsletter" }],
-            [{ type: "separator", label: "Adresa bydliště" }],
-            [{ field: "street" }],
-            [{ field: "city", width: "2fr" }, { field: "zip", width: "1fr" }]
+            [{ field: "notes" }]
         ]
     }
   ]
 }
 
 const formButtons: TsFormButton[] = [
-    { action: "cancel", label: "Zrušit", variant: "outline", type: "button" },
+    {
+        action: "delete", 
+        label: "Smazat účet", 
+        variant: "danger", 
+        type: "button",
+        confirmation: {
+            title: "Opravdu smazat?",
+            text: "Tato akce je nevratná. Opravdu chcete smazat tento účet?",
+            buttons: [
+                { action: "cancel", label: "Zrušit" },
+                { action: "confirm", label: "Smazat", variant: "danger", confirm: true }
+            ]
+        }
+    },
     { action: "save", label: "Uložit změny", variant: "primary", type: "submit" }
 ]
 
@@ -70,8 +133,10 @@ export default function TsFormPage() {
     setFormData({ action, data })
     if (action === 'save') {
         toast("Formulář odeslán", { description: "Data byla úspěšně uložena." })
+    } else if (action === 'delete') {
+        toast("Účet smazán", { description: "Požadavek na smazání byl odeslán." })
     } else {
-        toast("Akce zrušena", { description: "Formulář byl resetován." })
+        toast("Akce provedena", { description: `Akce: ${action}` })
     }
   }
 
