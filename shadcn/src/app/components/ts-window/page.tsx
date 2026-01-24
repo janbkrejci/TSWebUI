@@ -426,36 +426,6 @@ export default function Page() {
                                         <TableCell className="text-xs italic">number</TableCell>
                                         <TableCell>Minimum allowed height (default: 100).</TableCell>
                                     </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-mono text-xs">zIndex</TableCell>
-                                        <TableCell className="text-xs italic">number</TableCell>
-                                        <TableCell>Initial Z-index value.</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-mono text-xs">initiallyMinimized</TableCell>
-                                        <TableCell className="text-xs italic">boolean</TableCell>
-                                        <TableCell>Start the window in minimized state.</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-mono text-xs">initiallyMaximized</TableCell>
-                                        <TableCell className="text-xs italic">boolean</TableCell>
-                                        <TableCell>Start the window in maximized state.</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-mono text-xs">onClose</TableCell>
-                                        <TableCell className="text-xs italic">() =&gt; void</TableCell>
-                                        <TableCell>Callback when the window is closed.</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-mono text-xs">onFocus</TableCell>
-                                        <TableCell className="text-xs italic">() =&gt; void</TableCell>
-                                        <TableCell>Callback when the window gains focus.</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-mono text-xs">className</TableCell>
-                                        <TableCell className="text-xs italic">string</TableCell>
-                                        <TableCell>Additional CSS classes for the window container.</TableCell>
-                                    </TableRow>
                                 </TableBody>
                             </Table>
                         </CardContent>
