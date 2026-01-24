@@ -76,8 +76,9 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
   // Uložení pozice minimalizovaného okna
   const [minimizedPosition, setMinimizedPosition] = React.useState<{ x: number; y: number } | null>(null)
 
-  // Reference na obsah pro auto-size
+  // Reference
   const contentRef = React.useRef<HTMLDivElement>(null)
+  const rndRef = React.useRef<Rnd>(null)
 
   React.useEffect(() => {
     if (initiallyMaximized) {
@@ -135,8 +136,24 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
           if (typeof window === 'undefined') return
           const w = window.innerWidth
           const h = window.innerHeight
+          
+          // Get actual current size from DOM if possible for better precision
+          let currentWidth = size.width
+          let currentHeight = size.height
+          
+          if (rndRef.current) {
+              const el = rndRef.current.getSelfElement()
+              if (el) {
+                  const rect = el.getBoundingClientRect()
+                  currentWidth = rect.width
+                  currentHeight = rect.height
+              }
+          }
+
           if (windowState !== 'maximized') {
-              setPosition({ x: (w - size.width) / 2, y: (h - size.height) / 2 })
+              const newX = (w - currentWidth) / 2
+              const newY = (h - currentHeight) / 2
+              setPosition({ x: newX, y: newY })
           }
       },
       fitToContent: () => {
@@ -196,6 +213,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
 
   return (
     <Rnd
+      ref={rndRef}
       size={size}
       position={position}
       onDragStart={handleDragStart}
