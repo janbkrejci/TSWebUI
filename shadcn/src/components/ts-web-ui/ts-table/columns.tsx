@@ -166,15 +166,11 @@ export function generateColumns(
         enableSorting: def.sortable ?? true,
         enableColumnFilter: def.filterable ?? true,
         size: typeof def.width === "number" ? def.width : 200,
-        filterFn: (row, id, value) => {
-             if (def.type === 'number') return numberFilter(row, id, value)
-             if (def.type === 'date') return dateFilter(row, id, value)
-             if (def.type === 'boolean') return booleanFilter(row, id, value)
-
-             // Custom simple filter logic mirroring original behavior (case insensitive contains)
-             const rowValue = String(row.getValue(id) ?? "").toLowerCase()
-             const filterValue = String(value ?? "").toLowerCase()
-             return rowValue.includes(filterValue)
+        filterFn: (row, id, value, addMeta) => {
+             if (def.type === 'number') return numberFilter(row, id, value, addMeta)
+             if (def.type === 'date') return dateFilter(row, id, value, addMeta)
+             if (def.type === 'boolean') return booleanFilter(row, id, value, addMeta)
+             return true // default text filter handled by table
         },
         meta: {
             type: def.type

@@ -168,7 +168,6 @@ export function TsForm({
                         let variant: any = "default"
                         if (btn.variant === 'primary') variant = "default"
                         else if (btn.variant === 'danger') variant = "destructive"
-                        else if (btn.variant === 'neutral') variant = "secondary"
                         else if (btn.variant) variant = btn.variant
 
                         return (

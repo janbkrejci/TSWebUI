@@ -75,7 +75,7 @@ const formLayout: TsFormLayout = {
             [{ field: "country", width: "1fr" }, { field: "role", width: "1fr" }],
             [{ field: "active" }],
             [{ field: "rating" }],
-            [{ type: "separator", label: "Custom Content" }],
+            [{ type: "separator", label: "Custom Content", field: "custom_content_sep" }],
             [{ field: "notes" }]
         ]
     }

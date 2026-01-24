@@ -21,6 +21,7 @@ export type FieldType =
   | 'relationship'
   | 'infobox'
   | 'markdown'
+  | 'button-group'
 
 export interface TsFieldOptions {
     label: string

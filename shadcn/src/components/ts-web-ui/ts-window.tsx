@@ -4,9 +4,12 @@ import * as React from "react"
 import { Rnd, RndResizeCallback, RndDragCallback } from "react-rnd"
 import { X, Minus, Square, Copy } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+
+// Global Z-Index counter to ensure new or focused windows are always on top
+let globalZIndex = 1000
 
 export interface TsWindowProps {
+  id?: string | number // ID is useful for the manager
   title?: string
   defaultWidth?: number
   defaultHeight?: number
@@ -17,7 +20,7 @@ export interface TsWindowProps {
   children?: React.ReactNode
   onClose?: () => void
   className?: string
-  zIndex?: number
+  zIndex?: number // Initial z-index
   onFocus?: () => void
   initiallyMinimized?: boolean
   initiallyMaximized?: boolean
@@ -53,7 +56,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
   children,
   onClose,
   className,
-  zIndex = 100,
+  zIndex: initialZIndex,
   onFocus,
   initiallyMinimized = false,
   initiallyMaximized = false,
@@ -62,6 +65,9 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
     initiallyMaximized ? "maximized" : initiallyMinimized ? "minimized" : "normal"
   )
   
+  // Internal Z-Index state
+  const [currentZIndex, setCurrentZIndex] = React.useState(initialZIndex || globalZIndex++)
+
   // States for interaction tracking to disable CSS transitions during drag/resize
   const [isDragging, setIsDragging] = React.useState(false)
   const [isResizing, setIsResizing] = React.useState(false)
@@ -106,12 +112,20 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
     }
   }, [initiallyMaximized, defaultWidth, defaultHeight, defaultLeft, defaultTop, getParentSize])
 
+  // Bring to front functionality encapsulated in the component
+  const bringToFront = React.useCallback(() => {
+      const newZ = ++globalZIndex
+      setCurrentZIndex(newZ)
+      onFocus?.()
+  }, [onFocus])
+
   const restore = () => {
     if (!restoreRect) return
 
     setWindowState("normal")
     setSize({ width: restoreRect.width, height: restoreRect.height })
     setPosition({ x: restoreRect.x, y: restoreRect.y })
+    bringToFront()
   }
 
   const handleMinimize = () => {
@@ -129,6 +143,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
     if (minimizedPosition) {
         setPosition(minimizedPosition)
     }
+    bringToFront()
   }
 
   const handleMaximize = () => {
@@ -145,6 +160,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
     setWindowState("maximized")
     setSize({ width, height })
     setPosition({ x: 0, y: 0 })
+    bringToFront()
   }
 
   // Expose API via ref
@@ -176,6 +192,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
               
               setPosition({ x: newX, y: newY })
           }
+          bringToFront()
       },
       fitToContent: () => {
           if (contentRef.current && windowState !== 'minimized') {
@@ -183,7 +200,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
               setSize(prev => ({ ...prev, height: contentHeight + 40 }))
           }
       },
-      bringToFront: () => onFocus?.()
+      bringToFront: bringToFront
   }))
 
   const setGlobalUserSelect = (val: string) => {
@@ -194,7 +211,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
   const handleDragStart: RndDragCallback = (e, d) => {
     setIsDragging(true)
     setGlobalUserSelect('none')
-    onFocus?.()
+    bringToFront()
   }
 
   const handleDragStop: RndDragCallback = (e, d) => {
@@ -211,6 +228,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
   const handleResizeStart = () => {
     setIsResizing(true)
     setGlobalUserSelect('none')
+    bringToFront()
   }
 
   const handleResizeStop: RndResizeCallback = (e, direction, ref, delta, position) => {
@@ -241,13 +259,13 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       onDragStop={handleDragStop}
       onResizeStart={handleResizeStart}
       onResizeStop={handleResizeStop}
-      onMouseDown={onFocus}
+      onMouseDown={bringToFront}
       minWidth={windowState === "minimized" ? 200 : minWidth}
       minHeight={windowState === "minimized" ? 40 : minHeight}
       disableDragging={windowState === "maximized"}
       enableResizing={windowState === "normal"}
       dragHandleClassName="window-drag-handle"
-      style={{ zIndex }}
+      style={{ zIndex: currentZIndex }}
       className={cn(
         "flex flex-col overflow-hidden rounded-lg border bg-background shadow-xl ease-in-out select-none",
         // Apply transition ONLY when NOT dragging or resizing
@@ -313,3 +331,95 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
   )
 })
 TsWindow.displayName = "TsWindow"
+
+
+// --- Window Manager System ---
+
+interface WindowItem {
+    id: string
+    content: React.ReactNode
+    props: Partial<TsWindowProps>
+    ref: React.RefObject<TsWindowRef | null>
+}
+
+interface WindowContextType {
+    openWindow: (content: React.ReactNode, options?: Partial<TsWindowProps> & { id?: string }) => void
+    closeWindow: (id: string) => void
+    getWindow: (id: string) => TsWindowRef | null
+    windows: WindowItem[]
+}
+
+const WindowContext = React.createContext<WindowContextType | undefined>(undefined)
+
+export const WindowProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [windows, setWindows] = React.useState<WindowItem[]>([])
+
+    const openWindow = React.useCallback((content: React.ReactNode, options: Partial<TsWindowProps> & { id?: string } = {}) => {
+        const id = options.id || Math.random().toString(36).substring(7)
+        
+        setWindows(prev => {
+            const exists = prev.find(w => w.id === id)
+            if (exists) {
+                // If it exists, we might want to bring it to front or update props
+                // For now, let's just bring it to front using its ref if available
+                exists.ref.current?.bringToFront()
+                return prev
+            }
+
+            return [...prev, {
+                id,
+                content,
+                props: options,
+                ref: React.createRef<TsWindowRef>()
+            }]
+        })
+    }, [])
+
+    const closeWindow = React.useCallback((id: string) => {
+        setWindows(prev => prev.filter(w => w.id !== id))
+    }, [])
+
+    const getWindow = React.useCallback((id: string) => {
+        const win = windows.find(w => w.id === id)
+        return win?.ref.current || null
+    }, [windows])
+
+    return (
+        <WindowContext.Provider value={{ openWindow, closeWindow, getWindow, windows }}>
+            {children}
+        </WindowContext.Provider>
+    )
+}
+
+export const WindowOutlet: React.FC<{ className?: string }> = ({ className }) => {
+    const { windows, closeWindow } = useWindowManager()
+    
+    return (
+        <div className={cn("absolute inset-0 pointer-events-none z-[50]", className)}>
+            {windows.map(w => (
+                <TsWindow
+                    key={w.id}
+                    ref={w.ref as React.RefObject<TsWindowRef>}
+                    id={w.id}
+                    title={w.props.title || "Window"}
+                    className="pointer-events-auto"
+                    onClose={() => {
+                        w.props.onClose?.()
+                        closeWindow(w.id)
+                    }}
+                    {...w.props}
+                >
+                    {w.content}
+                </TsWindow>
+            ))}
+        </div>
+    )
+}
+
+export const useWindowManager = () => {
+    const context = React.useContext(WindowContext)
+    if (!context) {
+        throw new Error("useWindowManager must be used within a WindowProvider")
+    }
+    return context
+}
