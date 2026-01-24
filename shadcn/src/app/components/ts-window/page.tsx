@@ -3,6 +3,7 @@
 import * as React from "react"
 import { TsWindow } from "@/components/ts-web-ui/ts-window"
 import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
 
 export default function TsWindowPage() {
   const [windows, setWindows] = React.useState([
@@ -14,6 +15,10 @@ export default function TsWindowPage() {
   const bringToFront = (id: number) => {
     setWindows(prev => {
         const maxZ = Math.max(...prev.map(w => w.zIndex))
+        // Pokud je už okno nahoře, nezvyšujeme Z-index zbytečně (prevence re-renderu)
+        const currentWindow = prev.find(w => w.id === id)
+        if (currentWindow && currentWindow.zIndex === maxZ) return prev
+
         return prev.map(w => w.id === id ? { ...w, zIndex: maxZ + 1 } : w)
     })
   }
@@ -29,6 +34,19 @@ export default function TsWindowPage() {
       setWindows(prev => prev.map(w => w.id === id ? { ...w, isOpen: false } : w))
   }
 
+  const createNewWindow = () => {
+      setWindows(prev => {
+          const maxZ = Math.max(...prev.map(w => w.zIndex), 100)
+          const newId = Math.max(...prev.map(w => w.id), 0) + 1
+          return [...prev, { 
+              id: newId, 
+              title: `New Window ${newId}`, 
+              zIndex: maxZ + 1, 
+              isOpen: true 
+          }]
+      })
+  }
+
   return (
     <div className="flex flex-col h-full gap-6">
         <div>
@@ -38,10 +56,15 @@ export default function TsWindowPage() {
             </p>
         </div>
 
-        <div className="flex gap-2 p-4 border rounded-lg bg-card">
+        <div className="flex flex-wrap gap-2 p-4 border rounded-lg bg-card items-center">
             <Button onClick={() => openWindow(1)} disabled={windows.find(w => w.id === 1)?.isOpen}>Open Welcome</Button>
             <Button onClick={() => openWindow(2)} disabled={windows.find(w => w.id === 2)?.isOpen}>Open Data</Button>
             <Button onClick={() => openWindow(3)} disabled={windows.find(w => w.id === 3)?.isOpen}>Open Settings</Button>
+            <div className="h-6 w-px bg-border mx-2" />
+            <Button onClick={createNewWindow} variant="secondary">
+                <Plus className="w-4 h-4 mr-2" />
+                Create New Window
+            </Button>
         </div>
 
         {/* Workspace area */}
@@ -59,13 +82,13 @@ export default function TsWindowPage() {
                     zIndex={w.zIndex}
                     onFocus={() => bringToFront(w.id)}
                     onClose={() => closeWindow(w.id)}
-                    defaultLeft={50 + w.id * 40}
-                    defaultTop={50 + w.id * 40}
+                    defaultLeft={50 + (w.id % 10) * 30}
+                    defaultTop={50 + (w.id % 10) * 30}
                     defaultWidth={w.id === 3 ? 300 : 400}
                     defaultHeight={w.id === 3 ? 200 : 300}
                 >
                     <div className="space-y-4">
-                        <p>This is content for <strong>{w.title}</strong>.</p>
+                        <p>This is content for <strong>{w.title}</strong> (ID: {w.id}).</p>
                         <p className="text-sm text-muted-foreground">
                             Try dragging this window, resizing it, or minimizing/maximizing it.
                         </p>

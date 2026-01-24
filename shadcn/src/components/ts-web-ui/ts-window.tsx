@@ -62,6 +62,10 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
     initiallyMaximized ? "maximized" : initiallyMinimized ? "minimized" : "normal"
   )
   
+  // States for interaction tracking to disable CSS transitions during drag/resize
+  const [isDragging, setIsDragging] = React.useState(false)
+  const [isResizing, setIsResizing] = React.useState(false)
+  
   // Aktuální pozice a velikost pro Rnd
   const [size, setSize] = React.useState({ width: defaultWidth, height: defaultHeight })
   const [position, setPosition] = React.useState({ x: defaultLeft, y: defaultTop })
@@ -96,8 +100,6 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       restore()
       return
     }
-    // Pokud jsme normal, uložíme si rect pro restore. 
-    // Pokud jsme maximized, restoreRect už máme uložený z doby, kdy jsme šli do max.
     if (windowState === "normal") {
       setRestoreRect({ ...size, ...position })
     }
@@ -105,7 +107,6 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
     setWindowState("minimized")
     setSize({ width: 200, height: 40 })
 
-    // Pokud máme uloženou pozici minimalizovaného okna, přesuneme se tam
     if (minimizedPosition) {
         setPosition(minimizedPosition)
     }
@@ -148,26 +149,29 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
   }))
 
   const handleDragStart: RndDragCallback = (e, d) => {
+    setIsDragging(true)
     document.body.style.userSelect = 'none'
     onFocus?.()
   }
 
   const handleDragStop: RndDragCallback = (e, d) => {
+    setIsDragging(false)
     document.body.style.userSelect = ''
     const newPos = { x: d.x, y: d.y }
     setPosition(newPos)
 
-    // Pokud jsme minimalizovaní a hýbeme s oknem, uložíme si novou "minimized" pozici
     if (windowState === "minimized") {
         setMinimizedPosition(newPos)
     }
   }
 
   const handleResizeStart = () => {
+    setIsResizing(true)
     document.body.style.userSelect = 'none'
   }
 
   const handleResizeStop: RndResizeCallback = (e, direction, ref, delta, position) => {
+    setIsResizing(false)
     document.body.style.userSelect = ''
     setSize({
       width: Number.parseInt(ref.style.width),
@@ -202,7 +206,9 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       bounds="parent"
       style={{ zIndex }}
       className={cn(
-        "flex flex-col overflow-hidden rounded-lg border bg-background shadow-xl transition-all duration-100 ease-in-out",
+        "flex flex-col overflow-hidden rounded-lg border bg-background shadow-xl ease-in-out",
+        // Apply transition ONLY when NOT dragging or resizing
+        (!isDragging && !isResizing) && "transition-all duration-200",
         windowState === "maximized" && "rounded-none border-none",
         className
       )}
