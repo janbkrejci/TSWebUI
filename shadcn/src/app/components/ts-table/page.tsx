@@ -5,8 +5,8 @@ import { TsTable } from "@/components/ts-web-ui/ts-table"
 import { TsTableColumnDef } from "@/components/ts-web-ui/ts-table/columns"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-// Data z public/table-data.js (přepsaná do JS pole)
 const tableData = [
     { id: 1, name: "Jana Nováková", username: "jana_n", email: "jana@example.com", city: "Praha", phone: "555-1234", website: "www.jananovakova.com", company: "Novák s.r.o.", turnover: 125000.50, contractDate: "2022-03-15", approved: true },
     { id: 2, name: "Petr Svoboda", username: "petr_s", email: "petr@example.com", city: "Brno", phone: "555-5678", website: "www.petrsvoboda.com", company: "Svoboda a.s.", turnover: 89000.75, contractDate: "2019-07-22", approved: false },
@@ -20,7 +20,6 @@ const tableData = [
     { id: 10, name: "Martin Veselý", username: "martin_v", email: "martin@example.com", city: "Zlín", phone: "555-1597", website: "www.martinvesely.com", company: "Veselý a.s.", turnover: 134000.15, contractDate: "2020-08-27", approved: false },
 ]
 
-// Definice z public/column-definitions.js
 const columnDefinitions: TsTableColumnDef[] = [
     { key: 'id', title: 'ID', type: 'number', visible: false, align: 'right' },
     { key: 'name', title: 'Jméno', type: 'text', sortable: true, filterable: true, visible: true, align: 'left', isClickable: true },
@@ -44,12 +43,16 @@ export default function TsTablePage() {
     setLastAction("Kliknuto na 'Nový záznam'")
   }
 
+  const handleAction = (action: string, row: any) => {
+      setLastAction(`Akce: ${action} pro ${row.name}`)
+  }
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">TS Table</h1>
+        <h1 className="text-3xl font-bold tracking-tight">TS Table</h1>
         <p className="text-muted-foreground mt-2">
-          Advanced data table based on TanStack Table and Shadcn UI.
+          Feature-rich data grid with advanced filtering, sorting, and export capabilities.
         </p>
       </div>
 
@@ -60,53 +63,57 @@ export default function TsTablePage() {
           <TabsTrigger value="documentation">Documentation</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="preview" className="space-y-4">
+        <TabsContent value="preview" className="space-y-4 pt-4">
           <Card>
             <CardHeader>
               <CardTitle>Interactive Demo</CardTitle>
               <CardDescription>
-                Vyzkoušejte si řazení, filtrování, výběr sloupců a import/export.
+                Try sorting, filtering (use &gt;10 or 10..20 for numbers), column selection, and exports.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <TsTable 
                 data={tableData} 
                 columnDefinitions={columnDefinitions} 
-                title="Seznam klientů"
+                title="Client Management"
                 onRowClick={handleRowClick}
                 onCreateClick={handleCreate}
+                onAction={handleAction}
+                singleItemActions="edit/Edit,delete/Delete,details/Details"
               />
               {lastAction && (
-                <div className="mt-4 p-2 bg-muted rounded text-sm font-mono text-primary">
-                  Last Action: {lastAction}
+                <div className="mt-4 p-3 bg-muted border rounded-md text-sm font-mono text-primary animate-in fade-in">
+                  <span className="font-bold mr-2">Last Action:</span> {lastAction}
                 </div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="code">
+        <TabsContent value="code" className="pt-4">
           <Card>
-            <CardContent className="pt-6">
+            <CardHeader>
+                <CardTitle>Basic Configuration</CardTitle>
+            </CardHeader>
+            <CardContent>
               <pre className="p-4 rounded-lg bg-slate-950 text-slate-50 overflow-auto text-sm">
 {`import { TsTable } from "@/components/ts-web-ui/ts-table"
 
 const columns = [
-  { key: 'name', title: 'Jméno', type: 'text', sortable: true },
+  { key: 'name', title: 'Name', type: 'text', sortable: true },
   { key: 'email', title: 'E-mail', type: 'text', canBeCopied: true },
-  { key: 'turnover', title: 'Obrat', type: 'number', align: 'right' },
-  { key: 'approved', title: 'Schváleno', type: 'boolean', align: 'center' }
+  { key: 'turnover', title: 'Turnover', type: 'number', align: 'right' },
+  { key: 'approved', title: 'Approved', type: 'boolean', align: 'center' }
 ]
-
-const data = [...]
 
 export default function MyPage() {
   return (
     <TsTable 
       data={data} 
       columnDefinitions={columns} 
-      title="Moje Tabulka"
-      onRowClick={(row) => console.log(row)}
+      title="User List"
+      singleItemActions="edit/Edit,delete/Delete"
+      onAction={(action, row) => console.log(action, row)}
     />
   )
 }`}
@@ -115,38 +122,111 @@ export default function MyPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="documentation">
-          <Card>
-            <CardHeader>
-              <CardTitle>API Reference</CardTitle>
-            </CardHeader>
-            <CardContent className="prose prose-sm dark:prose-invert max-w-none">
-              <h3>Props</h3>
-              <ul>
-                <li><code>data</code>: Pole objektů s daty.</li>
-                <li><code>columnDefinitions</code>: Konfigurace sloupců (key, title, type, sortable, atd.).</li>
-                <li><code>title</code>: Titulek tabulky v toolbar.</li>
-                <li><code>showCreateButton</code>: Zobrazit tlačítko "Nový".</li>
-                <li><code>showImportButton</code>: Povolit import z Excel/CSV.</li>
-                <li><code>showExportButton</code>: Povolit export do Excel.</li>
-                <li><code>showColumnSelector</code>: Povolit výběr viditelných sloupců.</li>
-              </ul>
-              <h3>Column Definition</h3>
-              <pre className="text-xs bg-muted p-2 rounded">
-{`{
-  key: string,        // Klíč v datech
-  title: string,      // Popisek sloupce
-  type: "text" | "number" | "date" | "boolean",
-  sortable: boolean,
-  filterable: boolean,
-  visible: boolean,
-  align: "left" | "center" | "right",
-  canBeCopied: boolean,
-  isClickable: boolean
-}`}
-              </pre>
-            </CardContent>
-          </Card>
+        <TabsContent value="documentation" className="pt-4">
+          <div className="space-y-8 pb-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Component Properties</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[200px]">Prop</TableHead>
+                                <TableHead className="w-[150px]">Type</TableHead>
+                                <TableHead>Description</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell className="font-mono text-xs">data</TableCell>
+                                <TableCell className="text-xs italic">any[]</TableCell>
+                                <TableCell>Array of objects to display in the table.</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-mono text-xs">columnDefinitions</TableCell>
+                                <TableCell className="text-xs italic">TsTableColumnDef[]</TableCell>
+                                <TableCell>Configuration for each column (see below).</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-mono text-xs">title</TableCell>
+                                <TableCell className="text-xs italic">string</TableCell>
+                                <TableCell>Title displayed in the toolbar.</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-mono text-xs">singleItemActions</TableCell>
+                                <TableCell className="text-xs italic">string</TableCell>
+                                <TableCell>Comma-separated actions in "action/Label" format.</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-mono text-xs">predefinedFilters</TableCell>
+                                <TableCell className="text-xs italic">Record&lt;string, any&gt;</TableCell>
+                                <TableCell>Initial filters that cannot be cleared by the user.</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-mono text-xs">showCreateButton</TableCell>
+                                <TableCell className="text-xs italic">boolean</TableCell>
+                                <TableCell>Whether to show the "Create" button (default: true).</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Column Definition</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[200px]">Property</TableHead>
+                                <TableHead className="w-[150px]">Type</TableHead>
+                                <TableHead>Description</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell className="font-mono text-xs font-semibold">key</TableCell>
+                                <TableCell className="text-xs italic">string</TableCell>
+                                <TableCell>Data key for the column.</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-mono text-xs font-semibold">title</TableCell>
+                                <TableCell className="text-xs italic">string</TableCell>
+                                <TableCell>Label shown in the header.</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-mono text-xs font-semibold">type</TableCell>
+                                <TableCell className="text-xs italic">"text" | "number" | "date" | "boolean"</TableCell>
+                                <TableCell>Determines formatting and filter behavior.</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-mono text-xs font-semibold">sortable</TableCell>
+                                <TableCell className="text-xs italic">boolean</TableCell>
+                                <TableCell>Enables sorting for this column.</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-mono text-xs font-semibold">filterable</TableCell>
+                                <TableCell className="text-xs italic">boolean</TableCell>
+                                <TableCell>Enables the filter input in the header.</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-mono text-xs font-semibold">isClickable</TableCell>
+                                <TableCell className="text-xs italic">boolean</TableCell>
+                                <TableCell>If true, cell click returns columnKey in onRowClick.</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-mono text-xs font-semibold">canBeCopied</TableCell>
+                                <TableCell className="text-xs italic">boolean</TableCell>
+                                <TableCell>Adds a copy-to-clipboard button to cells.</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

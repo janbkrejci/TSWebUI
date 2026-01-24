@@ -8,6 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
+
 export default function TsWindowPage() {
   const [windows, setWindows] = React.useState([
     { id: 1, title: "Welcome Window", zIndex: 100, isOpen: true },
@@ -51,8 +54,128 @@ export default function TsWindowPage() {
       })
   }
 
+  const codeString = `"use client"
+
+import * as React from "react"
+import { TsWindow, TsWindowRef } from "@/components/ts-web-ui/ts-window"
+import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
+
+export default function TsWindowPage() {
+  const [windows, setWindows] = React.useState([
+    { id: 1, title: "Welcome Window", zIndex: 100, isOpen: true },
+    { id: 2, title: "Data Viewer", zIndex: 101, isOpen: false },
+    { id: 3, title: "Settings", zIndex: 102, isOpen: false }
+  ])
+
+  // Refs for imperative control of each window
+  const windowRefs = React.useRef<Record<number, TsWindowRef | null>>({})
+
+  const bringToFront = (id: number) => {
+    setWindows(prev => {
+        const maxZ = Math.max(...prev.map(w => w.zIndex))
+        const currentWindow = prev.find(w => w.id === id)
+        if (currentWindow && currentWindow.zIndex === maxZ) return prev
+        return prev.map(w => w.id === id ? { ...w, zIndex: maxZ + 1 } : w)
+    })
+  }
+
+  const openWindow = (id: number) => {
+     setWindows(prev => {
+         const maxZ = Math.max(...prev.map(w => w.zIndex))
+         return prev.map(w => w.id === id ? { ...w, isOpen: true, zIndex: maxZ + 1 } : w)
+     })
+  }
+
+  const closeWindow = (id: number) => {
+      setWindows(prev => prev.map(w => w.id === id ? { ...w, isOpen: false } : w))
+  }
+
+  const createNewWindow = () => {
+      setWindows(prev => {
+          const maxZ = Math.max(...prev.map(w => w.zIndex), 100)
+          const newId = Math.max(...prev.map(w => w.id), 0) + 1
+          return [...prev, { 
+              id: newId, 
+              title: \`New Window \${newId}\`, 
+              zIndex: maxZ + 1, 
+              isOpen: true 
+          }]
+      })
+  }
+
   return (
-    <div className="flex flex-col h-[calc(100vh-6rem)] gap-6">
+    <div className="flex flex-col h-[calc(100vh-6.5rem)] gap-6">
+       {/* Toolbar */}
+       <div className="flex flex-wrap gap-2 p-4 border rounded-lg bg-card items-center shrink-0 shadow-sm">
+            <Button onClick={() => openWindow(1)} disabled={windows.find(w => w.id === 1)?.isOpen}>Open Welcome</Button>
+            <Button onClick={() => openWindow(2)} disabled={windows.find(w => w.id === 2)?.isOpen}>Open Data</Button>
+            <Button onClick={() => openWindow(3)} disabled={windows.find(w => w.id === 3)?.isOpen}>Open Settings</Button>
+            <div className="h-6 w-px bg-border mx-2" />
+            <Button onClick={createNewWindow} variant="secondary">
+                <Plus className="w-4 h-4 mr-2" />
+                Create New Window
+            </Button>
+        </div>
+
+        {/* Workspace */}
+        <div className="flex-1 relative border rounded-lg bg-slate-100 dark:bg-slate-950 overflow-hidden shadow-inner min-h-[400px] select-none">
+            <div className="absolute inset-0 p-8 pointer-events-none">
+                <div className="h-full w-full border-2 border-dashed border-slate-300 dark:border-slate-800 rounded flex items-center justify-center text-slate-400">
+                    Window Workspace Area (Select text disabled)
+                </div>
+            </div>
+
+            {windows.map(w => w.isOpen && (
+                <TsWindow 
+                    key={w.id}
+                    ref={el => { windowRefs.current[w.id] = el }}
+                    title={w.title}
+                    zIndex={w.zIndex}
+                    onFocus={() => bringToFront(w.id)}
+                    onClose={() => closeWindow(w.id)}
+                    defaultLeft={50 + (w.id % 10) * 30}
+                    defaultTop={50 + (w.id % 10) * 30}
+                    defaultWidth={w.id === 3 ? 300 : 400}
+                    defaultHeight={w.id === 3 ? 200 : 300}
+                >
+                    <div className="space-y-4">
+                        <p>This is content for <strong>{w.title}</strong> (ID: {w.id}).</p>
+                        <p className="text-sm text-muted-foreground">
+                            Try dragging this window, resizing it, or minimizing/maximizing it.
+                        </p>
+                        
+                        <div className="bg-muted/50 p-3 rounded-md border text-xs">
+                            <p className="font-semibold mb-2">Imperative API Control:</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => windowRefs.current[w.id]?.minimize()}>Minimize</Button>
+                                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => windowRefs.current[w.id]?.maximize()}>Maximize</Button>
+                                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => windowRefs.current[w.id]?.restore()}>Restore</Button>
+                                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => windowRefs.current[w.id]?.centerOnScreen()}>Center</Button>
+                                <Button variant="outline" size="sm" className="h-7 text-xs col-span-2" onClick={() => windowRefs.current[w.id]?.fitToContent()}>Fit to Content</Button>
+                            </div>
+                        </div>
+
+                        {w.id === 2 && (
+                            <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded text-xs font-mono border border-blue-100 dark:border-blue-800 text-foreground">
+                                Data: [1, 2, 3, 4, 5]
+                            </div>
+                        )}
+                        {w.id === 3 && (
+                            <div className="space-y-2 pt-2">
+                                <Button size="sm" className="w-full">Save Settings</Button>
+                            </div>
+                        )}
+                    </div>
+                </TsWindow>
+            ))}
+        </div>
+    </div>
+  )
+}`
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-6.5rem)] gap-6">
         <div>
             <h1 className="text-3xl font-bold tracking-tight">TS Window</h1>
             <p className="text-muted-foreground mt-2">
@@ -79,10 +202,11 @@ export default function TsWindowPage() {
                     </Button>
                 </div>
 
-                <div className="flex-1 relative border rounded-lg bg-slate-100 dark:bg-slate-950 overflow-hidden shadow-inner min-h-[400px]">
+                {/* Added select-none to the workspace container */}
+                <div className="flex-1 relative border rounded-lg bg-slate-100 dark:bg-slate-950 overflow-hidden shadow-inner min-h-[400px] select-none">
                     <div className="absolute inset-0 p-8 pointer-events-none">
                         <div className="h-full w-full border-2 border-dashed border-slate-300 dark:border-slate-800 rounded flex items-center justify-center text-slate-400">
-                            Window Workspace Area
+                            Window Workspace Area (Select text disabled)
                         </div>
                     </div>
 
@@ -117,7 +241,7 @@ export default function TsWindowPage() {
                                 </div>
 
                                 {w.id === 2 && (
-                                    <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded text-xs font-mono border border-blue-100 dark:border-blue-800">
+                                    <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded text-xs font-mono border border-blue-100 dark:border-blue-800 text-foreground">
                                         Data: [1, 2, 3, 4, 5]
                                     </div>
                                 )}
@@ -135,38 +259,27 @@ export default function TsWindowPage() {
             <TabsContent value="code" className="flex-1 min-h-0 overflow-auto pt-4 data-[state=inactive]:hidden">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Basic Usage</CardTitle>
-                        <CardDescription>How to integrate TsWindow into your React application.</CardDescription>
+                        <CardTitle>Usage & Dynamic Creation</CardTitle>
+                        <CardDescription>How to manage a dynamic collection of windows with Z-index handling.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <pre className="p-4 rounded-lg bg-slate-950 text-slate-50 overflow-auto text-sm">
-{`import { TsWindow } from "@/components/ts-web-ui/ts-window"
-
-export default function App() {
-  return (
-    <div className="relative h-screen overflow-hidden">
-      <TsWindow 
-        title="My Application" 
-        defaultWidth={500}
-        defaultHeight={400}
-        defaultLeft={100} 
-        defaultTop={100}
-        onClose={() => console.log('Closed')}
-      >
-        <div className="p-4">
-            <h2 className="text-xl font-bold">Hello World</h2>
-            <p>Your content goes here...</p>
-        </div>
-      </TsWindow>
-    </div>
-  )
-}`}
-                        </pre>
+                        <SyntaxHighlighter 
+                            language="tsx" 
+                            style={vscDarkPlus}
+                            customStyle={{
+                                fontSize: '13px',
+                                lineHeight: '1.6',
+                                borderRadius: '0.5rem',
+                                padding: '1rem'
+                            }}
+                        >
+                            {codeString}
+                        </SyntaxHighlighter>
                     </CardContent>
                 </Card>
             </TabsContent>
 
-            <TabsContent value="documentation" className="flex-1 min-h-0 overflow-auto pt-4 data-[state=inactive]:hidden">
+            <TabsContent value="documentation" className="flex-1 min-h-0 overflow-auto pt-4 data-[state=inactive]:hidden text-foreground">
                 <div className="space-y-8 pb-8">
                     <Card>
                         <CardHeader>
@@ -271,7 +384,7 @@ export default function App() {
                                     </TableRow>
                                     <TableRow>
                                         <TableCell className="font-mono text-xs font-semibold text-primary">centerOnScreen()</TableCell>
-                                        <TableCell>Moves the window to the exact center of the viewport.</TableCell>
+                                        <TableCell>Moves the window to the exact center of the workspace container.</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell className="font-mono text-xs font-semibold text-primary">fitToContent()</TableCell>

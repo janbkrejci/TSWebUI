@@ -247,7 +247,6 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       disableDragging={windowState === "maximized"}
       enableResizing={windowState === "normal"}
       dragHandleClassName="window-drag-handle"
-      bounds="parent"
       style={{ zIndex }}
       className={cn(
         "flex flex-col overflow-hidden rounded-lg border bg-background shadow-xl ease-in-out select-none",
