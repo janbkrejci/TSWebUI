@@ -80,13 +80,31 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
   const contentRef = React.useRef<HTMLDivElement>(null)
   const rndRef = React.useRef<Rnd>(null)
 
+  const getParentSize = React.useCallback(() => {
+      if (typeof window === 'undefined') return { width: 1024, height: 768 } // SSR fallback
+      
+      if (rndRef.current) {
+          const el = rndRef.current.getSelfElement()
+          const parent = el?.parentElement
+          if (parent) {
+              const rect = parent.getBoundingClientRect()
+              return { width: rect.width, height: rect.height }
+          }
+      }
+      return { width: window.innerWidth, height: window.innerHeight }
+  }, [])
+
   React.useEffect(() => {
     if (initiallyMaximized) {
         setRestoreRect({ width: defaultWidth, height: defaultHeight, x: defaultLeft, y: defaultTop })
-        setSize({ width: window.innerWidth, height: window.innerHeight })
-        setPosition({ x: 0, y: 0 })
+        // Delay getting parent size to ensure DOM is ready
+        requestAnimationFrame(() => {
+            const { width, height } = getParentSize()
+            setSize({ width, height })
+            setPosition({ x: 0, y: 0 })
+        })
     }
-  }, [initiallyMaximized, defaultWidth, defaultHeight, defaultLeft, defaultTop])
+  }, [initiallyMaximized, defaultWidth, defaultHeight, defaultLeft, defaultTop, getParentSize])
 
   const restore = () => {
     if (!restoreRect) return
@@ -121,8 +139,11 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
     if (windowState === "normal") {
       setRestoreRect({ ...size, ...position })
     }
+    
+    const { width, height } = getParentSize()
+    
     setWindowState("maximized")
-    setSize({ width: window.innerWidth, height: window.innerHeight })
+    setSize({ width, height })
     setPosition({ x: 0, y: 0 })
   }
 
@@ -133,17 +154,25 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       restore: restore,
       close: () => onClose?.(),
       centerOnScreen: () => {
-          if (!rndRef.current) return
-          const el = rndRef.current.getSelfElement()
-          // Get parent element (container)
-          const parent = el?.parentElement
+          if (typeof window === 'undefined') return
           
-          if (parent && windowState !== 'maximized') {
-              const parentRect = parent.getBoundingClientRect()
-              const elementRect = el.getBoundingClientRect()
+          let currentWidth = size.width
+          let currentHeight = size.height
+          
+          if (rndRef.current) {
+              const el = rndRef.current.getSelfElement()
+              if (el) {
+                  const rect = el.getBoundingClientRect()
+                  currentWidth = rect.width
+                  currentHeight = rect.height
+              }
+          }
+
+          if (windowState !== 'maximized') {
+              const { width: parentW, height: parentH } = getParentSize()
               
-              const newX = (parentRect.width - elementRect.width) / 2
-              const newY = (parentRect.height - elementRect.height) / 2
+              const newX = (parentW - currentWidth) / 2
+              const newY = (parentH - currentHeight) / 2
               
               setPosition({ x: newX, y: newY })
           }
