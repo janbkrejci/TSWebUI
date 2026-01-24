@@ -133,26 +133,18 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       restore: restore,
       close: () => onClose?.(),
       centerOnScreen: () => {
-          if (typeof window === 'undefined') return
-          const w = window.innerWidth
-          const h = window.innerHeight
+          if (!rndRef.current) return
+          const el = rndRef.current.getSelfElement()
+          // Get parent element (container)
+          const parent = el?.parentElement
           
-          // Get actual current size from DOM if possible for better precision
-          let currentWidth = size.width
-          let currentHeight = size.height
-          
-          if (rndRef.current) {
-              const el = rndRef.current.getSelfElement()
-              if (el) {
-                  const rect = el.getBoundingClientRect()
-                  currentWidth = rect.width
-                  currentHeight = rect.height
-              }
-          }
-
-          if (windowState !== 'maximized') {
-              const newX = (w - currentWidth) / 2
-              const newY = (h - currentHeight) / 2
+          if (parent && windowState !== 'maximized') {
+              const parentRect = parent.getBoundingClientRect()
+              const elementRect = el.getBoundingClientRect()
+              
+              const newX = (parentRect.width - elementRect.width) / 2
+              const newY = (parentRect.height - elementRect.height) / 2
+              
               setPosition({ x: newX, y: newY })
           }
       },
