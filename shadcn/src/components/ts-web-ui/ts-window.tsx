@@ -300,22 +300,19 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
     
     const { width: parentWidth, height: parentHeight } = getParentSize()
     
-    // Logic: 
-    // 1. Header (top) must be >= 0 (don't disappear up)
-    // 2. Header (top) must be <= parentHeight - 30 (don't disappear down)
-    // 3. Left must be <= parentWidth - 30 (don't disappear right)
-    // 4. Right (x + width) must be >= 30 (don't disappear left) => x >= 30 - width
-    
     let newX = d.x
     let newY = d.y
     
-    const minVisible = 30
+    const headerHeight = 40
     
-    newX = Math.max(newX, minVisible - size.width)
-    newX = Math.min(newX, parentWidth - minVisible)
-    
+    // Strict containment: Header must not leave the container even partially.
+    // Y axis: Top >= 0, Bottom of header <= parentHeight
     newY = Math.max(0, newY)
-    newY = Math.min(newY, parentHeight - minVisible)
+    newY = Math.min(newY, parentHeight - headerHeight)
+
+    // X axis: Left >= 0, Right <= parentWidth
+    newX = Math.max(0, newX)
+    newX = Math.min(newX, parentWidth - size.width)
 
     const finalPos = { x: newX, y: newY }
     setPosition(finalPos)
@@ -449,7 +446,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
         )}
         style={{ height: "calc(100% - 2.5rem)" }}
       >
-        <div ref={measureRef} className="h-fit w-full p-4 pb-8">
+        <div ref={measureRef} className="h-fit w-full p-4 pb-6">
             {children}
         </div>
       </div>

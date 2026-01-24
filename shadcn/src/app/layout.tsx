@@ -50,7 +50,7 @@ export default function RootLayout({
                         <ModeToggle />
                     </div>
                 </header>
-                <main className="flex-1 p-6">
+                <main className="flex-1 flex flex-col pt-6 px-6 overflow-hidden">
                     {children}
                 </main>
             </div>
