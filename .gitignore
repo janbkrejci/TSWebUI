@@ -3,6 +3,7 @@ logs
 /dist/
 public/dist/
 public/ts-form-editor/
+public/shadcn/
 packages/ts-form-editor/dist/
 *.log
 npm-debug.log*
