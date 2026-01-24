@@ -34,11 +34,18 @@ export function AppSidebar({ className }: SidebarProps) {
           </h2>
           <div className="space-y-1">
              <Button 
-                variant={pathname?.startsWith("/components/ts-window") ? "secondary" : "ghost"} 
+                variant={pathname === "/components/ts-window" ? "secondary" : "ghost"} 
                 className="w-full justify-start" 
                 asChild
             >
               <Link href="/components/ts-window">Window</Link>
+            </Button>
+            <Button 
+                variant={pathname === "/ts-window-demo" ? "secondary" : "ghost"} 
+                className="w-full justify-start text-xs text-muted-foreground" 
+                asChild
+            >
+              <Link href="/ts-window-demo">Window Demo (Temp)</Link>
             </Button>
             <Button 
                 variant={pathname?.startsWith("/components/ts-table") ? "secondary" : "ghost"} 

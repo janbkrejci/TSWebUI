@@ -24,6 +24,7 @@ export interface TsWindowProps {
   onFocus?: () => void
   initiallyMinimized?: boolean
   initiallyMaximized?: boolean
+  autoFit?: boolean
 }
 
 export interface TsWindowRef {
@@ -60,6 +61,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
   onFocus,
   initiallyMinimized = false,
   initiallyMaximized = false,
+  autoFit = false,
 }, ref) => {
   const [windowState, setWindowState] = React.useState<WindowState>(
     initiallyMaximized ? "maximized" : initiallyMinimized ? "minimized" : "normal"
@@ -81,10 +83,18 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
 
   // Uložení pozice minimalizovaného okna
   const [minimizedPosition, setMinimizedPosition] = React.useState<{ x: number; y: number } | null>(null)
+  
+  // Opacity state for smooth auto-fit appearance
+  const [isVisible, setIsVisible] = React.useState(!autoFit)
 
   // Reference
   const contentRef = React.useRef<HTMLDivElement>(null)
+  const measureRef = React.useRef<HTMLDivElement>(null)
   const rndRef = React.useRef<Rnd>(null)
+  const lastResizeHandleClick = React.useRef(0)
+
+  // Get interaction state from manager
+  const { isInteracting: globalIsInteracting, setInteracting } = useWindowManager()
 
   const getParentSize = React.useCallback(() => {
       if (typeof window === 'undefined') return { width: 1024, height: 768 } // SSR fallback
@@ -99,6 +109,54 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       }
       return { width: window.innerWidth, height: window.innerHeight }
   }, [])
+
+  // ResizeObserver to handle parent container resizing when maximized
+  React.useEffect(() => {
+      if (windowState !== 'maximized' || !rndRef.current) return
+
+      const el = rndRef.current.getSelfElement()
+      const parent = el?.parentElement
+      if (!parent) return
+
+      const observer = new ResizeObserver((entries) => {
+          const entry = entries[0]
+          if (entry) {
+              const { width, height } = entry.contentRect
+              setSize({ width, height })
+              setPosition({ x: 0, y: 0 })
+          }
+      })
+
+      observer.observe(parent)
+      return () => observer.disconnect()
+  }, [windowState])
+
+  // Auto-fit on mount if requested
+  React.useEffect(() => {
+      if (autoFit && !initiallyMinimized && !initiallyMaximized) {
+          // Initially invisible
+          setIsVisible(false)
+          
+          requestAnimationFrame(() => {
+               if (contentRef.current && measureRef.current) {
+                   const contentStyles = window.getComputedStyle(contentRef.current)
+                   const paddingTop = parseFloat(contentStyles.paddingTop) || 0
+                   const paddingBottom = parseFloat(contentStyles.paddingBottom) || 0
+                   const innerHeight = measureRef.current.offsetHeight
+                   const currentScrollbarHeight = contentRef.current.offsetHeight - contentRef.current.clientHeight
+                   
+                   const totalContentHeight = innerHeight + paddingTop + paddingBottom + currentScrollbarHeight
+                   const headerHeight = 40
+                   const borderAdjustment = 2
+
+                   setSize(prev => ({ ...prev, height: totalContentHeight + headerHeight + borderAdjustment }))
+                   setIsVisible(true)
+               } else {
+                   setIsVisible(true)
+               }
+          })
+      }
+  }, [autoFit, initiallyMinimized, initiallyMaximized])
 
   React.useEffect(() => {
     if (initiallyMaximized) {
@@ -118,6 +176,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       setCurrentZIndex(newZ)
       onFocus?.()
   }, [onFocus])
+
 
   const restore = () => {
     if (!restoreRect) return
@@ -163,6 +222,26 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
     bringToFront()
   }
 
+  const handleFitToContent = React.useCallback(() => {
+     if (contentRef.current && measureRef.current && windowState !== 'minimized') {
+          const contentStyles = window.getComputedStyle(contentRef.current)
+          const paddingTop = parseFloat(contentStyles.paddingTop) || 0
+          const paddingBottom = parseFloat(contentStyles.paddingBottom) || 0
+          
+          const innerHeight = measureRef.current.offsetHeight
+          
+          // Check for horizontal scrollbar to ensure we don't cut off content due to scrollbar taking space
+          const currentScrollbarHeight = contentRef.current.offsetHeight - contentRef.current.clientHeight
+          
+          const totalContentHeight = innerHeight + paddingTop + paddingBottom + currentScrollbarHeight
+          
+          const headerHeight = 40
+          const borderAdjustment = 2 // top + bottom borders
+          
+          setSize(prev => ({ ...prev, height: totalContentHeight + headerHeight + borderAdjustment }))
+      }
+  }, [windowState])
+
   // Expose API via ref
   React.useImperativeHandle(ref, () => ({
       minimize: handleMinimize,
@@ -194,12 +273,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
           }
           bringToFront()
       },
-      fitToContent: () => {
-          if (contentRef.current && windowState !== 'minimized') {
-              const contentHeight = contentRef.current.scrollHeight
-              setSize(prev => ({ ...prev, height: contentHeight + 40 }))
-          }
-      },
+      fitToContent: handleFitToContent,
       bringToFront: bringToFront
   }))
 
@@ -210,29 +284,57 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
 
   const handleDragStart: RndDragCallback = (e, d) => {
     setIsDragging(true)
+    setInteracting(true)
     setGlobalUserSelect('none')
     bringToFront()
   }
 
+  // NOTE: We do NOT use onDrag to update state. This prevents the "jumping" behavior
+  // caused by fighting between React state updates and Rnd's internal DOM updates.
+  // Instead, we clamp the final position in onDragStop.
+
   const handleDragStop: RndDragCallback = (e, d) => {
     setIsDragging(false)
+    setInteracting(false)
     setGlobalUserSelect('')
-    const newPos = { x: d.x, y: d.y }
-    setPosition(newPos)
+    
+    const { width: parentWidth, height: parentHeight } = getParentSize()
+    
+    // Logic: 
+    // 1. Header (top) must be >= 0 (don't disappear up)
+    // 2. Header (top) must be <= parentHeight - 30 (don't disappear down)
+    // 3. Left must be <= parentWidth - 30 (don't disappear right)
+    // 4. Right (x + width) must be >= 30 (don't disappear left) => x >= 30 - width
+    
+    let newX = d.x
+    let newY = d.y
+    
+    const minVisible = 30
+    
+    newX = Math.max(newX, minVisible - size.width)
+    newX = Math.min(newX, parentWidth - minVisible)
+    
+    newY = Math.max(0, newY)
+    newY = Math.min(newY, parentHeight - minVisible)
+
+    const finalPos = { x: newX, y: newY }
+    setPosition(finalPos)
 
     if (windowState === "minimized") {
-        setMinimizedPosition(newPos)
+        setMinimizedPosition(finalPos)
     }
   }
 
   const handleResizeStart = () => {
     setIsResizing(true)
+    setInteracting(true)
     setGlobalUserSelect('none')
     bringToFront()
   }
 
   const handleResizeStop: RndResizeCallback = (e, direction, ref, delta, position) => {
     setIsResizing(false)
+    setInteracting(false)
     setGlobalUserSelect('')
     setSize({
       width: Number.parseInt(ref.style.width),
@@ -241,7 +343,8 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
     setPosition(position)
   }
 
-  const handleHeaderDoubleClick = () => {
+  const handleHeaderDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent bubbling
     if (windowState === "minimized") {
       restore()
       return
@@ -256,6 +359,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       size={size}
       position={position}
       onDragStart={handleDragStart}
+      // onDrag={handleDrag} // Removed to fix jitter
       onDragStop={handleDragStop}
       onResizeStart={handleResizeStart}
       onResizeStop={handleResizeStop}
@@ -264,11 +368,27 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       minHeight={windowState === "minimized" ? 40 : minHeight}
       disableDragging={windowState === "maximized"}
       enableResizing={windowState === "normal"}
+      resizeHandleComponent={{
+          bottomRight: (
+              <div 
+                  className="w-5 h-5 bg-transparent hover:bg-primary/20 absolute bottom-0 right-0 cursor-nwse-resize z-50"
+                  onMouseDown={(e) => {
+                      const now = Date.now()
+                      if (now - lastResizeHandleClick.current < 300) {
+                          e.stopPropagation()
+                          e.preventDefault()
+                          handleFitToContent()
+                      }
+                      lastResizeHandleClick.current = now
+                  }}
+              />
+          )
+      }}
       dragHandleClassName="window-drag-handle"
-      style={{ zIndex: currentZIndex }}
+      style={{ zIndex: currentZIndex, opacity: isVisible ? 1 : 0 }}
       className={cn(
-        "flex flex-col overflow-hidden rounded-lg border bg-background shadow-xl ease-in-out select-none",
-        // Apply transition ONLY when NOT dragging or resizing
+        "flex flex-col overflow-hidden rounded-lg border bg-background shadow-xl",
+        // Apply transition ONLY when NOT dragging or resizing. Also fade in.
         (!isDragging && !isResizing) && "transition-all duration-200",
         windowState === "maximized" && "rounded-none border-none",
         className
@@ -321,11 +441,16 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
       <div 
         ref={contentRef}
         className={cn(
-            "flex-1 overflow-auto bg-background p-4",
+            "flex-1 overflow-auto bg-background p-4 min-h-0 h-full",
+            // If ANY window is interacting, disable selection on ALL windows via context state
+            // If NO interaction, allow selection and auto cursor
+            globalIsInteracting ? "select-none" : "select-text cursor-auto",
             windowState === "minimized" && "hidden"
         )}
       >
-        {children}
+        <div ref={measureRef} className="h-fit w-full">
+            {children}
+        </div>
       </div>
     </Rnd>
   )
@@ -347,15 +472,24 @@ interface WindowContextType {
     closeWindow: (id: string) => void
     getWindow: (id: string) => TsWindowRef | null
     windows: WindowItem[]
+    isInteracting: boolean
+    setInteracting: (interacting: boolean) => void
 }
 
 const WindowContext = React.createContext<WindowContextType | undefined>(undefined)
 
 export const WindowProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [windows, setWindows] = React.useState<WindowItem[]>([])
+    const [isInteracting, setInteracting] = React.useState(false)
 
     const openWindow = React.useCallback((content: React.ReactNode, options: Partial<TsWindowProps> & { id?: string } = {}) => {
         const id = options.id || Math.random().toString(36).substring(7)
+        
+        // Default options
+        const finalOptions = {
+            autoFit: true, // Auto-fit by default
+            ...options
+        }
         
         setWindows(prev => {
             const exists = prev.find(w => w.id === id)
@@ -369,7 +503,7 @@ export const WindowProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             return [...prev, {
                 id,
                 content,
-                props: options,
+                props: finalOptions,
                 ref: React.createRef<TsWindowRef>()
             }]
         })
@@ -385,7 +519,7 @@ export const WindowProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }, [windows])
 
     return (
-        <WindowContext.Provider value={{ openWindow, closeWindow, getWindow, windows }}>
+        <WindowContext.Provider value={{ openWindow, closeWindow, getWindow, windows, isInteracting, setInteracting }}>
             {children}
         </WindowContext.Provider>
     )

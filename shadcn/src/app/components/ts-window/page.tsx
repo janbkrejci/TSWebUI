@@ -149,26 +149,67 @@ function TsWindowDemo() {
 export default function TsWindowPage() {
   const codeString = `"use client"
 
-import { WindowProvider, useWindowManager, WindowOutlet } from "@/components/ts-web-ui/ts-window"
+import { 
+  WindowProvider, 
+  useWindowManager, 
+  WindowOutlet 
+} from "@/components/ts-web-ui/ts-window"
+import { Button } from "@/components/ui/button"
 
 function MyWindowApp() {
-  const { openWindow } = useWindowManager()
+  const { openWindow, getWindow } = useWindowManager()
 
   const handleOpen = () => {
+    // Generate unique ID
+    const id = \`win-\${Math.random().toString(36).substring(7)}\`
+    
     openWindow(
-      <div className="p-4">
-        <h2>Hello World</h2>
+      <div className="space-y-4 p-1">
+        <p>This is dynamic React content for window <strong>{id}</strong>!</p>
+        <p className="text-sm text-muted-foreground">
+           Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+           Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        </p>
+        <div className="flex flex-wrap gap-2">
+            <Button size="sm" onClick={() => getWindow(id)?.centerOnScreen()}>
+                Center
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => getWindow(id)?.minimize()}>
+                Minimize
+            </Button>
+             <Button size="sm" variant="destructive" onClick={() => getWindow(id)?.close()}>
+                Close
+            </Button>
+        </div>
+        <div className="h-32 bg-muted/50 rounded flex items-center justify-center text-muted-foreground text-xs border border-dashed">
+            Scrollable Content Area Placeholder
+        </div>
+         <p className="text-sm">
+           More content to force scroll if window is small.
+           Ut enim ad minim veniam, quis nostrud exercitation ullamco.
+        </p>
       </div>,
-      { title: "My Window" }
+      { 
+        id,
+        title: \`Window \${id}\`, 
+        defaultWidth: 400,
+        defaultHeight: 300
+      }
     )
   }
 
   return (
-    <div className="h-screen w-full flex flex-col">
-       <button onClick={handleOpen}>Open Window</button>
+    <div className="h-[600px] w-full flex flex-col gap-4">
+       {/* Toolbar */}
+       <div className="p-4 border rounded-lg bg-card shadow-sm">
+           <Button onClick={handleOpen}>Open New Window</Button>
+       </div>
        
-       {/* Windows will be constrained to this div */}
-       <div className="flex-1 relative border">
+       {/* Workspace with WindowOutlet */}
+       <div className="flex-1 relative border rounded-lg bg-slate-100 dark:bg-slate-950 overflow-hidden shadow-inner">
+           <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/20 pointer-events-none font-bold text-4xl select-none">
+               WORKSPACE
+           </div>
            <WindowOutlet />
        </div>
     </div>
@@ -206,11 +247,11 @@ export default function Page() {
             </TabsContent>
 
             <TabsContent value="code" className="flex-1 min-h-0 overflow-auto pt-4 data-[state=inactive]:hidden">
-                <Card>
+                <Card className="max-w-5xl mx-auto w-full">
                     <CardHeader>
                         <CardTitle>Usage with WindowManager</CardTitle>
                         <CardDescription>
-                            The new <code>WindowProvider</code> and <code>useWindowManager</code> hook allow for easy, imperative window management.
+                            The <code>WindowProvider</code>, <code>WindowOutlet</code> and <code>useWindowManager</code> hook work together to provide a robust windowing system.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -231,7 +272,7 @@ export default function Page() {
             </TabsContent>
 
             <TabsContent value="documentation" className="flex-1 min-h-0 overflow-auto pt-4 data-[state=inactive]:hidden text-foreground">
-                <div className="space-y-8 pb-8">
+                <div className="space-y-8 pb-8 max-w-5xl mx-auto w-full">
                     <Card>
                         <CardHeader>
                             <CardTitle>Window Manager API</CardTitle>
@@ -243,7 +284,7 @@ export default function Page() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="w-[200px]">Method</TableHead>
+                                        <TableHead className="w-[250px]">Method</TableHead>
                                         <TableHead>Description</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -252,8 +293,7 @@ export default function Page() {
                                         <TableCell className="font-mono text-xs font-semibold text-primary">openWindow(content, options)</TableCell>
                                         <TableCell>
                                             Opens a new window with the provided React content. 
-                                            <code>options</code> can include <code>id</code>, <code>title</code>, dimensions, etc.
-                                            If <code>id</code> matches an existing window, it brings it to front.
+                                            If an <code>id</code> is provided and already exists, the window is brought to front.
                                         </TableCell>
                                     </TableRow>
                                     <TableRow>
@@ -262,7 +302,58 @@ export default function Page() {
                                     </TableRow>
                                     <TableRow>
                                         <TableCell className="font-mono text-xs font-semibold text-primary">getWindow(id)</TableCell>
-                                        <TableCell>Returns the ref (TsWindowRef) for the specified window, allowing imperative control.</TableCell>
+                                        <TableCell>Returns the <code>TsWindowRef</code> for the specified window, allowing imperative control.</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs font-semibold text-primary">windows</TableCell>
+                                        <TableCell>An array of currently open window objects.</TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Imperative API (TsWindowRef)</CardTitle>
+                            <CardDescription>Methods available on the window reference (retrieved via <code>getWindow(id)</code>).</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="w-[250px]">Method</TableHead>
+                                        <TableHead>Description</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs font-semibold text-primary">minimize()</TableCell>
+                                        <TableCell>Minimizes the window.</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs font-semibold text-primary">maximize()</TableCell>
+                                        <TableCell>Maximizes the window to fill its container.</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs font-semibold text-primary">restore()</TableCell>
+                                        <TableCell>Restores the window from minimized or maximized state.</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs font-semibold text-primary">close()</TableCell>
+                                        <TableCell>Closes the window.</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs font-semibold text-primary">centerOnScreen()</TableCell>
+                                        <TableCell>Centers the window within its parent container.</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs font-semibold text-primary">fitToContent()</TableCell>
+                                        <TableCell>Adjusts the window height to match its content scroll height.</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs font-semibold text-primary">bringToFront()</TableCell>
+                                        <TableCell>Increments the window's Z-index to place it above others.</TableCell>
                                     </TableRow>
                                 </TableBody>
                             </Table>
@@ -272,7 +363,7 @@ export default function Page() {
                     <Card>
                         <CardHeader>
                             <CardTitle>TsWindow Properties</CardTitle>
-                            <CardDescription>Available props for the component.</CardDescription>
+                            <CardDescription>Available props for configuring the window (passed as the second argument to <code>openWindow</code>).</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Table>
@@ -285,15 +376,74 @@ export default function Page() {
                                 </TableHeader>
                                 <TableBody>
                                     <TableRow>
+                                        <TableCell className="font-mono text-xs">id</TableCell>
+                                        <TableCell className="text-xs italic">string | number</TableCell>
+                                        <TableCell>Unique identifier for the window.</TableCell>
+                                    </TableRow>
+                                    <TableRow>
                                         <TableCell className="font-mono text-xs">title</TableCell>
                                         <TableCell className="text-xs italic">string</TableCell>
-                                        <TableCell>Title displayed in the window header.</TableCell>
+                                        <TableCell>Title displayed in the header bar.</TableCell>
                                     </TableRow>
-                                    {/* ... properties list same as before ... */}
                                     <TableRow>
-                                        <TableCell className="font-mono text-xs">children</TableCell>
-                                        <TableCell className="text-xs italic">ReactNode</TableCell>
-                                        <TableCell>The content of the window.</TableCell>
+                                        <TableCell className="font-mono text-xs">defaultWidth</TableCell>
+                                        <TableCell className="text-xs italic">number</TableCell>
+                                        <TableCell>Initial width in pixels (default: 400).</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs">defaultHeight</TableCell>
+                                        <TableCell className="text-xs italic">number</TableCell>
+                                        <TableCell>Initial height in pixels (default: 300).</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs">defaultTop</TableCell>
+                                        <TableCell className="text-xs italic">number</TableCell>
+                                        <TableCell>Initial Y position (default: 100).</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs">defaultLeft</TableCell>
+                                        <TableCell className="text-xs italic">number</TableCell>
+                                        <TableCell>Initial X position (default: 100).</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs">minWidth</TableCell>
+                                        <TableCell className="text-xs italic">number</TableCell>
+                                        <TableCell>Minimum allowed width (default: 200).</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs">minHeight</TableCell>
+                                        <TableCell className="text-xs italic">number</TableCell>
+                                        <TableCell>Minimum allowed height (default: 100).</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs">zIndex</TableCell>
+                                        <TableCell className="text-xs italic">number</TableCell>
+                                        <TableCell>Initial Z-index value.</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs">initiallyMinimized</TableCell>
+                                        <TableCell className="text-xs italic">boolean</TableCell>
+                                        <TableCell>Start the window in minimized state.</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs">initiallyMaximized</TableCell>
+                                        <TableCell className="text-xs italic">boolean</TableCell>
+                                        <TableCell>Start the window in maximized state.</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs">onClose</TableCell>
+                                        <TableCell className="text-xs italic">() =&gt; void</TableCell>
+                                        <TableCell>Callback when the window is closed.</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs">onFocus</TableCell>
+                                        <TableCell className="text-xs italic">() =&gt; void</TableCell>
+                                        <TableCell>Callback when the window gains focus.</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-mono text-xs">className</TableCell>
+                                        <TableCell className="text-xs italic">string</TableCell>
+                                        <TableCell>Additional CSS classes for the window container.</TableCell>
                                     </TableRow>
                                 </TableBody>
                             </Table>
