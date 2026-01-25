@@ -16,6 +16,9 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Menu, X, ChevronLeft, ChevronRight } from "lucide-react"
 
+const SIDEBAR_STATE_KEY = "sidebar:state"
+const SIDEBAR_COLLAPSED_KEY = "sidebar:collapsed"
+
 /**
  * Kontext pro řízení stavu sidebaru
  */
@@ -85,15 +88,68 @@ export function SidebarProvider({
 }: SidebarProviderProps) {
   // Inicializace - na serveru předpokládáme desktop (defaultOpen), na klientu zjistíme skutečný stav
   const getInitialMobile = () => typeof window !== 'undefined' ? window.innerWidth < mobileBreakpoint : false
-  const getInitialOpen = () => typeof window !== 'undefined' ? (window.innerWidth >= mobileBreakpoint ? defaultOpen : false) : defaultOpen
+  
+  const getInitialOpen = () => {
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth < mobileBreakpoint) {
+        return false
+      }
+      // Check storage
+      try {
+        const stored = window.localStorage.getItem(SIDEBAR_STATE_KEY)
+        if (stored !== null) {
+          return stored === 'true'
+        }
+      } catch (e) {
+        // ignore
+      }
+      return defaultOpen
+    }
+    return defaultOpen
+  }
+
+  const getInitialCollapsed = () => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY)
+        if (stored !== null) {
+          return stored === 'true'
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    return false
+  }
   
   const [isOpen, setIsOpen] = React.useState(getInitialOpen)
-  const [isCollapsed, setIsCollapsed] = React.useState(false)
+  const [isCollapsed, setIsCollapsed] = React.useState(getInitialCollapsed)
   const [isMobile, setIsMobile] = React.useState(getInitialMobile)
   
   // Refs pro sledování předchozího stavu (aby closure fungovalo správně)
   const wasMobileRef = React.useRef(isMobile)
   const wasOpenRef = React.useRef(isOpen)
+
+  // Ukládání stavu do localStorage
+  React.useEffect(() => {
+    if (!isMobile) {
+      try {
+        window.localStorage.setItem(SIDEBAR_STATE_KEY, String(isOpen))
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [isOpen, isMobile])
+
+  React.useEffect(() => {
+    if (!isMobile) {
+      try {
+        window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(isCollapsed))
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [isCollapsed, isMobile])
 
   // Detekce velikosti okna
   React.useEffect(() => {
@@ -109,21 +165,31 @@ export function SidebarProvider({
         wasMobileRef.current = true
         wasOpenRef.current = false
       }
-      // Automaticky otevřít při zvětšení na desktop
+      // Automaticky otevřít při zvětšení na desktop (respektovat uložený stav)
       else if (!mobile && wasMobile) {
         setIsMobile(false)
-        setIsOpen(true)
+        
+        let shouldBeOpen = defaultOpen
+        try {
+          const stored = window.localStorage.getItem(SIDEBAR_STATE_KEY)
+          if (stored !== null) {
+            shouldBeOpen = stored === 'true'
+          }
+        } catch (e) {}
+
+        setIsOpen(shouldBeOpen)
         wasMobileRef.current = false
-        wasOpenRef.current = true
+        wasOpenRef.current = shouldBeOpen
       }
     }
 
     // Počáteční kontrola (pro případ hydratace)
-    checkMobile()
-
+    // checkMobile() // - tohle možná není potřeba pokud inicializujeme správně, ale pro resize event to chceme
+    // Na druhou stranu, getInitialOpen už to řeší. checkMobile je HLAVNĚ pro změnu velikosti.
+    
     window.addEventListener("resize", checkMobile)
     return () => window.removeEventListener("resize", checkMobile)
-  }, [mobileBreakpoint])
+  }, [mobileBreakpoint, defaultOpen])
   
   // Synchronizace refs při manuální změně stavu
   React.useEffect(() => {
