@@ -133,7 +133,9 @@ export function TopBarSpacer({ className }: { className?: string }) {
 /**
  * Logo v TopBaru
  */
-interface TopBarLogoProps extends React.HTMLAttributes<HTMLDivElement> {
+interface TopBarLogoProps {
+  className?: string
+  children?: React.ReactNode
   /** Text loga */
   text?: string
   /** Ikona loga */
@@ -142,7 +144,7 @@ interface TopBarLogoProps extends React.HTMLAttributes<HTMLDivElement> {
   href?: string
 }
 
-export function TopBarLogo({ className, text, icon, href, children, ...props }: TopBarLogoProps) {
+export function TopBarLogo({ className, text, icon, href, children }: TopBarLogoProps) {
   const content = (
     <>
       {icon}
@@ -156,7 +158,6 @@ export function TopBarLogo({ className, text, icon, href, children, ...props }: 
       <a 
         href={href} 
         className={cn("flex items-center gap-2 font-semibold hover:opacity-80 transition-opacity", className)} 
-        {...props}
       >
         {content}
       </a>
@@ -164,7 +165,7 @@ export function TopBarLogo({ className, text, icon, href, children, ...props }: 
   }
 
   return (
-    <div className={cn("flex items-center gap-2 font-semibold", className)} {...props}>
+    <div className={cn("flex items-center gap-2 font-semibold", className)}>
       {content}
     </div>
   )
