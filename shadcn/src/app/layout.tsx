@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ClientOnly } from "@/components/client-only";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ModeToggle } from "@/components/mode-toggle";
+import { 
+  SidebarProvider, 
+  Sidebar, 
+  SidebarContent,
+  SidebarTrigger,
+  SidebarInset
+} from "@/components/ts-web-ui/ts-sidebar";
+import { TsTopBar, TopBarLogo } from "@/components/ts-web-ui/ts-topbar";
+import { SidebarCollapseTrigger } from "@/components/sidebar-collapse-trigger";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,6 +30,8 @@ export const metadata: Metadata = {
   description: "React implementation of TS Web UI components",
 };
 
+const TOP_BAR_HEIGHT = 56;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,32 +42,45 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background font-sans text-foreground`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className="flex min-h-screen">
-            {/* Sidebar - hidden on mobile, fixed width on desktop */}
-            <aside className="hidden w-64 flex-col md:flex">
-                <AppSidebar />
-            </aside>
-            
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col">
-                <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-6">
-                    <div className="flex w-full items-center justify-between">
-                        <div className="font-medium">TSWebUI Demo</div>
-                        <ModeToggle />
-                    </div>
-                </header>
-                <main className="flex-1 flex flex-col pt-6 px-6 overflow-hidden">
-                    {children}
-                </main>
-            </div>
+        <ClientOnly fallback={
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="animate-pulse text-muted-foreground">Loading...</div>
           </div>
-        </ThemeProvider>
+        }>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <SidebarProvider defaultOpen={true} mobileBreakpoint={1024} topBarHeight={TOP_BAR_HEIGHT}>
+              {/* Fixed TopBar - přes celou šířku */}
+              <TsTopBar
+                height={TOP_BAR_HEIGHT}
+                leftContent={
+                  <div className="flex items-center gap-3">
+                    <SidebarTrigger />
+                    <TopBarLogo text="TSWebUI" href="/" />
+                  </div>
+                }
+                rightContent={<ModeToggle />}
+              />
+              
+              {/* Sidebar - pod TopBarem */}
+              <Sidebar>
+                <SidebarCollapseTrigger />
+                <SidebarContent>
+                  <AppSidebar />
+                </SidebarContent>
+              </Sidebar>
+              
+              {/* Main Content Area - automaticky reaguje na sidebar */}
+              <SidebarInset className="px-6 py-6">
+                {children}
+              </SidebarInset>
+            </SidebarProvider>
+          </ThemeProvider>
+        </ClientOnly>
       </body>
     </html>
   );

@@ -7,6 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Toaster, toast } from "sonner"
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import vscDarkPlus from 'react-syntax-highlighter/dist/cjs/styles/prism/vsc-dark-plus'
 
 const formFields: Record<string, TsFieldDef> = {
   name: { type: "text", label: "First Name", required: true, placeholder: "Jan" },
@@ -170,7 +172,16 @@ export default function TsFormPage() {
         <TabsContent value="code" className="pt-4">
           <Card>
             <CardContent className="pt-6">
-              <pre className="p-4 rounded-lg bg-slate-950 text-slate-50 overflow-auto text-sm">
+              <SyntaxHighlighter 
+                language="tsx" 
+                style={vscDarkPlus}
+                customStyle={{
+                  fontSize: '13px',
+                  lineHeight: '1.6',
+                  borderRadius: '0.5rem',
+                  padding: '1rem'
+                }}
+              >
 {`import { TsForm } from "@/components/ts-web-ui/ts-form"
 
 const fields = {
@@ -191,7 +202,7 @@ export default function MyForm() {
     />
   )
 }`}
-              </pre>
+              </SyntaxHighlighter>
             </CardContent>
           </Card>
         </TabsContent>

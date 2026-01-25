@@ -6,6 +6,8 @@ import { TsTableColumnDef } from "@/components/ts-web-ui/ts-table/columns"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import vscDarkPlus from 'react-syntax-highlighter/dist/cjs/styles/prism/vsc-dark-plus'
 
 const tableData = [
     { id: 1, name: "Jana Nováková", username: "jana_n", email: "jana@example.com", city: "Praha", phone: "555-1234", website: "www.jananovakova.com", company: "Novák s.r.o.", turnover: 125000.50, contractDate: "2022-03-15", approved: true },
@@ -96,7 +98,16 @@ export default function TsTablePage() {
                 <CardTitle>Basic Configuration</CardTitle>
             </CardHeader>
             <CardContent>
-              <pre className="p-4 rounded-lg bg-slate-950 text-slate-50 overflow-auto text-sm">
+              <SyntaxHighlighter 
+                language="tsx" 
+                style={vscDarkPlus}
+                customStyle={{
+                  fontSize: '13px',
+                  lineHeight: '1.6',
+                  borderRadius: '0.5rem',
+                  padding: '1rem'
+                }}
+              >
 {`import { TsTable } from "@/components/ts-web-ui/ts-table"
 
 const columns = [
@@ -117,7 +128,7 @@ export default function MyPage() {
     />
   )
 }`}
-              </pre>
+              </SyntaxHighlighter>
             </CardContent>
           </Card>
         </TabsContent>

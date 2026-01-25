@@ -252,7 +252,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
     }, [size, windowState, getParentSize, bringToFront])
 
     const handleFitToContent = React.useCallback(() => {
-        if (contentRef.current && measureRef.current && windowState !== 'minimized') {
+        if (contentRef.current && measureRef.current && windowState !== 'minimized' && windowState !== 'maximized') {
             const contentStyles = window.getComputedStyle(contentRef.current)
             const paddingTop = parseFloat(contentStyles.paddingTop) || 0
             const paddingBottom = parseFloat(contentStyles.paddingBottom) || 0
@@ -436,7 +436,7 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
                 "flex flex-col overflow-hidden bg-background pointer-events-auto",
                 windowState === "maximized"
                     ? "rounded-none border-none"
-                    : "rounded-lg border shadow-xl"
+                    : "rounded-lg border shadow-xl dark:border-neutral-700"
             )}
         >
             {/* Header / Titlebar */}
@@ -482,24 +482,28 @@ export const TsWindow = React.forwardRef<TsWindowRef, TsWindowProps>(({
                 </div>
 
                 <div className="flex items-center gap-1 ml-2">
-                    <div title="Center on Screen" className="flex items-center justify-center">
-                        <Target
-                            className="w-3.5 h-3.5 cursor-pointer opacity-50 hover:opacity-100 text-foreground"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleCenterOnScreen()
-                            }}
-                        />
-                    </div>
-                    <div title="Fit to Content" className="flex items-center justify-center">
-                        <ChevronsUpDown
-                            className="w-3.5 h-3.5 cursor-pointer opacity-50 hover:opacity-100 text-foreground"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleFitToContent();
-                            }}
-                        />
-                    </div>
+                    {windowState === "normal" && (
+                        <>
+                            <div title="Center on Screen" className="flex items-center justify-center">
+                                <Target
+                                    className="w-3.5 h-3.5 cursor-pointer opacity-50 hover:opacity-100 text-foreground"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCenterOnScreen()
+                                    }}
+                                />
+                            </div>
+                            <div title="Fit to Content" className="flex items-center justify-center">
+                                <ChevronsUpDown
+                                    className="w-3.5 h-3.5 cursor-pointer opacity-50 hover:opacity-100 text-foreground"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleFitToContent();
+                                    }}
+                                />
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 

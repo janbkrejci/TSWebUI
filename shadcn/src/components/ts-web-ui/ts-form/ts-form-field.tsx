@@ -54,13 +54,17 @@ interface TsFormFieldProps {
 
 export function TsFormField({ name, fieldDef }: TsFormFieldProps) {
   const form = useFormContext()
+  const hasError = !!fieldDef.error
 
   return (
     <FormField
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem className={cn(fieldDef.hidden && "hidden")}>
+        <FormItem className={cn(
+          fieldDef.hidden && "hidden",
+          hasError && "[&_label]:text-destructive"
+        )}>
           {/* Label is rendered unless it's a checkbox/switch/infobox/button/separator/empty/markdown */}
           {fieldDef.type !== "checkbox" && 
            fieldDef.type !== "switch" && 
@@ -69,17 +73,22 @@ export function TsFormField({ name, fieldDef }: TsFormFieldProps) {
            fieldDef.type !== "separator" && 
            fieldDef.type !== "empty" && 
            fieldDef.type !== "markdown" && (
-            <FormLabel>
+            <FormLabel className={cn(hasError && "text-destructive")}>
                 {fieldDef.label} 
-                {fieldDef.required && <span className="text-destructive ml-1">*</span>}
+                {fieldDef.required && <span className="ml-1">*</span>}
             </FormLabel>
           )}
           
           <FormControl>
-            {renderWidget(field, fieldDef, name)}
+            {renderWidget(field, fieldDef, name, hasError)}
           </FormControl>
           
-          {fieldDef.hint && <FormDescription>{fieldDef.hint}</FormDescription>}
+          {/* Error message has priority over hint */}
+          {hasError ? (
+            <p className="text-sm text-destructive">{fieldDef.error}</p>
+          ) : (
+            fieldDef.hint && <FormDescription>{fieldDef.hint}</FormDescription>
+          )}
           <FormMessage />
         </FormItem>
       )}
@@ -87,7 +96,7 @@ export function TsFormField({ name, fieldDef }: TsFormFieldProps) {
   )
 }
 
-function renderWidget(field: any, def: TsFieldDef, name: string) {
+function renderWidget(field: any, def: TsFieldDef, name: string, hasError: boolean = false) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
       if (e.key === "Escape") {
           e.preventDefault()
@@ -99,10 +108,25 @@ function renderWidget(field: any, def: TsFieldDef, name: string) {
       }
   }
 
+  // Shared classes for error state and readonly styling
+  const errorClass = hasError ? "border-destructive focus-visible:ring-destructive" : ""
+  const readonlyClass = def.readonly ? "bg-muted/50 cursor-default focus:ring-0" : ""
+
   switch (def.type) {
     case "text":
     case "password":
-      return <Input type={def.type} placeholder={def.placeholder} {...field} value={field.value ?? ""} onKeyDown={handleKeyDown} disabled={def.disabled || def.readonly} />
+      return (
+        <Input 
+          type={def.type} 
+          placeholder={def.placeholder} 
+          {...field} 
+          value={field.value ?? ""} 
+          onKeyDown={handleKeyDown} 
+          disabled={def.disabled}
+          readOnly={def.readonly}
+          className={cn(errorClass, readonlyClass)}
+        />
+      )
     
     case "number":
       return (
@@ -119,12 +143,25 @@ function renderWidget(field: any, def: TsFieldDef, name: string) {
             min={def.min}
             max={def.max}
             step={def.step}
-            disabled={def.disabled || def.readonly}
+            disabled={def.disabled}
+            readOnly={def.readonly}
+            className={cn(errorClass, readonlyClass)}
         />
       )
 
     case "textarea":
-      return <Textarea placeholder={def.placeholder} {...field} value={field.value ?? ""} rows={def.rows || 3} onKeyDown={handleKeyDown} disabled={def.disabled || def.readonly} />
+      return (
+        <Textarea 
+          placeholder={def.placeholder} 
+          {...field} 
+          value={field.value ?? ""} 
+          rows={def.rows || 3} 
+          onKeyDown={handleKeyDown} 
+          disabled={def.disabled}
+          readOnly={def.readonly}
+          className={cn(errorClass, readonlyClass)}
+        />
+      )
 
     case "checkbox":
       return (
@@ -133,10 +170,11 @@ function renderWidget(field: any, def: TsFieldDef, name: string) {
                 checked={!!field.value} 
                 onCheckedChange={field.onChange} 
                 disabled={def.disabled || def.readonly}
+                className={cn(hasError && "border-destructive data-[state=checked]:bg-destructive")}
             />
-            <FormLabel className="font-normal cursor-pointer">
+            <FormLabel className={cn("font-normal cursor-pointer", hasError && "text-destructive")}>
                 {def.label}
-                {def.required && <span className="text-destructive ml-1">*</span>}
+                {def.required && <span className="ml-1">*</span>}
             </FormLabel>
         </div>
       )
@@ -148,24 +186,30 @@ function renderWidget(field: any, def: TsFieldDef, name: string) {
                     checked={!!field.value} 
                     onCheckedChange={field.onChange}
                     disabled={def.disabled || def.readonly}
+                    className={cn(hasError && "data-[state=checked]:bg-destructive data-[state=unchecked]:bg-destructive/30")}
                 />
-                <FormLabel className="font-normal cursor-pointer">
+                <FormLabel className={cn("font-normal cursor-pointer", hasError && "text-destructive")}>
                     {def.label}
-                    {def.required && <span className="text-destructive ml-1">*</span>}
+                    {def.required && <span className="ml-1">*</span>}
                 </FormLabel>
             </div>
         )
 
     case "radio":
         return (
-            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} disabled={def.disabled || def.readonly} className="flex flex-col space-y-1">
+            <RadioGroup 
+                onValueChange={field.onChange} 
+                defaultValue={field.value} 
+                disabled={def.disabled || def.readonly} 
+                className={cn("flex flex-col space-y-1", hasError && "[&_button]:border-destructive")}
+            >
                 {(def.options || []).map((opt: any) => {
                     const value = typeof opt === 'string' ? opt : opt.value
                     const label = typeof opt === 'string' ? opt : opt.label
                     return (
                         <div key={value} className="flex items-center space-x-2">
                             <RadioGroupItem value={value} id={`${field.name}-${value}`} />
-                            <FormLabel htmlFor={`${field.name}-${value}`} className="font-normal cursor-pointer">{label}</FormLabel>
+                            <FormLabel htmlFor={`${field.name}-${value}`} className={cn("font-normal cursor-pointer", hasError && "text-destructive")}>{label}</FormLabel>
                         </div>
                     )
                 })}
@@ -174,7 +218,13 @@ function renderWidget(field: any, def: TsFieldDef, name: string) {
 
     case "button-group":
         return (
-            <ToggleGroup type="single" value={field.value} onValueChange={field.onChange} disabled={def.disabled || def.readonly}>
+            <ToggleGroup 
+                type="single" 
+                value={field.value} 
+                onValueChange={field.onChange} 
+                disabled={def.disabled || def.readonly}
+                className={cn(hasError && "[&_button]:border-destructive [&_button[data-state=on]]:bg-destructive")}
+            >
                 {(def.options || []).map((opt: any) => {
                     // format value/enabled/variant/Label or just value/label or object
                     // Assuming object {value, label} or string "value/Label"
@@ -200,6 +250,7 @@ function renderWidget(field: any, def: TsFieldDef, name: string) {
                     step={def.step || 1}
                     onValueChange={(vals) => field.onChange(vals[0])}
                     disabled={def.disabled || def.readonly}
+                    className={cn(hasError && "[&_[role=slider]]:border-destructive [&_[role=slider]]:bg-destructive")}
                 />
             </div>
         )
@@ -207,7 +258,7 @@ function renderWidget(field: any, def: TsFieldDef, name: string) {
     case "select":
       return (
         <Select onValueChange={field.onChange} value={field.value} disabled={def.disabled || def.readonly}>
-          <SelectTrigger>
+          <SelectTrigger className={cn(errorClass, readonlyClass)}>
             <SelectValue placeholder={def.placeholder || "Vyberte..."} />
           </SelectTrigger>
           <SelectContent>
@@ -221,10 +272,10 @@ function renderWidget(field: any, def: TsFieldDef, name: string) {
       )
 
     case "combobox":
-        return <ComboboxWidget field={field} def={def} />
+        return <ComboboxWidget field={field} def={def} hasError={hasError} />
 
     case "multiselect":
-        return <MultiSelectWidget field={field} def={def} />
+        return <MultiSelectWidget field={field} def={def} hasError={hasError} />
 
     case "date":
       return (
@@ -234,7 +285,9 @@ function renderWidget(field: any, def: TsFieldDef, name: string) {
               variant={"outline"}
               className={cn(
                 "w-full justify-start text-left font-normal",
-                !field.value && "text-muted-foreground"
+                !field.value && "text-muted-foreground",
+                errorClass,
+                readonlyClass
               )}
               disabled={def.disabled || def.readonly}
             >
@@ -261,7 +314,9 @@ function renderWidget(field: any, def: TsFieldDef, name: string) {
                 {...field} 
                 value={field.value ? new Date(field.value).toISOString().slice(0, 16) : ""}
                 onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
-                disabled={def.disabled || def.readonly}
+                disabled={def.disabled}
+                readOnly={def.readonly}
+                className={cn(errorClass, readonlyClass)}
             />
         )
 
@@ -273,7 +328,9 @@ function renderWidget(field: any, def: TsFieldDef, name: string) {
                     type="file" 
                     accept={def.accept || (def.type === 'image' ? "image/*" : undefined)}
                     multiple={def.multiple}
-                    disabled={def.disabled || def.readonly}
+                    disabled={def.disabled}
+                    readOnly={def.readonly}
+                    className={cn(errorClass, readonlyClass, def.readonly && "pointer-events-none")}
                     onChange={(e) => {
                         const files = e.target.files
                         if (def.multiple) {
@@ -334,6 +391,35 @@ function renderWidget(field: any, def: TsFieldDef, name: string) {
                 {def.label}
             </Button>
         )
+
+    case "separator":
+        // Oddělovač - vizuální prvek bez hodnoty
+        return (
+            <div className="py-2">
+                {def.label ? (
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-background px-2 text-muted-foreground font-medium">
+                                {def.label}
+                            </span>
+                        </div>
+                    </div>
+                ) : (
+                    <hr className="border-t" />
+                )}
+            </div>
+        )
+
+    case "empty":
+        // Prázdný placeholder pro layout účely
+        return <div className="min-h-[40px]" />
+
+    case "relationship":
+        // Relationship picker pro výběr entit
+        return <RelationshipWidget field={field} def={def} hasError={hasError} />
     
     // Fallback for not implemented
     default:
@@ -341,7 +427,7 @@ function renderWidget(field: any, def: TsFieldDef, name: string) {
   }
 }
 
-function ComboboxWidget({ field, def }: { field: any, def: TsFieldDef }) {
+function ComboboxWidget({ field, def, hasError = false }: { field: any, def: TsFieldDef, hasError?: boolean }) {
     const [open, setOpen] = React.useState(false)
     const [searchValue, setSearchValue] = React.useState("")
     const options = (def.options || []).map((opt: any) => {
@@ -354,6 +440,9 @@ function ComboboxWidget({ field, def }: { field: any, def: TsFieldDef }) {
     const filteredOptions = options.filter(opt => opt.label.toLowerCase().includes(searchValue.toLowerCase()))
     const showCustom = (def as any).allowCustom && searchValue && !options.find(o => o.label.toLowerCase() === searchValue.toLowerCase())
 
+    const errorClass = hasError ? "border-destructive focus-visible:ring-destructive" : ""
+    const readonlyClass = def.readonly ? "bg-muted/50 cursor-default" : ""
+
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -361,7 +450,7 @@ function ComboboxWidget({ field, def }: { field: any, def: TsFieldDef }) {
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className="w-full justify-between"
+                    className={cn("w-full justify-between", errorClass, readonlyClass)}
                     disabled={def.disabled || def.readonly}
                 >
                     {field.value
@@ -422,7 +511,7 @@ function ComboboxWidget({ field, def }: { field: any, def: TsFieldDef }) {
     )
 }
 
-function MultiSelectWidget({ field, def }: { field: any, def: TsFieldDef }) {
+function MultiSelectWidget({ field, def, hasError = false }: { field: any, def: TsFieldDef, hasError?: boolean }) {
     const [open, setOpen] = React.useState(false)
     const selectedValues: string[] = Array.isArray(field.value) ? field.value : []
     const options = (def.options || []).map((opt: any) => {
@@ -438,13 +527,16 @@ function MultiSelectWidget({ field, def }: { field: any, def: TsFieldDef }) {
         field.onChange(newValues)
     }
 
+    const errorClass = hasError ? "border-destructive focus-visible:ring-destructive" : ""
+    const readonlyClass = def.readonly ? "bg-muted/50 cursor-default" : ""
+
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <Button
                     variant="outline"
                     role="combobox"
-                    className="w-full justify-between h-auto min-h-[40px]"
+                    className={cn("w-full justify-between h-auto min-h-[40px]", errorClass, readonlyClass)}
                     disabled={def.disabled || def.readonly}
                 >
                     <div className="flex flex-wrap gap-1">
@@ -491,5 +583,173 @@ function MultiSelectWidget({ field, def }: { field: any, def: TsFieldDef }) {
                 </Command>
             </PopoverContent>
         </Popover>
+    )
+}
+/**
+ * Relationship Widget - umožňuje vybírat entity z relacionální tabulky
+ * Podporuje single (jeden záznam) nebo multiple (více záznamů) režim
+ */
+function RelationshipWidget({ field, def, hasError = false }: { field: any, def: TsFieldDef, hasError?: boolean }) {
+    const [open, setOpen] = React.useState(false)
+    const [searchValue, setSearchValue] = React.useState("")
+    
+    // Konfigurace z field definice
+    const mode = (def as any).mode || 'single'
+    const targetEntity = (def as any).targetEntity || ''
+    const displayFields = (def as any).displayFields || ['name']
+    const chipDisplayFields = (def as any).chipDisplayFields || displayFields
+    const valueField = (def as any).valueField || 'id'
+    const availableItems = (def as any).options || []
+
+    const errorClass = hasError ? "border-destructive focus-visible:ring-destructive" : ""
+    const readonlyClass = def.readonly ? "bg-muted/50 cursor-default" : ""
+    
+    // Parsování hodnoty - může být single ID nebo array ID nebo objekt/objekty
+    const selectedValues = React.useMemo(() => {
+        if (!field.value) return []
+        if (mode === 'single') {
+            return Array.isArray(field.value) ? field.value : [field.value]
+        }
+        return Array.isArray(field.value) ? field.value : [field.value]
+    }, [field.value, mode])
+
+    /**
+     * Získá zobrazovaný text pro položku
+     */
+    const getDisplayText = (item: any, fields: string[]) => {
+        if (!item) return ''
+        if (typeof item !== 'object') {
+            // Najdi položku podle ID
+            const found = availableItems.find((i: any) => i[valueField] === item)
+            if (found) {
+                return fields.map(f => found[f]).filter(Boolean).join(' ')
+            }
+            return String(item)
+        }
+        return fields.map(f => item[f]).filter(Boolean).join(' ')
+    }
+
+    /**
+     * Filtruje položky podle vyhledávacího textu
+     */
+    const filteredItems = React.useMemo(() => {
+        if (!searchValue) return availableItems
+        const lower = searchValue.toLowerCase()
+        return availableItems.filter((item: any) => {
+            const text = displayFields.map((f: string) => item[f]).filter(Boolean).join(' ').toLowerCase()
+            return text.includes(lower)
+        })
+    }, [availableItems, searchValue, displayFields])
+
+    /**
+     * Vybere/odebere položku
+     */
+    const toggleItem = (item: any) => {
+        const itemValue = item[valueField]
+        
+        if (mode === 'single') {
+            field.onChange(itemValue)
+            setOpen(false)
+        } else {
+            const isSelected = selectedValues.includes(itemValue)
+            if (isSelected) {
+                field.onChange(selectedValues.filter((v: any) => v !== itemValue))
+            } else {
+                field.onChange([...selectedValues, itemValue])
+            }
+        }
+    }
+
+    /**
+     * Odebere položku z výběru (pro chip)
+     */
+    const removeItem = (itemValue: any) => {
+        if (mode === 'single') {
+            field.onChange(null)
+        } else {
+            field.onChange(selectedValues.filter((v: any) => v !== itemValue))
+        }
+    }
+
+    /**
+     * Zjistí, zda je položka vybrána
+     */
+    const isSelected = (item: any) => selectedValues.includes(item[valueField])
+
+    return (
+        <div className="space-y-2">
+            {/* Vybrané položky jako chipy */}
+            {selectedValues.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                    {selectedValues.map((val: any) => (
+                        <Badge key={val} variant="secondary">
+                            {getDisplayText(val, chipDisplayFields)}
+                            <XIcon 
+                                className="ml-1 h-3 w-3 cursor-pointer hover:text-destructive" 
+                                onClick={() => removeItem(val)}
+                            />
+                        </Badge>
+                    ))}
+                </div>
+            )}
+
+            {/* Picker button */}
+            <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                    <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={open}
+                        className={cn("w-full justify-between", errorClass, readonlyClass)}
+                        disabled={def.disabled || def.readonly}
+                    >
+                        {selectedValues.length === 0 ? (
+                            <span className="text-muted-foreground">
+                                {def.placeholder || `Vyberte ${targetEntity}...`}
+                            </span>
+                        ) : (
+                            <span className="text-muted-foreground text-sm">
+                                {mode === 'single' ? 'Změnit výběr' : 'Přidat další'}
+                            </span>
+                        )}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full min-w-[300px] p-0" align="start">
+                    <Command shouldFilter={false}>
+                        <CommandInput 
+                            placeholder={`Hledat ${targetEntity}...`}
+                            value={searchValue}
+                            onValueChange={setSearchValue}
+                        />
+                        <CommandList>
+                            <CommandEmpty>
+                                {availableItems.length === 0 
+                                    ? `Žádné položky v ${targetEntity}`
+                                    : 'Nenalezeno.'
+                                }
+                            </CommandEmpty>
+                            <CommandGroup>
+                                {filteredItems.map((item: any) => (
+                                    <CommandItem
+                                        key={item[valueField]}
+                                        value={String(item[valueField])}
+                                        onSelect={() => toggleItem(item)}
+                                    >
+                                        <Check
+                                            className={cn(
+                                                "mr-2 h-4 w-4",
+                                                isSelected(item) ? "opacity-100" : "opacity-0"
+                                            )}
+                                        />
+                                        {getDisplayText(item, displayFields)}
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
+                </PopoverContent>
+            </Popover>
+        </div>
     )
 }

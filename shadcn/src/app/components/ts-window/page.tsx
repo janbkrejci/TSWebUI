@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import vscDarkPlus from 'react-syntax-highlighter/dist/cjs/styles/prism/vsc-dark-plus'
 
 const WindowControls = ({ windowId }: { windowId: string }) => {
     const { getWindow } = useWindowManager()
@@ -119,7 +119,7 @@ function TsWindowDemo() {
   }, []) // run once
 
   return (
-    <div className="flex-1 flex flex-col gap-4 min-h-0 data-[state=inactive]:hidden text-foreground">
+    <div className="flex-1 flex flex-col gap-4 min-h-[500px] data-[state=inactive]:hidden text-foreground">
         <div className="flex flex-wrap gap-2 p-4 border rounded-lg bg-card items-center shrink-0 shadow-sm">
             <Button onClick={openWelcomeWindow} disabled={isWelcomeOpen}>Open Welcome</Button>
             <Button onClick={openDataWindow} disabled={isDataOpen}>Open Data</Button>
@@ -132,7 +132,7 @@ function TsWindowDemo() {
         </div>
 
         {/* Added select-none to the workspace container */}
-        <div className="flex-1 relative border rounded-lg bg-slate-100 dark:bg-slate-950 overflow-hidden shadow-inner h-full select-none">
+        <div className="flex-1 relative border rounded-lg bg-slate-100 dark:bg-slate-950 overflow-hidden shadow-inner min-h-[400px] select-none">
             <div className="absolute inset-0 p-8 pointer-events-none">
                 <div className="h-full w-full border-2 border-dashed border-slate-300 dark:border-slate-800 rounded flex items-center justify-center text-slate-400">
                     Window Workspace Area (Select text disabled)

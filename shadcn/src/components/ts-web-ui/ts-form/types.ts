@@ -37,6 +37,8 @@ export interface TsFieldDef {
     readonly?: boolean
     placeholder?: string
     hint?: string
+    /** Error message - when set, widget displays in danger/error state */
+    error?: string
     
     // Number specific
     min?: number
