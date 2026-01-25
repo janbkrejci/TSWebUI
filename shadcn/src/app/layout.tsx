@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ClientOnly } from "@/components/client-only";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ClientOnly } from "@/components/ts-web-ui/client-only";
+import { ThemeProvider } from "@/components/ts-web-ui/theme-provider";
 import { AppSidebar } from "@/components/app-sidebar";
-import { ModeToggle } from "@/components/mode-toggle";
+import { ModeToggle } from "@/components/ts-web-ui/mode-toggle";
 import { 
   SidebarProvider, 
   Sidebar, 
   SidebarContent,
   SidebarTrigger,
-  SidebarInset
+  SidebarInset,
+  SidebarCollapseTrigger
 } from "@/components/ts-web-ui/ts-sidebar";
 import { TsTopBar, TopBarLogo } from "@/components/ts-web-ui/ts-topbar";
-import { SidebarCollapseTrigger } from "@/components/sidebar-collapse-trigger";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,7 +51,6 @@ export default function RootLayout({
             attribute="class"
             defaultTheme="system"
             enableSystem
-            disableTransitionOnChange
           >
             <SidebarProvider defaultOpen={true} mobileBreakpoint={1024} topBarHeight={TOP_BAR_HEIGHT}>
               {/* Fixed TopBar - přes celou šířku */}

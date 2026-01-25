@@ -258,14 +258,6 @@ export function AppSidebar({ className }: SidebarProps) {
               isCollapsed={isCollapsed}
               onClick={handleLinkClick}
             />
-            <NavButton 
-              href="/components/sidebar-collapse-trigger"
-              label="Collapse Trigger"
-              icon={PanelLeftClose}
-              isActive={pathname === "/components/sidebar-collapse-trigger"}
-              isCollapsed={isCollapsed}
-              onClick={handleLinkClick}
-            />
           </div>
         </div>
 

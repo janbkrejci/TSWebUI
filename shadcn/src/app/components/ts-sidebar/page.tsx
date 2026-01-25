@@ -24,9 +24,9 @@ import {
   SidebarItem,
   SidebarTrigger,
   SidebarInset,
+  SidebarCollapseTrigger,
   useSidebar
 } from "@/components/ts-web-ui/ts-sidebar"
-import { SidebarCollapseTrigger } from "@/components/sidebar-collapse-trigger"
 
 /**
  * Menu položky pro demo
@@ -71,6 +71,7 @@ function SidebarControls() {
 function DemoSidebarContent() {
   return (
     <>
+      <SidebarCollapseTrigger />
       <SidebarContent>
         <SidebarSection title="Navigation">
           {menuItems.map((item) => (
@@ -84,9 +85,6 @@ function DemoSidebarContent() {
           ))}
         </SidebarSection>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarCollapseTrigger />
-      </SidebarFooter>
     </>
   )
 }
