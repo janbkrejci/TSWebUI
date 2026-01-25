@@ -37,7 +37,7 @@ export function TsTablePagination({
           <p className="text-sm font-medium">Řádků na stránku</p>
           <Select
             value={`${table.getState().pagination.pageSize}`}
-            onValueChange={(value) => {
+            onValueChange={(value: string) => {
               table.setPageSize(Number(value))
             }}
           >

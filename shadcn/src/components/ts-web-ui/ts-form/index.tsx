@@ -192,7 +192,7 @@ export function TsForm({
 
         {/* Confirmation Dialog */}
         {confirmation.config && (
-            <AlertDialog open={confirmation.isOpen} onOpenChange={(open) => setConfirmation(prev => ({ ...prev, isOpen: open }))}>
+            <AlertDialog open={confirmation.isOpen} onOpenChange={(open: boolean) => setConfirmation(prev => ({ ...prev, isOpen: open }))}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>{confirmation.config.title}</AlertDialogTitle>

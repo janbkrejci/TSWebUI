@@ -57,7 +57,7 @@ export function TsTableView({ table, onRowClick }: TsTableViewProps) {
                                 {meta?.type === 'boolean' ? (
                                     <Select 
                                         value={(header.column.getFilterValue() ?? "all") as string} 
-                                        onValueChange={val => header.column.setFilterValue(val === 'all' ? '' : val)}
+                                        onValueChange={(val: string) => header.column.setFilterValue(val === 'all' ? '' : val)}
                                     >
                                         <SelectTrigger className="h-8 text-xs bg-background w-full">
                                             <SelectValue placeholder="Vše" />

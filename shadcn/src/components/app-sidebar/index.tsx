@@ -160,7 +160,7 @@ export function AppSidebar({ className }: SidebarProps) {
               href="/"
               label="Úvod"
               icon={Home}
-              isActive={pathname === "/"}
+              isActive={pathname.startsWith("/")}
               isCollapsed={isCollapsed}
               onClick={handleLinkClick}
             />
@@ -179,7 +179,7 @@ export function AppSidebar({ className }: SidebarProps) {
               href="/components/ts-window"
               label="Window"
               icon={LayoutGrid}
-              isActive={pathname === "/components/ts-window"}
+              isActive={pathname.startsWith("/components/ts-window")}
               isCollapsed={isCollapsed}
               onClick={handleLinkClick}
             />
@@ -195,7 +195,7 @@ export function AppSidebar({ className }: SidebarProps) {
               href="/components/ts-form"
               label="Form"
               icon={FormInput}
-              isActive={pathname === "/components/ts-form"}
+              isActive={pathname.startsWith("/components/ts-form")}
               isCollapsed={isCollapsed}
               onClick={handleLinkClick}
             />
@@ -203,7 +203,7 @@ export function AppSidebar({ className }: SidebarProps) {
               href="/components/ts-topbar"
               label="TopBar"
               icon={PanelTop}
-              isActive={pathname === "/components/ts-topbar"}
+              isActive={pathname.startsWith("/components/ts-topbar")}
               isCollapsed={isCollapsed}
               onClick={handleLinkClick}
             />
@@ -211,7 +211,7 @@ export function AppSidebar({ className }: SidebarProps) {
               href="/components/ts-sidebar"
               label="Sidebar"
               icon={PanelLeft}
-              isActive={pathname === "/components/ts-sidebar"}
+              isActive={pathname.startsWith("/components/ts-sidebar")}
               isCollapsed={isCollapsed}
               onClick={handleLinkClick}
             />
@@ -219,7 +219,7 @@ export function AppSidebar({ className }: SidebarProps) {
               href="/form-editor"
               label="Form Editor"
               icon={Pencil}
-              isActive={pathname === "/form-editor"}
+              isActive={pathname.startsWith("/form-editor")}
               isCollapsed={isCollapsed}
               onClick={handleLinkClick}
             />
@@ -238,7 +238,7 @@ export function AppSidebar({ className }: SidebarProps) {
               href="/components/client-only"
               label="Client Only"
               icon={Monitor}
-              isActive={pathname === "/components/client-only"}
+              isActive={pathname.startsWith("/components/client-only")}
               isCollapsed={isCollapsed}
               onClick={handleLinkClick}
             />
@@ -246,7 +246,7 @@ export function AppSidebar({ className }: SidebarProps) {
               href="/components/mode-toggle"
               label="Mode Toggle"
               icon={Moon}
-              isActive={pathname === "/components/mode-toggle"}
+              isActive={pathname.startsWith("/components/mode-toggle")}
               isCollapsed={isCollapsed}
               onClick={handleLinkClick}
             />
@@ -254,7 +254,7 @@ export function AppSidebar({ className }: SidebarProps) {
               href="/components/theme-provider"
               label="Theme Provider"
               icon={Palette}
-              isActive={pathname === "/components/theme-provider"}
+              isActive={pathname.startsWith("/components/theme-provider")}
               isCollapsed={isCollapsed}
               onClick={handleLinkClick}
             />
@@ -275,7 +275,7 @@ export function AppSidebar({ className }: SidebarProps) {
                 href={widget.href}
                 label={widget.label}
                 icon={widget.icon}
-                isActive={pathname === widget.href}
+                isActive={pathname.startsWith(widget.href)}
                 isCollapsed={isCollapsed}
                 onClick={handleLinkClick}
               />

@@ -262,7 +262,7 @@ export function TsFormEditor() {
         <div className="flex items-center justify-between border-b p-2 bg-muted/30">
           <div className="flex items-center gap-2">
             {/* Mode toggle */}
-            <Select value={form.mode} onValueChange={(v) => setMode(v as 'tabs' | 'single')}>
+            <Select value={form.mode} onValueChange={(v: string) => setMode(v as 'tabs' | 'single')}>
               <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
@@ -910,7 +910,7 @@ function FieldPropertiesPanel({
           <Label>Povinné</Label>
           <Switch
             checked={config.required || false}
-            onCheckedChange={(checked) => onUpdate({ required: checked })}
+            onCheckedChange={(checked: boolean) => onUpdate({ required: checked })}
           />
         </div>
 
@@ -918,7 +918,7 @@ function FieldPropertiesPanel({
           <Label>Zakázané</Label>
           <Switch
             checked={config.disabled || false}
-            onCheckedChange={(checked) => onUpdate({ disabled: checked })}
+            onCheckedChange={(checked: boolean) => onUpdate({ disabled: checked })}
           />
         </div>
 
@@ -926,7 +926,7 @@ function FieldPropertiesPanel({
           <Label>Pouze pro čtení</Label>
           <Switch
             checked={config.readonly || false}
-            onCheckedChange={(checked) => onUpdate({ readonly: checked })}
+            onCheckedChange={(checked: boolean) => onUpdate({ readonly: checked })}
           />
         </div>
 
@@ -934,7 +934,7 @@ function FieldPropertiesPanel({
           <Label>Skryté</Label>
           <Switch
             checked={config.hidden || false}
-            onCheckedChange={(checked) => onUpdate({ hidden: checked })}
+            onCheckedChange={(checked: boolean) => onUpdate({ hidden: checked })}
           />
         </div>
       </div>
@@ -1031,7 +1031,7 @@ function FieldPropertiesPanel({
           <Label>Varianta</Label>
           <Select
             value={config.variant || 'default'}
-            onValueChange={(v) => onUpdate({ variant: v })}
+            onValueChange={(v: string) => onUpdate({ variant: v })}
           >
             <SelectTrigger>
               <SelectValue />

@@ -248,7 +248,7 @@ function renderWidget(field: any, def: TsFieldDef, name: string, hasError: boole
                     max={def.max || 100} 
                     min={def.min || 0} 
                     step={def.step || 1}
-                    onValueChange={(vals) => field.onChange(vals[0])}
+                    onValueChange={(vals: number[]) => field.onChange(vals[0])}
                     disabled={def.disabled || def.readonly}
                     className={cn(hasError && "[&_[role=slider]]:border-destructive [&_[role=slider]]:bg-destructive")}
                 />
@@ -485,7 +485,7 @@ function ComboboxWidget({ field, def, hasError = false }: { field: any, def: TsF
                                 <CommandItem
                                     key={framework.value}
                                     value={framework.label} 
-                                    onSelect={(currentValue) => {
+                                    onSelect={(currentValue: string) => {
                                         // Shadcn command returns lowercase label as value
                                         // We need to map back to original value
                                         // Simple lookup by label
