@@ -295,7 +295,7 @@ export function SidebarHeader({
  */
 export function SidebarContent({ className, children }: { className?: string, children: React.ReactNode }) {
   return (
-    <div className={cn("flex-1 overflow-y-auto", className)}>
+    <div className={cn("flex-1 overflow-y-auto scrollbar-hidden", className)}>
       <div className="py-2">
         {children}
       </div>
