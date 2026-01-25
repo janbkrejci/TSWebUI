@@ -11,6 +11,7 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 /**
  * Kontext pro TopBar - umožňuje komponentám přistupovat k výšce
@@ -155,12 +156,12 @@ export function TopBarLogo({ className, text, icon, href, children }: TopBarLogo
 
   if (href) {
     return (
-      <a 
+      <Link 
         href={href} 
         className={cn("flex items-center gap-2 font-semibold hover:opacity-80 transition-opacity", className)} 
       >
         {content}
-      </a>
+      </Link>
     )
   }
 
