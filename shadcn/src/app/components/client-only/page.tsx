@@ -48,7 +48,7 @@ function ClientOnlyDemo() {
           
           <div className="p-4 border rounded-lg bg-muted/50">
             <p className="text-sm text-muted-foreground">
-              ☝️ The content above uses <code>window.innerWidth</code> which is not available during SSR.
+              The content above uses <code>window.innerWidth</code> which is not available during SSR.
               Without <code>ClientOnly</code>, this would cause hydration errors.
             </p>
           </div>
@@ -141,8 +141,8 @@ export default function ClientOnlyPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[150px]">Prop</TableHead>
-                      <TableHead className="w-[150px]">Type</TableHead>
+                      <TableHead className="w-37.5">Prop</TableHead>
+                      <TableHead className="w-37.5">Type</TableHead>
                       <TableHead>Description</TableHead>
                     </TableRow>
                   </TableHeader>
