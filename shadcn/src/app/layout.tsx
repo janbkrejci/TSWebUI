@@ -67,7 +67,6 @@ export default function RootLayout({
               
               {/* Sidebar - pod TopBarem */}
               <Sidebar>
-                <SidebarCollapseTrigger />
                 <SidebarContent>
                   <AppSidebar />
                 </SidebarContent>

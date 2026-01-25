@@ -209,6 +209,7 @@ export function Sidebar({
           isMobile 
             ? (isOpen ? "translate-x-0" : "-translate-x-full")
             : "translate-x-0",
+          !isMobile && "overflow-visible",
           className
         )}
         style={{ 
@@ -221,6 +222,7 @@ export function Sidebar({
         <div className="flex flex-col h-full overflow-hidden">
           {children}
         </div>
+        <SidebarCollapseTrigger />
       </aside>
     </>
   )
@@ -462,35 +464,43 @@ export function SidebarInset({ className, children, style, ...props }: SidebarIn
  * Zobrazuje se pouze na desktopu (ne na mobile)
  */
 export function SidebarCollapseTrigger({ className }: { className?: string }) {
-  const { isCollapsed, toggleCollapsed, isMobile } = useSidebar()
+  const { isCollapsed, toggleCollapsed, isMobile, isOpen, topBarHeight } = useSidebar()
 
-  // Na mobile nikdy nezobrazovat - mobile sidebar nemá být collapsed
-  if (isMobile) {
-    return null
-  }
+  // Na mobile nezobrazovat
+  if (isMobile) return null
+
+  // Pokud je sidebar zavřený (closed), nezobrazovat trigger
+  if (!isOpen) return null
 
   return (
-    <button
-      className={cn(
-        "absolute top-1/2 -translate-y-1/2 -right-3 z-50",
-        "h-6 w-6 rounded-full",
-        "bg-background border shadow-sm",
-        "flex items-center justify-center",
-        "text-muted-foreground hover:text-foreground hover:bg-accent",
-        "transition-colors duration-200",
-        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-        className
-      )}
-      onClick={toggleCollapsed}
-      title={isCollapsed ? "Rozbalit menu" : "Sbalit menu"}
-      aria-label={isCollapsed ? "Rozbalit menu" : "Sbalit menu"}
-    >
-      {isCollapsed ? (
-        <ChevronRight className="h-3.5 w-3.5" />
-      ) : (
-        <ChevronLeft className="h-3.5 w-3.5" />
-      )}
-    </button>
+    <div className="absolute inset-y-0 -right-3 z-50 w-6 pointer-events-none">
+      <div 
+        className="sticky flex justify-center -translate-y-1/2"
+        style={{ top: `calc(50% + ${topBarHeight / 2}px)` }}
+      >
+        <button
+          className={cn(
+            "h-6 w-6 rounded-full",
+            "bg-background border shadow-sm",
+            "flex items-center justify-center",
+            "text-muted-foreground hover:text-foreground hover:bg-accent",
+            "transition-colors duration-200",
+            "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+            "pointer-events-auto",
+            className
+          )}
+          onClick={toggleCollapsed}
+          title={isCollapsed ? "Rozbalit menu" : "Sbalit menu"}
+          aria-label={isCollapsed ? "Rozbalit menu" : "Sbalit menu"}
+        >
+          {isCollapsed ? (
+            <ChevronRight className="h-3.5 w-3.5" />
+          ) : (
+            <ChevronLeft className="h-3.5 w-3.5" />
+          )}
+        </button>
+      </div>
+    </div>
   )
 }
 

@@ -71,7 +71,6 @@ function SidebarControls() {
 function DemoSidebarContent() {
   return (
     <>
-      <SidebarCollapseTrigger />
       <SidebarContent>
         <SidebarSection title="Navigation">
           {menuItems.map((item) => (

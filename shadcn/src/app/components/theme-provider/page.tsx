@@ -161,8 +161,8 @@ export default function ThemeProviderPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[180px]">Prop</TableHead>
-                      <TableHead className="w-[150px]">Type</TableHead>
+                      <TableHead className="w-45">Prop</TableHead>
+                      <TableHead className="w-37.5">Type</TableHead>
                       <TableHead>Description</TableHead>
                     </TableRow>
                   </TableHeader>
