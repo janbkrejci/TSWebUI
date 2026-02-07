@@ -9,7 +9,6 @@
   "main": "./dist/index.js",
   "exports": {
     ".": "./dist/index.js",
-    "./ts-window": "./dist/ts-window-bundle.js",
     "./ts-form": "./dist/ts-form-bundle.js",
     "./ts-table": "./dist/ts-table-bundle.js"
   },

@@ -9,7 +9,7 @@ const preview = {
     },
     options: {
       storySort: {
-        order: ['TSWebUI', ['Introduction', 'TSWindow', 'TSTable', 'TSForm']],
+        order: ['TSWebUI', ['Introduction', 'TSTable', 'TSForm']],
       },
     },
   },

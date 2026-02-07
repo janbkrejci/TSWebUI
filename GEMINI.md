@@ -11,8 +11,7 @@ The project is structured as a monorepo with core components located in `package
     *   **Events**: `form-submit`, `form-changed`, `form-field-action`.
 2.  **`ts-table`**: A feature-rich data table component.
     *   **Features**: Sorting, filtering, pagination, resizable columns, and nested action buttons (export/import).
-3.  **`ts-window`**: A draggable and resizable window component using Shadow DOM.
-4.  **`ts-form-editor`**: A React-based visual editor (Vite-powered) for creating `ts-form` configurations.
+3.  **`ts-form-editor`**: A React-based visual editor (Vite-powered) for creating `ts-form` configurations.
 
 ## Building and Running
 
