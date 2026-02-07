@@ -1,65 +1,45 @@
 # TSWebUI Project Context
 
 ## Project Overview
-**TSWebUI** is a library of custom web components (Web Components) designed for declarative UI construction. It provides powerful, configuration-driven components that can be easily integrated into any web application.
+**TSWebUI** is a library of custom web components (Web Components) designed for declarative UI construction. It provides powerful, configuration-driven components that can be easily integrated into any web application by passing JSON configurations.
 
-## Key Components (Packages)
+### Key Components (Packages)
+The project is structured as a monorepo with core components located in `packages/`:
 
-The core components are located in `packages/`:
+1.  **`ts-form`**: A comprehensive form component that generates dynamic forms based on JSON configuration.
+    *   **Features**: Supports Tabs or Single page layouts, extensive field types (`text`, `number`, `relationship`, `table`, etc.), validation, and external error injection.
+    *   **Events**: `form-submit`, `form-changed`, `form-field-action`.
+2.  **`ts-table`**: A feature-rich data table component.
+    *   **Features**: Sorting, filtering, pagination, resizable columns, and nested action buttons (export/import).
+3.  **`ts-window`**: A draggable and resizable window component using Shadow DOM.
+4.  **`ts-form-editor`**: A React-based visual editor (Vite-powered) for creating `ts-form` configurations.
 
-### 1. `ts-form`
-A comprehensive form component that generates dynamic forms based on JSON configuration.
-*   **Source:** `packages/ts-form`
-*   **Key Features:**
-    *   **Layout:** Supports Tabs or Single page layouts via JSON.
-    *   **Fields:** Extensive field types including `text`, `number`, `date`, `combobox`, `relationship` (complex entity picker), `file`, `table` (nested), etc.
-    *   **Validation:** Supports required fields and external error injection.
-    *   **Events:** `form-submit`, `form-changed`, `form-field-action`.
-    *   **Data:** Import/Export functionality (JSON).
-*   **Documentation:** See `ts-form-readme.md` for detailed JSON schema and API.
-
-### 2. `ts-table`
-A feature-rich data table component.
-*   **Source:** `packages/ts-table`
-*   **Key Features:**
-    *   **Data Handling:** Sorting, filtering, pagination (`ts-table-pager`).
-    *   **Columns:** Resizable, reorderable, hideable columns (`ts-column-selector`).
-    *   **Actions:** Selection, row menus, export/import buttons.
-    *   **Configuration:** `columnDefinitions`, `itemsPerPage`, `visibleColumns`.
-
-### 3. `ts-window`
-A draggable and resizable window component using Shadow DOM.
-*   **Source:** `packages/ts-window`
-*   **State:** Manages minimized/maximized states, position (top/left), and dimensions.
-
-### 4. `ts-form-editor`
-A React-based visual editor for creating `ts-form` configurations.
-*   **Source:** `packages/ts-form-editor`
-*   **Tech Stack:** React, Vite, Tailwind CSS, Radix UI, dnd-kit, Zustand.
-*   **Purpose:** Allows users to drag-and-drop fields to generate the JSON required for `ts-form`.
-
-## Development & Build
+## Building and Running
 
 ### Root Scripts (`package.json`)
-*   **`npm run bundle`**: Builds the core components using Vite (`vite.bundle.config.js`).
-*   **`npm run build:editor`**: Installs dependencies and builds the React-based Form Editor.
-*   **`npm run storybook`**: Starts Storybook for component development and documentation (port 3000).
-*   **`npm run build-storybook`**: Builds the Storybook static site to `docs/`.
+*   **`npm run bundle`**: Builds the core library bundles (`index.js`, `ts-form-bundle.js`, etc.) into the `dist/` directory using Vite.
+*   **`npm run storybook`**: Starts Storybook for component development and documentation on port 3000.
+*   **`npm run build:editor`**: Builds the React-based Form Editor located in `packages/ts-form-editor`.
+*   **`npm run build:storybook`**: Builds the static Storybook documentation to the `docs/` directory.
 
 ### Directory Structure
-*   `packages/`: Source code for all components.
-*   `storybook/`: Storybook stories (`.stories.js`) and documentation (`.mdx`).
-*   `docs/`: Generated static files (Storybook build).
-*   `dist/`: Output directory for bundled libraries.
+*   `packages/`: Source code for all web components and the React editor.
+*   `storybook/`: Storybook stories and documentation (`.mdx`).
+*   `docs/`: Static site for documentation (Storybook output).
+*   `dist/`: Bundled library files for production use.
+*   `public/`: Static assets.
 
-## Coding Conventions
+## Development Conventions
 
-*   **Web Components:** Core UI elements are built as standard HTMLElement extensions.
-*   **Styling:** Components rely on **Shoelace Design System** CSS variables (e.g., `--sl-color-primary-*`) for theming.
-*   **Module System:** ES Modules (`type: "module"`).
-*   **Bundling:** Vite is used for both the library bundle and the React editor application.
+*   **Web Components**: Core UI elements are built as standard `HTMLElement` extensions. They use `observedAttributes` for reactivity and `attributeChangedCallback` to trigger renders.
+*   **Styling**: Components rely on **Shoelace Design System** CSS variables (e.g., `--sl-color-primary-*`) for theming and layout.
+*   **JSON-Driven**: UI structure and behavior are primarily defined through complex JSON objects (layout, fields, columns).
+*   **Event Handling**: Communication between components and the host application is done via standard Custom Events.
+*   **Module System**: The project uses ES Modules (`type: "module"`).
+*   **Bundling**: Vite is used for both library bundling and application builds.
 
-## Quick Reference
-*   **Form Attributes:** `layout` (structure), `fields` (definitions), `buttons` (actions), `values` (data).
-*   **Table Attributes:** `tableData`, `columnDefinitions`.
-*   **Event Handling:** Use standard `addEventListener` for custom events like `form-submit` or `form-changed`.
+## Key Files
+*   `package.json`: Root configuration and build scripts.
+*   `vite.bundle.config.js`: Configuration for generating the library bundles.
+*   `ts-form-readme.md`: Detailed technical documentation for the `ts-form` JSON schema.
+*   `packages/index.js`: Main entry point exporting all components.
